@@ -81,3 +81,4 @@ Key recurring patterns:
 - Alternation between integration and disintegration
 - Transformation of psycho-technologies
 - Evolution of meaning-making frameworks 
+
