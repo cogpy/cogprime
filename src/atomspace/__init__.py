@@ -52,20 +52,16 @@ class TruthValue:
     """Truth value representation for atoms."""
     
     def __init__(self, strength: float = 1.0, confidence: float = 1.0):
-        """
-        Initialize a TruthValue instance with specified strength and confidence, clamped between 0.0 and 1.0.
+        """Initialize with strength and confidence values.
         
-        Parameters:
-            strength (float): Degree of truth, where 0.0 is completely false and 1.0 is completely true.
-            confidence (float): Certainty of the truth value, from 0.0 (no confidence) to 1.0 (full confidence).
+        Args:
+            strength: Truth value strength (0.0 to 1.0)
+            confidence: Confidence in the truth value (0.0 to 1.0)
         """
         self.strength = max(0.0, min(1.0, strength))
         self.confidence = max(0.0, min(1.0, confidence))
     
     def __repr__(self) -> str:
-        """
-        Return a string representation of the TruthValue with formatted strength and confidence.
-        """
         return f"TruthValue(strength={self.strength:.3f}, confidence={self.confidence:.3f})"
 
 
@@ -73,22 +69,18 @@ class AttentionValue:
     """Attention value representation for atoms."""
     
     def __init__(self, sti: float = 0.0, lti: float = 0.0, vlti: bool = False):
-        """
-        Initialize an AttentionValue instance with specified short-term, long-term, and very long-term importance values.
+        """Initialize with attention values.
         
-        Parameters:
-        	sti (float): Short-term importance value.
-        	lti (float): Long-term importance value.
-        	vlti (bool): Indicates if the atom has very long-term importance.
+        Args:
+            sti: Short-Term Importance
+            lti: Long-Term Importance
+            vlti: Very Long-Term Importance flag
         """
         self.sti = sti  # Short-Term Importance
         self.lti = lti  # Long-Term Importance
         self.vlti = vlti  # Very Long-Term Importance flag
     
     def __repr__(self) -> str:
-        """
-        Return a string representation of the AttentionValue, showing short-term, long-term, and very long-term importance values.
-        """
         return f"AttentionValue(sti={self.sti:.3f}, lti={self.lti:.3f}, vlti={self.vlti})"
 
 
@@ -96,8 +88,11 @@ class Atom(ABC):
     """Base class for all atoms in the AtomSpace."""
     
     def __init__(self, atom_type: AtomType, name: str = None):
-        """
-        Create a new atom with the specified type and optional name, assigning a unique identifier and initializing truth and attention values.
+        """Initialize an atom with a type and optional name.
+        
+        Args:
+            atom_type: The type of the atom (e.g., "ConceptNode")
+            name: Optional name for the atom
         """
         self.atom_type = atom_type
         self.name = name
@@ -110,130 +105,63 @@ class Atom(ABC):
     
     @abstractmethod
     def is_node(self) -> bool:
-        """
-        Determine whether the atom is a node.
-        
-        Returns:
-            bool: True if the atom is a node, False otherwise.
-        """
+        """Return True if this is a node, False if it's a link."""
         pass
     
     @abstractmethod
     def is_link(self) -> bool:
-        """
-        Indicates whether the atom is a link.
-        
-        Returns:
-            bool: True if the atom is a link; False otherwise.
-        """
+        """Return True if this is a link, False if it's a node."""
         pass
     
     @abstractmethod
     def get_hash(self) -> int:
-        """
-        Return a hash value uniquely identifying this atom.
-        
-        Intended to be implemented by subclasses to provide a consistent hash based on atom properties.
-        """
+        """Get a hash value for this atom."""
         pass
     
     def get_value(self, key: str) -> Any:
-        """
-        Retrieve the value associated with the specified key from the atom's key-value store.
-        
-        Parameters:
-            key (str): The key for which to retrieve the value.
-        
-        Returns:
-            Any: The value associated with the key, or None if the key does not exist.
-        """
+        """Get a value by key."""
         return self.values.get(key)
     
     def set_value(self, key: str, value: Any) -> None:
-        """
-        Assigns a value to the specified key in the atom's key-value store.
-        
-        Parameters:
-            key (str): The key under which the value will be stored.
-            value (Any): The value to associate with the key.
-        """
+        """Set a value for a key."""
         self.values[key] = value
     
     def set_truth_value(self, tv: TruthValue) -> None:
-        """
-        Assigns a new truth value to this atom.
-        
-        Parameters:
-        	tv (TruthValue): The truth value to set for the atom.
-        """
+        """Set the truth value for this atom."""
         self.tv = tv
     
     def get_truth_value(self) -> TruthValue:
-        """
-        Returns the truth value associated with this atom.
-        
-        Returns:
-            TruthValue: The strength and confidence values representing the atom's truth assessment.
-        """
+        """Get the truth value for this atom."""
         return self.tv
     
     def set_attention_value(self, av: AttentionValue) -> None:
-        """
-        Assigns a new attention value to this atom.
-        
-        Parameters:
-        	av (AttentionValue): The attention value to set for the atom.
-        """
+        """Set the attention value for this atom."""
         self.av = av
     
     def get_attention_value(self) -> AttentionValue:
-        """
-        Returns the attention value associated with this atom.
-        
-        Returns:
-            AttentionValue: The attention value object containing short-term, long-term, and very long-term importance metrics.
-        """
+        """Get the attention value for this atom."""
         return self.av
     
     def add_to_incoming_set(self, link) -> None:
-        """
-        Adds the specified link to the set of incoming links for this atom.
-        
-        Parameters:
-            link (Link): The link to be added as an incoming connection.
-        """
+        """Add a link to this atom's incoming set."""
         self.incoming_set.add(link)
     
     def remove_from_incoming_set(self, link) -> None:
-        """
-        Removes the specified link from the set of incoming links to this atom.
-        """
+        """Remove a link from this atom's incoming set."""
         self.incoming_set.discard(link)
     
     def get_incoming_set(self) -> Set:
-        """
-        Return the set of links in which this atom appears as an outgoing atom.
-        
-        Returns:
-            Set: A set of Link instances referencing this atom.
-        """
+        """Get the set of links that contain this atom."""
         return self.incoming_set
     
     def __eq__(self, other) -> bool:
-        """
-        Determine whether this atom is equal to another atom based on their unique IDs.
-        
-        Returns:
-            bool: True if the other object is an Atom with the same ID, otherwise False.
-        """
+        """Check if two atoms are equal."""
         if not isinstance(other, Atom):
             return False
         return self.id == other.id
     
     def __hash__(self) -> int:
-        """
-        Returns the hash value of the atom based on its unique identifier.
-        """
+        """Hash function for atoms."""
         return hash(self.id)
 
 
@@ -241,44 +169,29 @@ class Node(Atom):
     """Node class representing vertices in the AtomSpace hypergraph."""
     
     def __init__(self, atom_type: AtomType, name: str):
-        """
-        Initialize a Node with the specified type and name.
+        """Initialize a node with type and name.
         
-        Raises:
-            ValueError: If the name is None.
+        Args:
+            atom_type: The type of the node (e.g., "ConceptNode")
+            name: The name of the node
         """
         super().__init__(atom_type, name)
         if name is None:
             raise ValueError("Node must have a name")
     
     def is_node(self) -> bool:
-        """
-        Indicates that this atom is a node.
-        
-        Returns:
-            bool: True, since this object represents a node.
-        """
+        """Return True as this is a node."""
         return True
     
     def is_link(self) -> bool:
-        """
-        Indicates that this atom is not a link.
-        
-        Returns:
-            bool: Always returns False.
-        """
+        """Return False as this is not a link."""
         return False
     
     def get_hash(self) -> int:
-        """
-        Return a hash value for the node based on its type and name.
-        """
+        """Get a hash value for this node."""
         return hash((self.atom_type, self.name))
     
     def __repr__(self) -> str:
-        """
-        Return a string representation of the node showing its type and name.
-        """
         return f"{self.atom_type}('{self.name}')"
 
 
@@ -286,62 +199,36 @@ class Link(Atom):
     """Link class representing hyperedges in the AtomSpace hypergraph."""
     
     def __init__(self, atom_type: AtomType, outgoing_set: List[Atom]):
-        """
-        Initialize a Link atom with a specified type and a list of connected atoms.
+        """Initialize a link with type and outgoing set.
         
-        Parameters:
-        	atom_type (AtomType): The type of the link atom.
-        	outgoing_set (List[Atom]): Atoms that this link connects as its outgoing set.
+        Args:
+            atom_type: The type of the link (e.g., "InheritanceLink")
+            outgoing_set: List of atoms that this link connects
         """
         super().__init__(atom_type)
         self.outgoing_set = outgoing_set if outgoing_set else []
     
     def is_node(self) -> bool:
-        """
-        Indicates that this atom is not a node.
-        
-        Returns:
-            bool: Always returns False.
-        """
+        """Return False as this is not a node."""
         return False
     
     def is_link(self) -> bool:
-        """
-        Indicates that this atom is a link.
-        
-        Returns:
-            bool: Always True, as this object represents a link.
-        """
+        """Return True as this is a link."""
         return True
     
     def get_hash(self) -> int:
-        """
-        Return a hash value based on the link's type and the IDs of its outgoing atoms.
-        """
+        """Get a hash value for this link."""
         return hash((self.atom_type, tuple(atom.id for atom in self.outgoing_set)))
     
     def get_arity(self) -> int:
-        """
-        Return the number of atoms connected by this link.
-        
-        Returns:
-            int: The arity, representing how many atoms are in the outgoing set of the link.
-        """
+        """Get the arity (number of atoms in outgoing set) of this link."""
         return len(self.outgoing_set)
     
     def get_outgoing_set(self) -> List[Atom]:
-        """
-        Return the list of atoms connected by this link.
-        
-        Returns:
-            List[Atom]: The outgoing set of atoms associated with this link.
-        """
+        """Get the outgoing set of this link."""
         return self.outgoing_set
     
     def __repr__(self) -> str:
-        """
-        Return a string representation of the link, showing its type and connected atoms.
-        """
         outgoing_repr = ", ".join(repr(atom) for atom in self.outgoing_set)
         return f"{self.atom_type}({outgoing_repr})"
 
@@ -351,88 +238,37 @@ class AtomSpaceBackend(ABC):
     
     @abstractmethod
     def add_atom(self, atom: Atom) -> Atom:
-        """
-        Adds an atom to the backend storage and updates relevant indexes.
-        
-        Returns:
-            Atom: The atom that was added.
-        """
+        """Add an atom to the backend storage."""
         pass
     
     @abstractmethod
     def remove_atom(self, atom: Atom) -> bool:
-        """
-        Removes the specified atom from the backend storage.
-        
-        Returns:
-            bool: True if the atom was successfully removed, False if the atom was not found.
-        """
+        """Remove an atom from the backend storage."""
         pass
     
     @abstractmethod
     def get_atom(self, atom_id: AtomID) -> Optional[Atom]:
-        """
-        Retrieve an atom from the AtomSpace by its unique identifier.
-        
-        Parameters:
-        	atom_id: The unique identifier of the atom to retrieve.
-        
-        Returns:
-        	The Atom instance with the specified ID, or None if not found.
-        """
+        """Get an atom by ID."""
         pass
     
     @abstractmethod
     def get_atom_by_type_name(self, atom_type: AtomType, name: str) -> Optional[Node]:
-        """
-        Retrieve a node from the AtomSpace by its type and name.
-        
-        Parameters:
-        	atom_type (AtomType): The type of the node to retrieve.
-        	name (str): The name of the node to retrieve.
-        
-        Returns:
-        	Node or None: The node matching the specified type and name, or None if not found.
-        """
+        """Get a node by type and name."""
         pass
     
     @abstractmethod
     def get_atoms_by_type(self, atom_type: AtomType) -> List[Atom]:
-        """
-        Return a list of all atoms with the specified type.
-        
-        Parameters:
-        	atom_type (AtomType): The type of atoms to retrieve.
-        
-        Returns:
-        	List[Atom]: Atoms matching the given type.
-        """
+        """Get all atoms of a given type."""
         pass
     
     @abstractmethod
     def query(self, pattern: Atom) -> List[Atom]:
-        """
-        Return a list of atoms that match the given pattern atom.
-        
-        Parameters:
-            pattern (Atom): The atom pattern to match against atoms in the AtomSpace.
-        
-        Returns:
-            List[Atom]: Atoms matching the specified pattern.
-        """
+        """Query atoms matching a pattern."""
         pass
     
     @abstractmethod
     def pattern_match(self, pattern: Dict) -> List[Dict]:
-        """
-        Performs advanced pattern matching against atoms in the AtomSpace.
-        
-        Parameters:
-            pattern (Dict): A dictionary specifying the pattern to match.
-        
-        Returns:
-            List[Dict]: A list of match results, each represented as a dictionary.
-        """
+        """Perform advanced pattern matching."""
         pass
 
 
@@ -440,20 +276,13 @@ class LocalAtomSpaceBackend(AtomSpaceBackend):
     """Local in-memory implementation of the AtomSpace backend."""
     
     def __init__(self):
-        """
-        Initialize the in-memory data structures for storing and indexing atoms in the local AtomSpace backend.
-        """
+        """Initialize a local AtomSpace backend."""
         self.atoms_by_id = {}  # id -> atom
         self.nodes_by_type_name = {}  # (type, name) -> node
         self.atoms_by_type = {}  # type -> set of atoms
     
     def add_atom(self, atom: Atom) -> Atom:
-        """
-        Adds an atom to the local in-memory backend, updating all relevant indexes and incoming link sets.
-        
-        Returns:
-            The atom that was added.
-        """
+        """Add an atom to the local storage."""
         self.atoms_by_id[atom.id] = atom
         
         # Index by type
@@ -474,12 +303,7 @@ class LocalAtomSpaceBackend(AtomSpaceBackend):
         return atom
     
     def remove_atom(self, atom: Atom) -> bool:
-        """
-        Removes the specified atom from local storage and all associated indexes.
-        
-        Returns:
-            bool: True if the atom was removed, False if it was not found.
-        """
+        """Remove an atom from the local storage."""
         if atom.id not in self.atoms_by_id:
             return False
         
@@ -506,57 +330,20 @@ class LocalAtomSpaceBackend(AtomSpaceBackend):
         return True
     
     def get_atom(self, atom_id: AtomID) -> Optional[Atom]:
-        """
-        Retrieve an atom from the backend by its unique identifier.
-        
-        Parameters:
-        	atom_id: The unique identifier of the atom to retrieve.
-        
-        Returns:
-        	The Atom instance with the specified ID, or None if not found.
-        """
+        """Get an atom by ID."""
         return self.atoms_by_id.get(atom_id)
     
     def get_atom_by_type_name(self, atom_type: AtomType, name: str) -> Optional[Node]:
-        """
-        Retrieve a node from the AtomSpace by its type and name.
-        
-        Parameters:
-            atom_type (AtomType): The type of the node to retrieve.
-            name (str): The name of the node to retrieve.
-        
-        Returns:
-            Optional[Node]: The node matching the given type and name, or None if not found.
-        """
+        """Get a node by type and name."""
         key = (atom_type, name)
         return self.nodes_by_type_name.get(key)
     
     def get_atoms_by_type(self, atom_type: AtomType) -> List[Atom]:
-        """
-        Return a list of all atoms with the specified type.
-        
-        Parameters:
-            atom_type (AtomType): The type of atoms to retrieve.
-        
-        Returns:
-            List[Atom]: Atoms matching the given type.
-        """
+        """Get all atoms of a given type."""
         return list(self.atoms_by_type.get(atom_type, set()))
     
     def query(self, pattern: Atom) -> List[Atom]:
-        """
-        Return a list of atoms that match the given pattern atom.
-        
-        If the pattern is a node, returns the node with the same type and name.  
-        If the pattern is a link, returns all links of the same type whose outgoing set matches the pattern's outgoing set, supporting None as a wildcard.  
-        Recursive matching for nested links is not implemented.
-         
-        Parameters:
-            pattern (Atom): The atom pattern to match against.
-        
-        Returns:
-            List[Atom]: Atoms matching the pattern.
-        """
+        """Query atoms matching a pattern."""
         results = []
         
         # If pattern is a node, look it up directly
@@ -609,15 +396,7 @@ class LocalAtomSpaceBackend(AtomSpaceBackend):
         return results
     
     def pattern_match(self, pattern: Dict) -> List[Dict]:
-        """
-        Performs advanced pattern matching against atoms in the AtomSpace.
-        
-        Parameters:
-            pattern (Dict): A dictionary specifying the pattern to match.
-        
-        Returns:
-            List[Dict]: A list of match results, currently always empty as this is a placeholder.
-        """
+        """Perform advanced pattern matching."""
         # TODO: Implement more sophisticated pattern matching
         # This is a placeholder for advanced pattern matching functionality
         return []
@@ -627,10 +406,10 @@ class Node9AtomSpaceBackend(AtomSpaceBackend):
     """AtomSpace backend that uses node9 namespace for distributed operation."""
     
     def __init__(self, namespace_path: str = "/cog/space"):
-        """
-        Initialize a Node9AtomSpaceBackend for distributed AtomSpace operations using a specified node9 namespace path.
+        """Initialize a node9 namespace-based AtomSpace backend.
         
-        Currently, this backend is not fully implemented and falls back to a local in-memory backend.
+        Args:
+            namespace_path: Path in the node9 namespace for AtomSpace
         """
         self.namespace_path = namespace_path
         # TODO: Implement node9 namespace integration
@@ -640,83 +419,37 @@ class Node9AtomSpaceBackend(AtomSpaceBackend):
         self._local_backend = LocalAtomSpaceBackend()
     
     def add_atom(self, atom: Atom) -> Atom:
-        """
-        Adds an atom to the AtomSpace using the node9 backend.
-        
-        Currently, this method delegates to the local backend as node9 integration is not implemented.
-        
-        Returns:
-            The atom that was added.
-        """
+        """Add an atom to the node9 namespace."""
         # TODO: Implement node9 namespace integration
         return self._local_backend.add_atom(atom)
     
     def remove_atom(self, atom: Atom) -> bool:
-        """
-        Removes an atom from the AtomSpace using the node9 backend.
-        
-        Returns:
-            bool: True if the atom was removed successfully, False otherwise.
-        """
+        """Remove an atom from the node9 namespace."""
         # TODO: Implement node9 namespace integration
         return self._local_backend.remove_atom(atom)
     
     def get_atom(self, atom_id: AtomID) -> Optional[Atom]:
-        """
-        Retrieve an atom by its unique ID, using the local backend as a fallback.
-        
-        Returns:
-            The Atom instance with the specified ID, or None if not found.
-        """
+        """Get an atom by ID from the node9 namespace."""
         # TODO: Implement node9 namespace integration
         return self._local_backend.get_atom(atom_id)
     
     def get_atom_by_type_name(self, atom_type: AtomType, name: str) -> Optional[Node]:
-        """
-        Retrieve a node by its type and name using the local backend as a fallback.
-        
-        Returns:
-            The Node instance matching the specified type and name, or None if not found.
-        """
+        """Get a node by type and name from the node9 namespace."""
         # TODO: Implement node9 namespace integration
         return self._local_backend.get_atom_by_type_name(atom_type, name)
     
     def get_atoms_by_type(self, atom_type: AtomType) -> List[Atom]:
-        """
-        Return all atoms of the specified type from the AtomSpace.
-        
-        Parameters:
-        	atom_type (AtomType): The type of atoms to retrieve.
-        
-        Returns:
-        	List[Atom]: A list of atoms matching the given type.
-        """
+        """Get all atoms of a given type from the node9 namespace."""
         # TODO: Implement node9 namespace integration
         return self._local_backend.get_atoms_by_type(atom_type)
     
     def query(self, pattern: Atom) -> List[Atom]:
-        """
-        Return atoms matching the given pattern using the local backend.
-        
-        Parameters:
-        	pattern (Atom): The atom pattern to match against existing atoms.
-        
-        Returns:
-        	List[Atom]: Atoms that match the specified pattern.
-        """
+        """Query atoms matching a pattern in the node9 namespace."""
         # TODO: Implement node9 namespace integration
         return self._local_backend.query(pattern)
     
     def pattern_match(self, pattern: Dict) -> List[Dict]:
-        """
-        Performs advanced pattern matching using the local backend as a fallback.
-        
-        Parameters:
-            pattern (Dict): A dictionary representing the pattern to match against atoms.
-        
-        Returns:
-            List[Dict]: A list of match results, each represented as a dictionary.
-        """
+        """Perform advanced pattern matching in the node9 namespace."""
         # TODO: Implement node9 namespace integration
         return self._local_backend.pattern_match(pattern)
 
@@ -725,10 +458,10 @@ class Mem0AtomSpaceBackend(AtomSpaceBackend):
     """AtomSpace backend that uses mem0 for persistence and vector search."""
     
     def __init__(self, config: Dict = None):
-        """
-        Initialize the Mem0AtomSpaceBackend with optional configuration for mem0 integration.
+        """Initialize a mem0-based AtomSpace backend.
         
-        Currently, this backend is not fully implemented and falls back to using a local in-memory backend.
+        Args:
+            config: Configuration for mem0 integration
         """
         self.config = config or {}
         # TODO: Implement mem0 integration
@@ -738,93 +471,49 @@ class Mem0AtomSpaceBackend(AtomSpaceBackend):
         self._local_backend = LocalAtomSpaceBackend()
     
     def add_atom(self, atom: Atom) -> Atom:
-        """
-        Adds an atom to the mem0 backend storage.
-        
-        Currently, this method delegates to the local backend as mem0 integration is not yet implemented.
-        
-        Returns:
-            The atom that was added.
-        """
+        """Add an atom to mem0 storage."""
         # TODO: Implement mem0 integration
         return self._local_backend.add_atom(atom)
     
     def remove_atom(self, atom: Atom) -> bool:
-        """
-        Removes an atom from mem0 storage, delegating to the local backend.
-        
-        Returns:
-            bool: True if the atom was removed, False otherwise.
-        """
+        """Remove an atom from mem0 storage."""
         # TODO: Implement mem0 integration
         return self._local_backend.remove_atom(atom)
     
     def get_atom(self, atom_id: AtomID) -> Optional[Atom]:
-        """
-        Retrieve an atom by its unique ID from the backend.
-        
-        Returns:
-            The Atom instance with the specified ID, or None if not found.
-        """
+        """Get an atom by ID from mem0 storage."""
         # TODO: Implement mem0 integration
         return self._local_backend.get_atom(atom_id)
     
     def get_atom_by_type_name(self, atom_type: AtomType, name: str) -> Optional[Node]:
-        """
-        Retrieve a node from mem0 storage by its type and name.
-        
-        Returns:
-            The Node instance matching the specified type and name, or None if not found.
-        """
+        """Get a node by type and name from mem0 storage."""
         # TODO: Implement mem0 integration
         return self._local_backend.get_atom_by_type_name(atom_type, name)
     
     def get_atoms_by_type(self, atom_type: AtomType) -> List[Atom]:
-        """
-        Retrieve all atoms of the specified type from the backend.
-        
-        Returns:
-            List[Atom]: A list of atoms matching the given type.
-        """
+        """Get all atoms of a given type from mem0 storage."""
         # TODO: Implement mem0 integration
         return self._local_backend.get_atoms_by_type(atom_type)
     
     def query(self, pattern: Atom) -> List[Atom]:
-        """
-        Query atoms matching a given pattern using the local backend.
-        
-        Parameters:
-        	pattern (Atom): The atom pattern to match against stored atoms.
-        
-        Returns:
-        	List[Atom]: A list of atoms that match the specified pattern.
-        """
+        """Query atoms matching a pattern in mem0 storage."""
         # TODO: Implement mem0 integration
         return self._local_backend.query(pattern)
     
     def pattern_match(self, pattern: Dict) -> List[Dict]:
-        """
-        Performs advanced pattern matching using the mem0 backend.
-        
-        Parameters:
-            pattern (Dict): A dictionary representing the pattern to match against atoms.
-        
-        Returns:
-            List[Dict]: A list of dictionaries representing matched patterns.
-        """
+        """Perform advanced pattern matching in mem0 storage."""
         # TODO: Implement mem0 integration
         return self._local_backend.pattern_match(pattern)
     
     def vector_search(self, vector: List[float], limit: int = 10) -> List[Tuple[Atom, float]]:
-        """
-        Performs a vector similarity search for atoms using the mem0 backend.
+        """Perform vector similarity search using mem0.
         
-        Parameters:
-            vector (List[float]): The query vector for similarity search.
-            limit (int): The maximum number of results to return.
-        
+        Args:
+            vector: The query vector
+            limit: Maximum number of results to return
+            
         Returns:
-            List[Tuple[Atom, float]]: A list of tuples containing atoms and their similarity scores.
+            List of (atom, similarity_score) tuples
         """
         # TODO: Implement mem0 vector search integration
         return []
@@ -843,16 +532,12 @@ class AtomSpace:
     
     def __init__(self, backend_type: Union[BackendType, str] = BackendType.LOCAL, 
                  config: Dict = None):
+        """Initialize an AtomSpace with the specified backend.
+        
+        Args:
+            backend_type: Type of backend to use (local, node9, mem0, distributed)
+            config: Configuration for the backend
         """
-                 Initialize an AtomSpace instance with the specified backend type and configuration.
-                 
-                 Parameters:
-                     backend_type (BackendType or str): The backend to use for atom storage and operations. Supported values are 'local', 'node9', 'mem0', or 'distributed'.
-                     config (dict, optional): Configuration options for the selected backend.
-                 
-                 Raises:
-                     ValueError: If an unknown backend type is provided.
-                 """
         self.config = config or {}
         
         # Convert string to enum if needed
@@ -879,13 +564,13 @@ class AtomSpace:
         self._event_handlers = {}  # Event name -> list of handlers
     
     def add(self, atom: Atom) -> Atom:
-        """
-        Adds an atom to the AtomSpace and triggers the 'atom_added' event.
+        """Add an atom to the AtomSpace.
         
-        If the atom already exists in the backend, the existing instance may be returned.
-        
+        Args:
+            atom: The atom to add
+            
         Returns:
-            Atom: The atom instance stored in the AtomSpace.
+            The added atom (may be a different instance if already exists)
         """
         # Set the atomspace reference
         atom.atomspace = weakref.ref(self)
@@ -899,11 +584,13 @@ class AtomSpace:
         return result
     
     def remove(self, atom: Atom) -> bool:
-        """
-        Removes the specified atom from the AtomSpace.
+        """Remove an atom from the AtomSpace.
         
+        Args:
+            atom: The atom to remove
+            
         Returns:
-            bool: True if the atom was successfully removed; False if the atom was not present.
+            True if the atom was removed, False if it wasn't in the AtomSpace
         """
         result = self.backend.remove_atom(atom)
         
@@ -917,76 +604,70 @@ class AtomSpace:
         return result
     
     def get_atom(self, atom_id: AtomID) -> Optional[Atom]:
-        """
-        Retrieve an atom from the AtomSpace by its unique identifier.
+        """Get an atom by ID.
         
-        Parameters:
-        	atom_id: The unique identifier of the atom to retrieve.
-        
+        Args:
+            atom_id: The ID of the atom to get
+            
         Returns:
-        	The corresponding Atom instance if found, otherwise None.
+            The atom, or None if not found
         """
         return self.backend.get_atom(atom_id)
     
     def get_node(self, atom_type: AtomType, name: str) -> Optional[Node]:
-        """
-        Retrieve a node from the AtomSpace by its type and name.
+        """Get a node by type and name.
         
-        Parameters:
-        	atom_type (AtomType): The type of the node to retrieve.
-        	name (str): The name of the node to retrieve.
-        
+        Args:
+            atom_type: The type of the node
+            name: The name of the node
+            
         Returns:
-        	Node or None: The matching node if found, otherwise None.
+            The node, or None if not found
         """
         return self.backend.get_atom_by_type_name(atom_type, name)
     
     def get_atoms_by_type(self, atom_type: AtomType) -> List[Atom]:
-        """
-        Return all atoms of the specified type from the AtomSpace.
+        """Get all atoms of a given type.
         
-        Parameters:
-            atom_type (AtomType): The type of atoms to retrieve.
-        
+        Args:
+            atom_type: The type of atoms to get
+            
         Returns:
-            List[Atom]: Atoms matching the given type.
+            List of atoms of the specified type
         """
         return self.backend.get_atoms_by_type(atom_type)
     
     def query(self, pattern: Atom) -> List[Atom]:
-        """
-        Return a list of atoms that match the given pattern, supporting wildcards.
+        """Query atoms matching a pattern.
         
-        Parameters:
-            pattern (Atom): An atom pattern to match against, where fields may be set to None to act as wildcards.
-        
+        Args:
+            pattern: The pattern to match (can contain None as wildcards)
+            
         Returns:
-            List[Atom]: Atoms from the AtomSpace that match the specified pattern.
+            List of matching atoms
         """
         return self.backend.query(pattern)
     
     def pattern_match(self, pattern: Dict) -> List[Dict]:
-        """
-        Perform advanced pattern matching over the AtomSpace using the specified pattern.
+        """Perform advanced pattern matching.
         
-        Parameters:
-            pattern (dict): A dictionary describing the structure and constraints of the pattern to match.
-        
+        Args:
+            pattern: A dictionary describing the pattern to match
+            
         Returns:
-            List[dict]: A list of dictionaries, each representing a successful match of the pattern.
+            List of dictionaries containing matches
         """
         return self.backend.pattern_match(pattern)
     
     def vector_search(self, vector: List[float], limit: int = 10) -> List[Tuple[Atom, float]]:
-        """
-        Performs a vector similarity search for atoms using the mem0 backend.
+        """Perform vector similarity search (requires mem0 backend).
         
-        Parameters:
-            vector (List[float]): The query vector for similarity search.
-            limit (int): The maximum number of results to return.
-        
+        Args:
+            vector: The query vector
+            limit: Maximum number of results to return
+            
         Returns:
-            List[Tuple[Atom, float]]: A list of tuples containing atoms and their similarity scores. Returns an empty list if the mem0 backend is not used.
+            List of (atom, similarity_score) tuples
         """
         if isinstance(self.backend, Mem0AtomSpaceBackend):
             return self.backend.vector_search(vector, limit)
@@ -995,27 +676,25 @@ class AtomSpace:
             return []
     
     def register_event_handler(self, event_name: str, handler: Callable) -> None:
-        """
-        Registers a handler function to be called when the specified event is triggered.
+        """Register a handler for an event.
         
-        Parameters:
-        	event_name (str): The name of the event to listen for.
-        	handler (Callable): The function to be called when the event occurs.
+        Args:
+            event_name: The name of the event
+            handler: The handler function
         """
         if event_name not in self._event_handlers:
             self._event_handlers[event_name] = []
         self._event_handlers[event_name].append(handler)
     
     def unregister_event_handler(self, event_name: str, handler: Callable) -> bool:
-        """
-        Remove a previously registered handler from the specified event.
+        """Unregister a handler for an event.
         
-        Parameters:
-        	event_name (str): The name of the event.
-        	handler (Callable): The handler function to remove.
-        
+        Args:
+            event_name: The name of the event
+            handler: The handler function
+            
         Returns:
-        	bool: True if the handler was successfully removed; False if it was not registered.
+            True if the handler was removed, False if it wasn't registered
         """
         if event_name in self._event_handlers:
             if handler in self._event_handlers[event_name]:
@@ -1024,10 +703,11 @@ class AtomSpace:
         return False
     
     def _trigger_event(self, event_name: str, *args, **kwargs) -> None:
-        """
-        Invokes all handlers registered for a given event name, passing any provided arguments.
+        """Trigger an event, calling all registered handlers.
         
-        If a handler raises an exception, the error is logged and event processing continues for remaining handlers.
+        Args:
+            event_name: The name of the event
+            *args, **kwargs: Arguments to pass to the handlers
         """
         if event_name in self._event_handlers:
             for handler in self._event_handlers[event_name]:
@@ -1040,29 +720,27 @@ class AtomSpace:
 # Factory functions for creating atoms
 
 def create_node(atom_type: AtomType, name: str) -> Node:
-    """
-    Create and return a new Node atom with the specified type and name.
+    """Create a new node.
     
-    Parameters:
-        atom_type (AtomType): The type of the node to create.
-        name (str): The name assigned to the node.
-    
+    Args:
+        atom_type: The type of the node
+        name: The name of the node
+        
     Returns:
-        Node: The newly created Node instance.
+        A new Node instance
     """
     return Node(atom_type, name)
 
 
 def create_link(atom_type: AtomType, outgoing_set: List[Atom]) -> Link:
-    """
-    Create and return a new Link atom connecting the specified set of atoms.
+    """Create a new link.
     
-    Parameters:
-        atom_type (AtomType): The type of the link to create.
-        outgoing_set (List[Atom]): Atoms that the link will connect.
-    
+    Args:
+        atom_type: The type of the link
+        outgoing_set: List of atoms that this link connects
+        
     Returns:
-        Link: The newly created Link instance.
+        A new Link instance
     """
     return Link(atom_type, outgoing_set)
 
@@ -1071,24 +749,31 @@ def create_link(atom_type: AtomType, outgoing_set: List[Atom]) -> Link:
 
 def register_cognitive_module(atomspace: AtomSpace, module_name: str, 
                              handler: Callable) -> None:
+    """Register a cognitive module with the AtomSpace.
+    
+    This allows cognitive modules to receive notifications about AtomSpace events.
+    
+    Args:
+        atomspace: The AtomSpace to register with
+        module_name: The name of the cognitive module
+        handler: The handler function for AtomSpace events
     """
-                             Registers a cognitive module's handler to receive notifications for atom addition and removal events in the AtomSpace.
-                             
-                             Parameters:
-                                 module_name (str): Name of the cognitive module.
-                                 handler (Callable): Function to be called when atoms are added or removed.
-                             """
     atomspace.register_event_handler('atom_added', handler)
     atomspace.register_event_handler('atom_removed', handler)
 
 
 def create_cognitive_binding(atomspace: AtomSpace, perception_module, 
                             reasoning_module, action_module) -> None:
+    """Create bindings between cognitive modules and the AtomSpace.
+    
+    This sets up the necessary connections for the CogPrime cognitive cycle.
+    
+    Args:
+        atomspace: The AtomSpace to bind to
+        perception_module: The perception module
+        reasoning_module: The reasoning module
+        action_module: The action module
     """
-                            Bind perception, reasoning, and action modules to the AtomSpace, enabling them to process atoms on relevant events.
-                            
-                            This function registers each module's `process_atom` method as an event handler in the AtomSpace, facilitating integration of cognitive cycles.
-                            """
     # Register modules
     register_cognitive_module(atomspace, 'perception', 
                              lambda atom: perception_module.process_atom(atom))
