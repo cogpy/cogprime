@@ -24,4 +24,5 @@ def add_sources():
         chat_bot.add(name, value)
         return make_response(jsonify(message="Sources added successfully"), 200)
     except Exception as e:
-        return make_response(jsonify(message=f"Error adding sources: {str(e)}"), 400)
+        app.logger.error("Error adding sources", exc_info=True)
+        return make_response(jsonify(message="An internal error occurred while adding sources. Please try again later."), 400)
