@@ -1,4 +1,5 @@
 import os
+import logging
 
 from flask import Blueprint, jsonify, make_response, request
 from models import APIKey
@@ -29,4 +30,6 @@ def get_answer():
         return make_response(jsonify({"response": response}), 200)
 
     except Exception as e:
-        return make_response(jsonify({"error": str(e)}), 400)
+        import logging
+        logging.error("An error occurred: %s", str(e), exc_info=True)
+        return make_response(jsonify({"error": "An internal error has occurred."}), 400)
