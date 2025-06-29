@@ -6,5 +6,7 @@ from embedchain.app import App  # noqa: F401
 from embedchain.client import Client  # noqa: F401
 from embedchain.pipeline import Pipeline  # noqa: F401
 
-# Setup the user directory if doesn't exist already
-Client.setup()
+# Explicit initialization function for setting up the user directory
+def initialize_embedchain():
+    """Initialize the embedchain module by setting up the user directory."""
+    Client.setup()
