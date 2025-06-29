@@ -6,7 +6,7 @@ Implements mechanisms for systematic overcoming of self-deception through active
 from enum import Enum
 from dataclasses import dataclass
 from typing import List, Dict, Set, Optional
-from .cognitive_core import CognitiveCore
+from ..core.cognitive_core import CognitiveCore
 from .relevance_core import RelevanceCore
 
 class BiasType(Enum):

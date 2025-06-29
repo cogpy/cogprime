@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import List, Dict, Set, Optional
 from .rationality_core import RationalityCore
 from .mindset import MindsetCore
-from .cognitive_core import CognitiveCore
+from ..core.cognitive_core import CognitiveCore
 
 class WisdomType(Enum):
     SOPHIA = "sophia"  # Theoretical wisdom

@@ -1,10 +1,10 @@
 from enum import Enum
 from dataclasses import dataclass
 from typing import Dict, List, Set, Optional
-from .wisdom_core import WisdomCore
-from .rationality_core import RationalityCore
-from .cognitive_science import CognitiveCore
-from .phenomenology import PhenomenologyCore
+from ..cognitive_science.wisdom_core import WisdomCore
+from ..cognitive_science.rationality_core import RationalityCore
+from ..cognitive_science.cognitive_science import CognitiveCore
+from ..cognitive_science.phenomenology import PhenomenologyCore
 
 class PsychotechnologyType(Enum):
     """Types of psychotechnologies in wisdom ecology"""

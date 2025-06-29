@@ -3,7 +3,7 @@ from typing import Dict, List, Set, Optional, Tuple
 from enum import Enum
 import numpy as np
 
-from .relevance_core import RelevanceCore, RelevanceMode
+from ..core.relevance_core import RelevanceCore, RelevanceMode
 
 class CommunicationMaxim(Enum):
     """Grice's maxims as described by Vervaeke"""

@@ -5,7 +5,7 @@ Action module for generating actions based on relevance realization.
 from dataclasses import dataclass
 from typing import Dict, List, Any, Optional
 from enum import Enum
-from .cognitive_core import CognitiveFrame, KnowingMode
+from ..core.vervaeke_cognitive_core import CognitiveFrame, KnowingMode
 
 class ActionType(Enum):
     ATTEND = "attend"           # Shift attention

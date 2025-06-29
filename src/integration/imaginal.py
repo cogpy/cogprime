@@ -1,7 +1,7 @@
 from enum import Enum
 from dataclasses import dataclass
 from typing import Dict, List, Optional
-from .aletheia import AletheiaCore
+from ..integration.aletheia import AletheiaCore
 
 class ImaginalMode(Enum):
     """Modes of imaginal engagement"""

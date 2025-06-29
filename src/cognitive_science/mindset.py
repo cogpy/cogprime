@@ -7,7 +7,7 @@ from enum import Enum
 from dataclasses import dataclass
 from typing import List, Dict, Set, Optional
 from .rationality_core import RationalityCore
-from .cognitive_core import CognitiveCore
+from ..core.cognitive_core import CognitiveCore
 
 class MindsetType(Enum):
     FIXED = "fixed"

@@ -5,7 +5,7 @@ Learning module for adapting relevance realization mechanisms.
 import numpy as np
 from typing import Dict, List, Tuple, Any
 from dataclasses import dataclass
-from .cognitive_core import CognitiveFrame, KnowingMode
+from ..core.vervaeke_cognitive_core import CognitiveFrame, KnowingMode
 
 @dataclass
 class RelevanceExperience:

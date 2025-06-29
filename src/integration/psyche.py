@@ -1,7 +1,7 @@
 from enum import Enum
 from dataclasses import dataclass
 from typing import Dict, List, Optional
-from .imaginal import ImaginalCore
+from ..integration.imaginal import ImaginalCore
 
 class ArchetypeType(Enum):
     """Types of archetypes in Jungian psychology"""

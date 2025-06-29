@@ -1,7 +1,7 @@
 from enum import Enum
 from dataclasses import dataclass
 from typing import Dict, List, Optional
-from .phenomenology import PhenomenologyCore
+from ..cognitive_science.phenomenology import PhenomenologyCore
 
 class TruthMode(Enum):
     """Modes of truth disclosure"""

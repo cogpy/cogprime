@@ -1,10 +1,10 @@
 from enum import Enum
 from dataclasses import dataclass
 from typing import Dict, List, Optional
-from .aletheia import AletheiaCore
-from .imaginal import ImaginalCore
-from .psyche import PsycheCore
-from .phenomenology_core import PhenomenologyCore
+from ..integration.aletheia import AletheiaCore
+from ..integration.imaginal import ImaginalCore
+from ..integration.psyche import PsycheCore
+from ..cognitive_science.phenomenology_core import PhenomenologyCore
 from .wisdom_ecology import WisdomEcology
 
 class IntegrationMode(Enum):
