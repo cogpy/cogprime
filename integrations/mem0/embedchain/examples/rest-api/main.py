@@ -72,11 +72,20 @@ async def create_app_using_default_config(app_id: str, config: UploadFile = None
 
         yaml_path = "default.yaml"
         if config is not None:
+            # Validate app_id to ensure it contains only safe characters
+            import re
+            if not re.match(r'^[a-zA-Z0-9_-]+$', app_id):
+                raise HTTPException(detail="Invalid App ID. Only alphanumeric characters, underscores, and hyphens are allowed.", status_code=400)
+
             contents = await config.read()
             try:
                 yaml.safe_load(contents)
                 # TODO: validate the config yaml file here
-                yaml_path = f"configs/{app_id}.yaml"
+                base_path = "configs"
+                yaml_path = os.path.normpath(os.path.join(base_path, f"{app_id}.yaml"))
+                if not yaml_path.startswith(base_path):
+                    raise HTTPException(detail="Invalid file path.", status_code=400)
+
                 async with aiofiles.open(yaml_path, mode="w") as file_out:
                     await file_out.write(str(contents, "utf-8"))
             except yaml.YAMLError as exc:
