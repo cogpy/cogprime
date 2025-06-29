@@ -60,19 +60,43 @@ class MemoryBackend:
     """Base class for memory backends."""
     
     def store(self, key: str, value: Any) -> bool:
-        """Store a value with the given key."""
+        """
+        Store a value associated with the specified key.
+        
+        Returns:
+            bool: True if the value was stored successfully, otherwise False.
+        """
         raise NotImplementedError
     
     def retrieve(self, key: str) -> Optional[Any]:
-        """Retrieve a value by key."""
+        """
+        Retrieve the value associated with the specified key.
+        
+        Returns:
+            The value corresponding to the key if found, or None if the key does not exist.
+        """
         raise NotImplementedError
     
     def delete(self, key: str) -> bool:
-        """Delete a value by key."""
+        """
+        Delete the value associated with the specified key.
+        
+        Returns:
+            bool: True if the deletion was successful, False otherwise.
+        """
         raise NotImplementedError
     
     def search(self, query: str, limit: int = 10) -> List[Tuple[str, Any, float]]:
-        """Search for values matching the query."""
+        """
+        Searches for values matching the given query string.
+        
+        Parameters:
+            query (str): The search query.
+            limit (int): Maximum number of results to return.
+        
+        Returns:
+            List of tuples containing the key, value, and a relevance score for each matching entry.
+        """
         raise NotImplementedError
 
 
@@ -80,27 +104,55 @@ class DictMemoryBackend(MemoryBackend):
     """Simple in-memory dictionary backend."""
     
     def __init__(self):
-        """Initialize an in-memory dictionary backend."""
+        """
+        Initialize the in-memory dictionary backend for storing key-value pairs.
+        """
         self.data = {}
     
     def store(self, key: str, value: Any) -> bool:
-        """Store a value with the given key."""
+        """
+        Store a value in memory under the specified key.
+        
+        Returns:
+            bool: True if the value was stored successfully.
+        """
         self.data[key] = value
         return True
     
     def retrieve(self, key: str) -> Optional[Any]:
-        """Retrieve a value by key."""
+        """
+        Retrieve the value associated with the given key from memory.
+        
+        Returns:
+            The value stored under the specified key, or None if the key does not exist.
+        """
         return self.data.get(key)
     
     def delete(self, key: str) -> bool:
-        """Delete a value by key."""
+        """
+        Remove a value from memory by its key.
+        
+        Returns:
+            bool: True if the key was found and deleted; False if the key did not exist.
+        """
         if key in self.data:
             del self.data[key]
             return True
         return False
     
     def search(self, query: str, limit: int = 10) -> List[Tuple[str, Any, float]]:
-        """Search for values matching the query (simple substring match)."""
+        """
+        Searches for entries whose values contain the query string as a substring.
+        
+        Performs a case-insensitive substring search over all stored values. Returns a list of tuples containing the key, value, and a relevance score (1.0 for direct string matches, 0.8 for matches within dictionary values).
+        
+        Parameters:
+            query (str): The substring to search for within stored values.
+            limit (int): Maximum number of results to return.
+        
+        Returns:
+            List[Tuple[str, Any, float]]: A list of (key, value, score) tuples for matching entries.
+        """
         results = []
         for key, value in self.data.items():
             if isinstance(value, str) and query.lower() in value.lower():
@@ -118,10 +170,13 @@ class Mem0MemoryBackend(MemoryBackend):
     """Memory backend using mem0 for persistence, vector search, and graph memory."""
     
     def __init__(self, config: Dict = None):
-        """Initialize a mem0-based memory backend.
+        """
+        Initialize the Mem0MemoryBackend with the provided configuration.
         
-        Args:
-            config: Configuration for mem0
+        Creates a mem0-based memory backend for persistent storage, semantic search, and knowledge graph operations. Raises ImportError if mem0 is not installed.
+        
+        Parameters:
+            config (Dict, optional): Configuration dictionary for mem0 and backend options.
         """
         if not MEM0_AVAILABLE:
             raise ImportError(
@@ -143,7 +198,14 @@ class Mem0MemoryBackend(MemoryBackend):
         logger.info("Initialized mem0 memory backend")
     
     def store(self, key: str, value: Any) -> bool:
-        """Store a value with the given key."""
+        """
+        Stores a value in the mem0 backend under the specified key.
+        
+        If the value is a CognitiveState, it is converted to a serializable dictionary before storage. The value is stored as a JSON string (unless already a string) along with metadata including the key, timestamp, and value type.
+        
+        Returns:
+            bool: True if the value was stored successfully, False otherwise.
+        """
         try:
             # Convert to JSON serializable format if needed
             if isinstance(value, CognitiveState):
@@ -168,7 +230,12 @@ class Mem0MemoryBackend(MemoryBackend):
             return False
     
     def retrieve(self, key: str) -> Optional[Any]:
-        """Retrieve a value by key."""
+        """
+        Retrieves a value from persistent storage by key, deserializing it to its original type if possible.
+        
+        Returns:
+            The retrieved value, reconstructed as a `CognitiveState` object, dictionary, or raw content string, or `None` if the key is not found or an error occurs.
+        """
         try:
             # Get from mem0
             result = self.memory.get(key)
@@ -192,7 +259,12 @@ class Mem0MemoryBackend(MemoryBackend):
             return None
     
     def delete(self, key: str) -> bool:
-        """Delete a value by key."""
+        """
+        Delete a value from memory by its key.
+        
+        Returns:
+            bool: True if the deletion was successful, False otherwise.
+        """
         try:
             self.memory.delete(key)
             return True
@@ -201,7 +273,16 @@ class Mem0MemoryBackend(MemoryBackend):
             return False
     
     def search(self, query: str, limit: int = 10) -> List[Tuple[str, Any, float]]:
-        """Search for values matching the query using vector search."""
+        """
+        Performs a semantic vector search for entries matching the query and returns a list of results with their keys, deserialized values, and similarity scores.
+        
+        Parameters:
+            query (str): The search query string.
+            limit (int): Maximum number of results to return.
+        
+        Returns:
+            List of tuples containing the entry key, the deserialized value (CognitiveState, dict, or string), and the similarity score.
+        """
         try:
             # Use mem0's vector search
             results = self.memory.search(
@@ -235,16 +316,17 @@ class Mem0MemoryBackend(MemoryBackend):
     
     def add_fact(self, fact: str, tags: List[str] = None, 
                 metadata: Dict = None) -> str:
-        """Add a fact to memory with vector embedding.
-        
-        Args:
-            fact: The fact to add
-            tags: List of tags for categorization
-            metadata: Additional metadata
-            
-        Returns:
-            ID of the added fact
         """
+                Adds a fact string to memory with associated tags and metadata, generating a unique ID if not provided.
+                
+                Parameters:
+                    fact (str): The fact to store.
+                    tags (List[str], optional): Tags for categorization.
+                    metadata (Dict, optional): Additional metadata for the fact.
+                
+                Returns:
+                    str: The unique ID assigned to the added fact, or None if the operation fails.
+                """
         try:
             # Prepare metadata
             meta = metadata or {}
@@ -269,13 +351,16 @@ class Mem0MemoryBackend(MemoryBackend):
             return None
     
     def extract_facts(self, text: str) -> List[Dict]:
-        """Extract facts from text using LLM.
+        """
+        Extracts facts from the provided text using an LLM-based extraction method.
         
-        Args:
-            text: The text to extract facts from
-            
+        High-confidence facts (confidence > 0.7) are automatically added to memory with associated metadata.
+        
+        Parameters:
+            text (str): The input text from which to extract facts.
+        
         Returns:
-            List of extracted facts with metadata
+            List[Dict]: A list of extracted facts, each represented as a dictionary with metadata.
         """
         try:
             # Use mem0's LLM-based fact extraction
@@ -299,17 +384,18 @@ class Mem0MemoryBackend(MemoryBackend):
     
     def add_relation(self, subject: str, predicate: str, object: str, 
                     metadata: Dict = None) -> bool:
-        """Add a relation to the knowledge graph.
-        
-        Args:
-            subject: Subject of the relation
-            predicate: Predicate (relation type)
-            object: Object of the relation
-            metadata: Additional metadata
-            
-        Returns:
-            True if successful, False otherwise
         """
+                    Adds a triple (subject, predicate, object) to the knowledge graph if graph memory is enabled.
+                    
+                    Parameters:
+                        subject (str): The subject entity of the relation.
+                        predicate (str): The type of relation.
+                        object (str): The object entity of the relation.
+                        metadata (Dict, optional): Additional metadata for the relation.
+                    
+                    Returns:
+                        bool: True if the relation was successfully added; False if graph memory is disabled or an error occurs.
+                    """
         if not self.graph_enabled:
             logger.warning("Graph memory not enabled")
             return False
@@ -328,13 +414,14 @@ class Mem0MemoryBackend(MemoryBackend):
             return False
     
     def query_graph(self, query: str) -> List[Dict]:
-        """Query the knowledge graph.
+        """
+        Executes a Cypher query on the knowledge graph and returns the results.
         
-        Args:
-            query: The query to execute (Cypher format)
-            
+        Parameters:
+            query (str): The Cypher query string to execute.
+        
         Returns:
-            List of query results
+            List[Dict]: A list of dictionaries representing the query results. Returns an empty list if graph memory is not enabled or if an error occurs.
         """
         if not self.graph_enabled:
             logger.warning("Graph memory not enabled")
@@ -348,7 +435,11 @@ class Mem0MemoryBackend(MemoryBackend):
             return []
     
     def _cognitive_state_to_dict(self, state: CognitiveState) -> Dict:
-        """Convert a CognitiveState to a dictionary for storage."""
+        """
+        Convert a CognitiveState object into a JSON-serializable dictionary for storage.
+        
+        Non-serializable objects in working memory are stringified, and tensor fields are converted to lists to ensure compatibility with JSON serialization.
+        """
         # Convert PyTorch tensors to lists
         attention_focus = state.attention_focus.tolist() if hasattr(state.attention_focus, 'tolist') else state.attention_focus
         
@@ -388,7 +479,15 @@ class Mem0MemoryBackend(MemoryBackend):
         }
     
     def _dict_to_cognitive_state(self, data: Dict) -> CognitiveState:
-        """Convert a dictionary to a CognitiveState."""
+        """
+        Reconstruct a CognitiveState object from a dictionary, converting list fields back to tensors and restoring basic attributes.
+        
+        Parameters:
+            data (Dict): Dictionary containing serialized CognitiveState fields.
+        
+        Returns:
+            CognitiveState: The reconstructed CognitiveState instance with tensor and attribute restoration.
+        """
         import torch
         from ..modules.reasoning import Thought
         from ..modules.action import Action
@@ -418,11 +517,10 @@ class Memory:
     """Memory management for CogPrime, integrating mem0 capabilities."""
     
     def __init__(self, backend_type: str = "mem0", config: Dict = None):
-        """Initialize memory with the specified backend.
+        """
+        Initialize the Memory interface with the specified backend and configuration.
         
-        Args:
-            backend_type: Type of backend to use ("dict" or "mem0")
-            config: Configuration for the backend
+        Selects either the mem0-based backend (if available) or a simple in-memory dictionary backend for memory operations, based on the provided backend type and configuration.
         """
         self.config = config or {}
         
@@ -437,74 +535,71 @@ class Memory:
         self.backend_type = backend_type
     
     def store_cognitive_state(self, key: str, state: CognitiveState) -> bool:
-        """Store a cognitive state with the given key.
+        """
+        Store a CognitiveState object in memory under the specified key.
         
-        Args:
-            key: The key to store the state under
-            state: The cognitive state to store
-            
+        Parameters:
+            key (str): Identifier for storing the cognitive state.
+            state (CognitiveState): The cognitive state to be stored.
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the state was stored successfully, False otherwise.
         """
         return self.backend.store(key, state)
     
     def retrieve_cognitive_state(self, key: str) -> Optional[CognitiveState]:
-        """Retrieve a cognitive state by key.
+        """
+        Retrieve a stored CognitiveState object by its key.
         
-        Args:
-            key: The key to retrieve the state for
-            
+        Parameters:
+        	key (str): The unique identifier for the cognitive state.
+        
         Returns:
-            The cognitive state, or None if not found
+        	CognitiveState or None: The retrieved cognitive state if found; otherwise, None.
         """
         return self.backend.retrieve(key)
     
     def store(self, key: str, value: Any) -> bool:
-        """Store a value with the given key.
+        """
+        Store a value associated with the specified key in memory.
         
-        Args:
-            key: The key to store the value under
-            value: The value to store
-            
+        Parameters:
+            key (str): The key under which to store the value.
+            value (Any): The value to be stored.
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the value was stored successfully, False otherwise.
         """
         return self.backend.store(key, value)
     
     def retrieve(self, key: str) -> Optional[Any]:
-        """Retrieve a value by key.
+        """
+        Retrieve the value associated with the given key from memory.
         
-        Args:
-            key: The key to retrieve the value for
-            
+        Parameters:
+            key (str): The key whose value should be retrieved.
+        
         Returns:
-            The value, or None if not found
+            The value associated with the key, or None if the key does not exist.
         """
         return self.backend.retrieve(key)
     
     def delete(self, key: str) -> bool:
-        """Delete a value by key.
+        """
+        Delete the entry associated with the given key from memory.
         
-        Args:
-            key: The key to delete the value for
-            
         Returns:
-            True if successful, False otherwise
+            bool: True if the entry was successfully deleted, False otherwise.
         """
         return self.backend.delete(key)
     
     def add_fact(self, fact: str, tags: List[str] = None, 
                 metadata: Dict = None) -> str:
-        """Add a fact to memory with vector embedding.
-        
-        Args:
-            fact: The fact to add
-            tags: List of tags for categorization
-            metadata: Additional metadata
-            
-        Returns:
-            ID of the added fact
         """
+                Add a fact to memory, optionally with tags and metadata, and return its unique identifier.
+                
+                If the backend supports vector embeddings, the fact is stored with an embedding; otherwise, it is stored as a simple entry.
+                """
         if hasattr(self.backend, "add_fact"):
             return self.backend.add_fact(fact, tags, metadata)
         else:
@@ -519,25 +614,27 @@ class Memory:
             return fact_id
     
     def semantic_search(self, query: str, limit: int = 10) -> List[Tuple[str, Any, float]]:
-        """Search for semantically similar content.
+        """
+        Performs a semantic search for content similar to the given query.
         
-        Args:
-            query: The query text
-            limit: Maximum number of results to return
-            
+        Parameters:
+            query (str): The text to search for semantically similar entries.
+            limit (int): The maximum number of results to return.
+        
         Returns:
-            List of (key, value, score) tuples
+            List[Tuple[str, Any, float]]: A list of tuples containing the key, value, and similarity score for each matching entry.
         """
         return self.backend.search(query, limit)
     
     def extract_facts(self, text: str) -> List[Dict]:
-        """Extract facts from text using LLM.
+        """
+        Extracts factual information from the provided text using an LLM-based extraction method if supported by the backend.
         
-        Args:
-            text: The text to extract facts from
-            
+        Parameters:
+            text (str): The input text from which to extract facts.
+        
         Returns:
-            List of extracted facts with metadata
+            List[Dict]: A list of extracted facts, each represented as a dictionary with associated metadata. Returns an empty list if fact extraction is not supported by the backend.
         """
         if hasattr(self.backend, "extract_facts"):
             return self.backend.extract_facts(text)
@@ -547,17 +644,18 @@ class Memory:
     
     def add_relation(self, subject: str, predicate: str, object: str, 
                     metadata: Dict = None) -> bool:
-        """Add a relation to the knowledge graph.
-        
-        Args:
-            subject: Subject of the relation
-            predicate: Predicate (relation type)
-            object: Object of the relation
-            metadata: Additional metadata
-            
-        Returns:
-            True if successful, False otherwise
         """
+                    Add a relation (triple) to the knowledge graph if supported by the backend.
+                    
+                    Parameters:
+                        subject (str): The subject entity of the relation.
+                        predicate (str): The type of relation.
+                        object (str): The object entity of the relation.
+                        metadata (Dict, optional): Additional metadata for the relation.
+                    
+                    Returns:
+                        bool: True if the relation was added successfully; False if the backend does not support graph operations.
+                    """
         if hasattr(self.backend, "add_relation"):
             return self.backend.add_relation(subject, predicate, object, metadata)
         else:
@@ -565,13 +663,14 @@ class Memory:
             return False
     
     def query_graph(self, query: str) -> List[Dict]:
-        """Query the knowledge graph.
+        """
+        Executes a Cypher query on the knowledge graph and returns the results.
         
-        Args:
-            query: The query to execute (Cypher format)
-            
+        Parameters:
+            query (str): The Cypher query string to execute.
+        
         Returns:
-            List of query results
+            List[Dict]: A list of dictionaries representing the query results, or an empty list if the backend does not support graph operations.
         """
         if hasattr(self.backend, "query_graph"):
             return self.backend.query_graph(query)
@@ -581,34 +680,30 @@ class Memory:
     
     def update_working_memory(self, cognitive_state: CognitiveState, 
                              key: str, value: Any) -> CognitiveState:
-        """Update the working memory of a cognitive state.
-        
-        This is a convenience method for CogPrime's cognitive cycle.
-        
-        Args:
-            cognitive_state: The cognitive state to update
-            key: The key to update
-            value: The new value
-            
-        Returns:
-            The updated cognitive state
         """
+                             Update a CognitiveState's working memory with a new key-value pair.
+                             
+                             Parameters:
+                                 cognitive_state (CognitiveState): The cognitive state to modify.
+                                 key (str): The key to set or update in working memory.
+                                 value (Any): The value to assign to the specified key.
+                             
+                             Returns:
+                                 CognitiveState: The updated cognitive state with modified working memory.
+                             """
         cognitive_state.working_memory[key] = value
         return cognitive_state
     
     def save_experience(self, state: CognitiveState, action: Any, 
                        reward: float, next_state: CognitiveState) -> str:
-        """Save an experience for reinforcement learning.
-        
-        Args:
-            state: The initial state
-            action: The action taken
-            reward: The reward received
-            next_state: The resulting state
-            
-        Returns:
-            ID of the saved experience
         """
+                       Store a reinforcement learning experience tuple in memory and return its unique identifier.
+                       
+                       The experience includes the initial state, action taken (as a string), reward received, resulting state, timestamp, and is tagged as type "experience".
+                       
+                       Returns:
+                           str: Unique identifier of the saved experience.
+                       """
         experience_id = f"exp_{uuid.uuid4()}"
         
         # Store the experience
@@ -624,13 +719,14 @@ class Memory:
         return experience_id
     
     def get_recent_experiences(self, limit: int = 10) -> List[Dict]:
-        """Get recent experiences for batch learning.
+        """
+        Retrieve a list of recent reinforcement learning experiences stored in memory.
         
-        Args:
-            limit: Maximum number of experiences to retrieve
-            
+        Parameters:
+            limit (int): The maximum number of experiences to return.
+        
         Returns:
-            List of experiences
+            List[Dict]: A list of experience records, each represented as a dictionary. Returns an empty list if the backend does not support search.
         """
         if hasattr(self.backend, "search"):
             results = self.backend.search("type:experience", limit=limit)
@@ -643,14 +739,15 @@ class Memory:
 # Factory function for creating memory instances
 
 def create_memory(backend_type: str = "mem0", config: Dict = None) -> Memory:
-    """Create a new memory instance.
+    """
+    Instantiate and return a Memory object with the specified backend and configuration.
     
-    Args:
-        backend_type: Type of backend to use ("dict" or "mem0")
-        config: Configuration for the backend
-        
+    Parameters:
+    	backend_type (str): The type of backend to use ("mem0" for persistent, feature-rich memory or "dict" for in-memory storage).
+    	config (Dict, optional): Configuration dictionary for the selected backend.
+    
     Returns:
-        A new Memory instance
+    	Memory: A Memory instance using the chosen backend and configuration.
     """
     return Memory(backend_type=backend_type, config=config)
 
@@ -658,16 +755,16 @@ def create_memory(backend_type: str = "mem0", config: Dict = None) -> Memory:
 # Integration with CogPrime modules
 
 def integrate_with_cognitive_core(memory: Memory, core) -> None:
-    """Integrate memory with a CogPrime cognitive core.
-    
-    This sets up the necessary connections for memory to work with the cognitive cycle.
-    
-    Args:
-        memory: The memory instance
-        core: The CogPrime cognitive core
+    """
+    Integrates a Memory instance with a CogPrime cognitive core by registering a callback that stores the current cognitive state after each cognitive cycle.
     """
     # Store the current cognitive state after each cycle
     def store_state_after_cycle(sensory_input, reward, action):
+        """
+        Stores the current cognitive state in memory after each cognitive cycle.
+        
+        This function retrieves the latest cognitive state from the core and saves it in memory with a unique key.
+        """
         state = core.get_cognitive_state()
         memory.store_cognitive_state(f"state_{uuid.uuid4()}", state)
     

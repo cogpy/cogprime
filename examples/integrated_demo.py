@@ -31,13 +31,14 @@ from cogprime.modules.perception import SensoryInput
 
 
 def create_simulated_input(complexity: float = 0.5) -> SensoryInput:
-    """Create simulated sensory input for the cognitive system.
+    """
+    Generate simulated sensory input data with adjustable complexity for cognitive system testing.
     
-    Args:
-        complexity: Complexity of the input (0.0 to 1.0)
-        
+    Parameters:
+        complexity (float): A value from 0.0 (simplest) to 1.0 (most complex) that scales the richness and challenge of the generated input.
+    
     Returns:
-        Simulated sensory input
+        SensoryInput: An object containing random visual (RGB image), audio (waveform), selected text, and proprioceptive (body state) data reflecting the specified complexity.
     """
     # Create visual input (simulated image tensor)
     visual = torch.randn(3, 64, 64)  # RGB image, 64x64
@@ -72,7 +73,9 @@ def create_simulated_input(complexity: float = 0.5) -> SensoryInput:
 
 
 def print_separator(title: str = "") -> None:
-    """Print a separator with an optional title."""
+    """
+    Prints a horizontal separator line of 80 characters, optionally centering a provided title within the line.
+    """
     width = 80
     if title:
         padding = (width - len(title) - 4) // 2
@@ -82,7 +85,13 @@ def print_separator(title: str = "") -> None:
 
 
 def print_atom(atom, indent: int = 0) -> None:
-    """Print an atom with indentation."""
+    """
+    Recursively prints the structure of an AtomSpace atom with indentation for hierarchical visualization.
+    
+    Parameters:
+        atom: The AtomSpace atom to print.
+        indent (int): The current indentation level for nested atoms.
+    """
     indent_str = "  " * indent
     if atom.is_node():
         print(f"{indent_str}{atom.atom_type}(\"{atom.name}\")")
@@ -94,7 +103,11 @@ def print_atom(atom, indent: int = 0) -> None:
 
 
 def main():
-    """Run the integrated CogPrime demo."""
+    """
+    Runs a full demonstration of the integrated CogPrime cognitive architecture, showcasing knowledge representation with AtomSpace, memory operations with mem0, cognitive cycles with simulated sensory input, distributed namespace integration via node9, state persistence and recovery, and final system cleanup.
+    
+    The demo proceeds stepwise through system initialization, creation and querying of knowledge, memory fact management and semantic search, execution of cognitive cycles with varying input complexity, simulated distributed operation, saving and restoring cognitive state, and reporting of final statistics.
+    """
     print_separator("COGPRIME INTEGRATED DEMO")
     print("Demonstrating the integration of CogPrime with AtomSpace, mem0, and node9")
     print()

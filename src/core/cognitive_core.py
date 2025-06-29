@@ -31,6 +31,11 @@ class CogPrimeCore:
     """
     
     def __init__(self, config: Dict[str, Any] = None):
+        """
+        Initialize the CogPrimeCore with perception, reasoning, action selection, learning modules, AtomSpace knowledge base, and persistent memory.
+        
+        Configures core AGI components using the provided configuration dictionary, sets up the initial cognitive state, registers callback infrastructure, and creates foundational concept nodes in the AtomSpace.
+        """
         self.config = config or {}
         self.perception = PerceptionModule(config)
         self.reasoning = ReasoningModule(config)
@@ -67,7 +72,11 @@ class CogPrimeCore:
         self._create_core_atoms()
     
     def _create_core_atoms(self):
-        """Create foundational atoms in the AtomSpace"""
+        """
+        Create and add core conceptual nodes for major cognitive components to the AtomSpace knowledge base.
+        
+        This establishes foundational concepts such as Perception, Reasoning, Action, Learning, Emotion, Attention, and Goal for use in the system's symbolic knowledge representation.
+        """
         # Create concept nodes for core components
         self.concept_perception = Node("ConceptNode", "Perception")
         self.concept_reasoning = Node("ConceptNode", "Reasoning")
@@ -87,7 +96,18 @@ class CogPrimeCore:
             self.atomspace.add(concept)
     
     def cognitive_cycle(self, sensory_input: SensoryInput, reward: float = 0.0) -> Optional[Action]:
-        """Execute one cognitive cycle with learning"""
+        """
+        Executes a full cognitive cycle, including perception, reasoning, action selection, learning, and state updates.
+        
+        Processes sensory input, updates the cognitive state with new perceptions and reasoning results, selects and executes an action, and applies reinforcement learning if applicable. The experience and updated cognitive state are stored in memory. Registered cycle callbacks are invoked after the cycle completes.
+        
+        Parameters:
+            sensory_input (SensoryInput): The current sensory input to process.
+            reward (float, optional): The reward signal received for the previous action. Defaults to 0.0.
+        
+        Returns:
+            Optional[Action]: The action selected and executed during this cycle, or None if no action was taken.
+        """
         # Store current state for learning
         current_state = self.state.attention_focus
         
@@ -135,7 +155,11 @@ class CogPrimeCore:
         return action
     
     def _perceive(self, sensory_input: SensoryInput) -> None:
-        """Perception phase of the cognitive cycle"""
+        """
+        Processes sensory input during the perception phase, updating the cognitive state and representing attended features in the AtomSpace.
+        
+        The method extracts attended features and attention weights from the perception module, updates the cognitive state's attention focus and sensory buffer, and creates corresponding nodes and links in the AtomSpace to represent the perception event and its features.
+        """
         # Process sensory input through perception module
         attended_features, attention_weights = self.perception.process_input(sensory_input)
         
@@ -165,7 +189,9 @@ class CogPrimeCore:
         self.atomspace.add(perception_link)
     
     def _reason(self) -> None:
-        """Reasoning phase of the cognitive cycle"""
+        """
+        Processes attended sensory features through the reasoning module, updates the cognitive state with the resulting thought and memory, and integrates the thought into AtomSpace and Memory. Also updates emotional valence and extracts facts from the thought content if supported.
+        """
         # Get attended features from sensory buffer
         attended_features = self.state.sensory_buffer['attended_features']
         
@@ -216,7 +242,12 @@ class CogPrimeCore:
                 self.state.working_memory['extracted_facts'] = facts
     
     def _act(self) -> Optional[Action]:
-        """Action phase of the cognitive cycle with learning influence"""
+        """
+        Selects and returns an action based on the current thought, integrating learning and action selection, and updates the AtomSpace with action and causality nodes.
+        
+        Returns:
+            The selected Action object, or None if there is no current thought.
+        """
         if self.state.current_thought is None:
             return None
             
@@ -265,7 +296,12 @@ class CogPrimeCore:
         return selected_action
     
     def update_goals(self, new_goal: str) -> None:
-        """Update the system's goal stack"""
+        """
+        Appends a new goal to the goal stack and updates both AtomSpace and memory with the new goal.
+        
+        Parameters:
+            new_goal (str): The goal to be added to the system.
+        """
         self.state.goal_stack.append(new_goal)
         
         # Create atoms for goal in AtomSpace
@@ -287,25 +323,28 @@ class CogPrimeCore:
         })
     
     def get_cognitive_state(self) -> CognitiveState:
-        """Return current cognitive state"""
+        """
+        Returns the current cognitive state of the system.
+        
+        Returns:
+            CognitiveState: The current state object containing attention, memory, emotion, goals, and other cognitive attributes.
+        """
         return self.state
     
     def register_cycle_callback(self, callback: Callable) -> None:
-        """Register a callback to be called after each cognitive cycle
+        """
+        Register a callback function to be invoked after each cognitive cycle.
         
-        Args:
-            callback: Function to call with signature (sensory_input, reward, action)
+        The callback should accept three arguments: sensory_input, reward, and action.
         """
         self._cycle_callbacks.append(callback)
     
     def unregister_cycle_callback(self, callback: Callable) -> bool:
-        """Unregister a previously registered callback
+        """
+        Removes a previously registered cognitive cycle callback.
         
-        Args:
-            callback: The callback to unregister
-            
         Returns:
-            True if the callback was found and removed, False otherwise
+            bool: True if the callback was successfully removed; False if it was not found.
         """
         if callback in self._cycle_callbacks:
             self._cycle_callbacks.remove(callback)
@@ -313,13 +352,10 @@ class CogPrimeCore:
         return False
     
     def query_knowledge(self, pattern: Any) -> List[Any]:
-        """Query the AtomSpace for knowledge matching a pattern
+        """
+        Query the AtomSpace for knowledge matching the given pattern.
         
-        Args:
-            pattern: Query pattern (can be an Atom or a dict for advanced queries)
-            
-        Returns:
-            List of matching results
+        If the pattern is a dictionary, performs a pattern match; otherwise, performs a direct query. Returns a list of matching results.
         """
         if isinstance(pattern, dict):
             return self.atomspace.pattern_match(pattern)
@@ -327,25 +363,27 @@ class CogPrimeCore:
             return self.atomspace.query(pattern)
     
     def semantic_search(self, query: str, limit: int = 10) -> List[Tuple[str, Any, float]]:
-        """Search memory for semantically similar content
+        """
+        Performs a semantic search in memory for content similar to the given query.
         
-        Args:
-            query: The search query
-            limit: Maximum number of results to return
-            
+        Parameters:
+        	query (str): The search query string.
+        	limit (int): The maximum number of results to return.
+        
         Returns:
-            List of (key, value, similarity_score) tuples
+        	List[Tuple[str, Any, float]]: A list of tuples containing the key, value, and similarity score for each matching memory entry.
         """
         return self.memory.semantic_search(query, limit)
     
     def save_state(self, path: str) -> bool:
-        """Save the current cognitive state to persistent storage
+        """
+        Save the current cognitive state to persistent storage via the memory backend.
         
-        Args:
-            path: Path to save the state
-            
+        Parameters:
+            path (str): Identifier or path for saving the state (not directly used in storage).
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the state was saved successfully, False otherwise.
         """
         try:
             # Save cognitive state to memory
@@ -361,13 +399,13 @@ class CogPrimeCore:
             return False
     
     def load_state(self, path: str = None) -> bool:
-        """Load a previously saved cognitive state
+        """
+        Load a previously saved cognitive state from memory.
         
-        Args:
-            path: Path to load the state from, or None to load the last saved state
-            
+        If no path is provided, attempts to load the most recently saved state. Replaces the current cognitive state with the loaded state if successful.
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the state was loaded successfully, False otherwise.
         """
         try:
             if path is None:

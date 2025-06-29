@@ -53,13 +53,14 @@ class AtomSerializer:
     
     @staticmethod
     def atom_to_dict(atom: Atom) -> Dict:
-        """Convert an atom to a dictionary representation.
+        """
+        Convert an AtomSpace atom to a dictionary, including its type, ID, truth and attention values, and, for links, recursively serializes outgoing atoms.
         
-        Args:
-            atom: The atom to convert
-            
+        Parameters:
+            atom (Atom): The atom to serialize.
+        
         Returns:
-            Dictionary representation of the atom
+            Dict: A dictionary representation of the atom, including nested outgoing atoms for links.
         """
         base_dict = {
             "id": atom.id,
@@ -86,13 +87,14 @@ class AtomSerializer:
     
     @staticmethod
     def dict_to_atom(data: Dict) -> Atom:
-        """Convert a dictionary representation to an atom.
+        """
+        Reconstructs an Atom instance from its dictionary representation.
         
-        Args:
-            data: Dictionary representation of an atom
-            
+        Parameters:
+            data (dict): Dictionary containing atom attributes, including type, name, id, truth value, attention value, and outgoing links.
+        
         Returns:
-            The reconstructed atom
+            Atom: The reconstructed Atom object, either a Node or Link, with associated truth and attention values.
         """
         # Create truth and attention values
         tv = TruthValue(
@@ -125,38 +127,41 @@ class AtomSerializer:
     
     @staticmethod
     def atom_to_json(atom: Atom) -> str:
-        """Convert an atom to a JSON string.
+        """
+        Serialize an AtomSpace atom to a JSON string representation.
         
-        Args:
-            atom: The atom to convert
-            
+        Parameters:
+        	atom (Atom): The atom to serialize.
+        
         Returns:
-            JSON string representation of the atom
+        	str: JSON string encoding the atom's structure and properties.
         """
         return json.dumps(AtomSerializer.atom_to_dict(atom))
     
     @staticmethod
     def json_to_atom(json_str: str) -> Atom:
-        """Convert a JSON string to an atom.
+        """
+        Convert a JSON string representation of an atom into an Atom instance.
         
-        Args:
-            json_str: JSON string representation of an atom
-            
+        Parameters:
+            json_str (str): JSON string encoding the atom's structure and properties.
+        
         Returns:
-            The reconstructed atom
+            Atom: The atom reconstructed from the JSON data.
         """
         data = json.loads(json_str)
         return AtomSerializer.dict_to_atom(data)
     
     @staticmethod
     def atom_to_lua(atom: Atom) -> str:
-        """Convert an atom to a Lua table representation.
+        """
+        Convert an AtomSpace atom to a Lua table syntax string.
         
-        Args:
-            atom: The atom to convert
-            
+        Parameters:
+        	atom (Atom): The atom to serialize.
+        
         Returns:
-            Lua table representation of the atom as a string
+        	str: Lua table representation of the atom.
         """
         # Convert to dictionary first
         atom_dict = AtomSerializer.atom_to_dict(atom)
@@ -166,13 +171,14 @@ class AtomSerializer:
     
     @staticmethod
     def _dict_to_lua_table(d: Dict) -> str:
-        """Convert a Python dictionary to a Lua table string.
+        """
+        Convert a Python dictionary to its equivalent Lua table syntax as a string.
         
-        Args:
-            d: The dictionary to convert
-            
+        Parameters:
+            d (dict): The dictionary to convert.
+        
         Returns:
-            Lua table representation as a string
+            str: A string representing the Lua table.
         """
         parts = []
         for k, v in d.items():
@@ -204,13 +210,14 @@ class AtomSerializer:
     
     @staticmethod
     def _list_to_lua_table(lst: List) -> str:
-        """Convert a Python list to a Lua table string.
+        """
+        Convert a Python list to its equivalent Lua table string representation.
         
-        Args:
-            lst: The list to convert
-            
+        Parameters:
+            lst (List): The Python list to convert.
+        
         Returns:
-            Lua table representation as a string
+            str: A string representing the list as a Lua table, with proper handling of nested lists, dictionaries, and basic types.
         """
         parts = []
         for i, v in enumerate(lst, 1):  # Lua tables are 1-indexed
@@ -237,15 +244,16 @@ class Node9File:
     
     def __init__(self, path: str, content: str = "", is_dir: bool = False, 
                  read_fn: Callable = None, write_fn: Callable = None):
-        """Initialize a node9 file.
-        
-        Args:
-            path: Path in the namespace
-            content: Initial content
-            is_dir: Whether this is a directory
-            read_fn: Function to call when the file is read
-            write_fn: Function to call when the file is written
         """
+                 Create a file or directory representation in the node9 namespace.
+                 
+                 Parameters:
+                     path (str): The file or directory path within the namespace.
+                     content (str, optional): Initial file content. Ignored for directories.
+                     is_dir (bool, optional): If True, creates a directory; otherwise, a file.
+                     read_fn (Callable, optional): Custom function to handle file reads.
+                     write_fn (Callable, optional): Custom function to handle file writes.
+                 """
         self.path = path
         self.content = content
         self.is_dir = is_dir
@@ -254,23 +262,27 @@ class Node9File:
         self.children = {}  # For directories
     
     def read(self) -> str:
-        """Read the file content.
+        """
+        Returns the content of the file, using a custom read function if provided.
         
         Returns:
-            The file content
+            str: The file's content as a string.
         """
         if self.read_fn:
             return self.read_fn()
         return self.content
     
     def write(self, content: str) -> bool:
-        """Write content to the file.
+        """
+        Writes the given content to the file.
         
-        Args:
-            content: The content to write
-            
+        If a custom write callback is defined, it is used to handle the write operation; otherwise, the content is stored directly. Returns True if the write succeeds, or False if the custom callback indicates failure.
+        
+        Parameters:
+            content (str): The content to write to the file.
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the write operation was successful, False otherwise.
         """
         if self.write_fn:
             return self.write_fn(content)
@@ -278,11 +290,11 @@ class Node9File:
         return True
     
     def add_child(self, name: str, file) -> None:
-        """Add a child file to this directory.
+        """
+        Adds a child file or directory to this directory.
         
-        Args:
-            name: Name of the child
-            file: The child file
+        Raises:
+            ValueError: If this file is not a directory.
         """
         if not self.is_dir:
             raise ValueError("Cannot add child to a non-directory")
@@ -293,10 +305,11 @@ class Node9Namespace:
     """Manages the node9 namespace for AtomSpace."""
     
     def __init__(self, root_path: str = "/cog"):
-        """Initialize the namespace.
+        """
+        Initialize a Node9Namespace rooted at the specified path and create default subdirectories.
         
-        Args:
-            root_path: Root path in the node9 namespace
+        Parameters:
+            root_path (str): The root directory path for the namespace. Defaults to "/cog".
         """
         self.root_path = root_path
         self.files = {}
@@ -309,23 +322,22 @@ class Node9Namespace:
         self._create_directory(f"{root_path}/types")
     
     def _create_directory(self, path: str) -> None:
-        """Create a directory in the namespace.
-        
-        Args:
-            path: Path to create
+        """
+        Creates a directory at the specified path within the namespace.
         """
         self.files[path] = Node9File(path, is_dir=True)
     
     def create_file(self, path: str, content: str = "", 
                    read_fn: Callable = None, write_fn: Callable = None) -> None:
-        """Create a file in the namespace.
-        
-        Args:
-            path: Path to create
-            content: Initial content
-            read_fn: Function to call when the file is read
-            write_fn: Function to call when the file is written
         """
+                   Creates a file at the specified path in the namespace with optional initial content and custom read/write handlers.
+                   
+                   Parameters:
+                       path (str): The full path where the file will be created.
+                       content (str, optional): The initial content of the file. Defaults to an empty string.
+                       read_fn (Callable, optional): A function to handle custom read operations for the file.
+                       write_fn (Callable, optional): A function to handle custom write operations for the file.
+                   """
         self.files[path] = Node9File(path, content, False, read_fn, write_fn)
         
         # Add to parent directory
@@ -336,24 +348,26 @@ class Node9Namespace:
             parent.add_child(name, self.files[path])
     
     def get_file(self, path: str) -> Optional[Node9File]:
-        """Get a file from the namespace.
+        """
+        Retrieve a file or directory object from the namespace by its path.
         
-        Args:
-            path: Path to get
-            
+        Parameters:
+            path (str): The absolute path of the file or directory to retrieve.
+        
         Returns:
-            The file, or None if not found
+            Node9File or None: The corresponding file or directory object if it exists, otherwise None.
         """
         return self.files.get(path)
     
     def list_directory(self, path: str) -> List[str]:
-        """List the contents of a directory.
+        """
+        Return the names of all child files and directories within the specified directory path.
         
-        Args:
-            path: Path to list
-            
+        Parameters:
+            path (str): The directory path to list.
+        
         Returns:
-            List of child names
+            List[str]: Names of child files and directories, or an empty list if the path is not a directory or does not exist.
         """
         file = self.get_file(path)
         if file and file.is_dir:
@@ -365,15 +379,18 @@ class Node9FFI:
     """Foreign Function Interface for node9 integration."""
     
     def __init__(self):
-        """Initialize the FFI interface."""
+        """
+        Initialize the Node9FFI instance, setting up placeholders for the native library and initialization state.
+        """
         self.lib = None
         self.initialized = False
     
     def initialize(self) -> bool:
-        """Initialize the FFI interface.
+        """
+        Initializes the Node9 FFI interface and loads required native libraries.
         
         Returns:
-            True if successful, False otherwise
+            bool: True if initialization succeeds, False otherwise.
         """
         if not NODE9_AVAILABLE:
             logger.error("node9 FFI libraries not available")
@@ -415,14 +432,15 @@ class Node9FFI:
             return False
     
     def mount_namespace(self, namespace_path: str, local_path: str) -> bool:
-        """Mount a namespace path.
+        """
+        Mounts a node9 namespace path to a specified local path.
         
-        Args:
-            namespace_path: Path in the namespace
-            local_path: Local path to mount
-            
+        Parameters:
+            namespace_path (str): The path in the node9 namespace to mount.
+            local_path (str): The local filesystem path where the namespace will be mounted.
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the mount operation succeeds, False otherwise.
         """
         if not self.initialized:
             return False
@@ -439,14 +457,15 @@ class Node9FFI:
             return False
     
     def create_file(self, path: str, content: str) -> int:
-        """Create a file in the namespace.
+        """
+        Creates a file at the specified path in the node9 namespace with the given initial content.
         
-        Args:
-            path: Path in the namespace
-            content: Initial content
-            
+        Parameters:
+            path (str): The namespace path where the file will be created.
+            content (str): The initial content to write to the file.
+        
         Returns:
-            File descriptor, or -1 on error
+            int: The file descriptor of the created file, or -1 if creation fails.
         """
         if not self.initialized:
             return -1
@@ -480,14 +499,15 @@ class Node9FFI:
             return -1
     
     def read_file(self, path: str, max_size: int = 4096) -> str:
-        """Read a file from the namespace.
+        """
+        Reads the content of a file at the specified path in the node9 namespace.
         
-        Args:
-            path: Path in the namespace
-            max_size: Maximum size to read
-            
+        Parameters:
+            path (str): The path to the file within the namespace.
+            max_size (int): The maximum number of bytes to read from the file.
+        
         Returns:
-            The file content, or empty string on error
+            str: The file content as a string, or an empty string if an error occurs.
         """
         if not self.initialized:
             return ""
@@ -517,14 +537,15 @@ class Node9FFI:
             return ""
     
     def write_file(self, path: str, content: str) -> bool:
-        """Write to a file in the namespace.
+        """
+        Writes the specified content to a file at the given path in the node9 namespace.
         
-        Args:
-            path: Path in the namespace
-            content: Content to write
-            
+        Parameters:
+            path (str): The path of the file within the namespace.
+            content (str): The content to write to the file.
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the write operation succeeds, False otherwise.
         """
         if not self.initialized:
             return False
@@ -561,14 +582,17 @@ class LuaFFI:
     """FFI interface for Lua integration."""
     
     def __init__(self):
-        """Initialize the Lua FFI interface."""
+        """
+        Initialize the LuaFFI instance, setting the initial state as uninitialized.
+        """
         self.initialized = False
     
     def initialize(self) -> bool:
-        """Initialize the Lua FFI interface.
+        """
+        Checks for the availability of LuaJIT and marks the Lua FFI interface as initialized if found.
         
         Returns:
-            True if successful, False otherwise
+            bool: True if LuaJIT is available and initialization succeeds, False otherwise.
         """
         try:
             # Check if LuaJIT is available
@@ -580,13 +604,14 @@ class LuaFFI:
             return False
     
     def generate_ffi_bindings(self, output_path: str) -> bool:
-        """Generate FFI bindings for Lua.
+        """
+        Generate Lua FFI bindings for AtomSpace operations and write them to a file.
         
-        Args:
-            output_path: Path to write the bindings to
-            
+        Parameters:
+            output_path (str): The file path where the Lua FFI bindings will be written.
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the bindings were generated and written successfully, False otherwise.
         """
         if not self.initialized:
             return False
@@ -760,12 +785,13 @@ class VirtualProcess:
     """Represents a virtual process in the node9 namespace."""
     
     def __init__(self, name: str, module_path: str, namespace_path: str):
-        """Initialize a virtual process.
+        """
+        Initialize a VirtualProcess representing a cognitive module mapped to a node9 namespace.
         
-        Args:
-            name: Name of the process
-            module_path: Path to the Python module
-            namespace_path: Path in the node9 namespace
+        Parameters:
+            name (str): The name of the virtual process.
+            module_path (str): Filesystem path to the Python module to run.
+            namespace_path (str): Path in the node9 namespace where the process is represented.
         """
         self.name = name
         self.module_path = module_path
@@ -774,10 +800,11 @@ class VirtualProcess:
         self.running = False
     
     def start(self) -> bool:
-        """Start the virtual process.
+        """
+        Starts the virtual process by importing the specified module and running it in a daemon thread.
         
         Returns:
-            True if successful, False otherwise
+            bool: True if the process started successfully, False otherwise.
         """
         if self.running:
             return True
@@ -804,10 +831,11 @@ class VirtualProcess:
             return False
     
     def stop(self) -> bool:
-        """Stop the virtual process.
+        """
+        Stops the virtual process and waits for its thread to terminate.
         
         Returns:
-            True if successful, False otherwise
+            bool: True if the process was stopped successfully or was not running; False if an error occurred during stopping.
         """
         if not self.running:
             return True
@@ -826,7 +854,11 @@ class VirtualProcess:
             return False
     
     def _run_process(self) -> None:
-        """Run the virtual process."""
+        """
+        Executes the main or run function of the associated Python module for this virtual process.
+        
+        Attempts to import the specified module and invoke its `main()` or `run()` function. Logs a warning if neither function is found, and logs errors if exceptions occur during execution.
+        """
         try:
             # Import the module
             module_name = self.module_path.replace("/", ".")
@@ -850,11 +882,12 @@ class Node9AtomSpaceBridge:
     """Bridge between AtomSpace and node9 namespace."""
     
     def __init__(self, atomspace: AtomSpace, namespace_path: str = "/cog"):
-        """Initialize the bridge.
+        """
+        Initialize a Node9AtomSpaceBridge to connect an AtomSpace instance with a node9 namespace.
         
-        Args:
-            atomspace: The AtomSpace to bridge
-            namespace_path: Path in the node9 namespace
+        Parameters:
+            atomspace (AtomSpace): The AtomSpace instance to expose via the node9 namespace.
+            namespace_path (str, optional): The root path in the node9 namespace where AtomSpace operations will be mapped. Defaults to "/cog".
         """
         self.atomspace = atomspace
         self.namespace_path = namespace_path
@@ -865,10 +898,11 @@ class Node9AtomSpaceBridge:
         self.virtual_processes = {}
     
     def start(self) -> bool:
-        """Start the bridge.
+        """
+        Initializes and starts the AtomSpace-to-node9 bridge, setting up FFI interfaces, the namespace, Lua bindings, and launching registered virtual processes.
         
         Returns:
-            True if successful, False otherwise
+            bool: True if the bridge started successfully, False otherwise.
         """
         if self.running:
             return True
@@ -901,10 +935,11 @@ class Node9AtomSpaceBridge:
             return False
     
     def stop(self) -> bool:
-        """Stop the bridge.
+        """
+        Stops the bridge and all registered virtual processes.
         
         Returns:
-            True if successful, False otherwise
+            bool: True if the bridge and all virtual processes were stopped successfully, False otherwise.
         """
         if not self.running:
             return True
@@ -921,7 +956,11 @@ class Node9AtomSpaceBridge:
             return False
     
     def _setup_namespace(self) -> None:
-        """Set up the node9 namespace."""
+        """
+        Initializes the node9 namespace structure by creating required directories and special files for control, queries, atom types, and atoms.
+        
+        This method sets up the virtual filesystem hierarchy, including control files for managing the bridge's state, query files for interacting with AtomSpace, and files representing atom types and individual atoms.
+        """
         # Create directories
         for path in [
             f"{self.namespace_path}/atoms",
@@ -986,7 +1025,11 @@ class Node9AtomSpaceBridge:
         self._create_atom_files()
     
     def _create_type_files(self) -> None:
-        """Create files for atom types."""
+        """
+        Create files in the namespace representing each supported atom type.
+        
+        Each file is named after an atom type and contains the type name as its content.
+        """
         # Get all atom types from the AtomSpace
         # This is a placeholder - in a real implementation, we would get the types from the AtomSpace
         types = [
@@ -1003,7 +1046,11 @@ class Node9AtomSpaceBridge:
             )
     
     def _create_atom_files(self) -> None:
-        """Create files for atoms."""
+        """
+        Creates placeholder files for atoms in the AtomSpace within the node9 namespace.
+        
+        This method is a stub and does not currently enumerate or create files for actual atoms. In a complete implementation, it would generate a file for each atom in the AtomSpace, exposing their serialized content and supporting updates via file writes.
+        """
         # In a real implementation, we would create files for all atoms in the AtomSpace
         # For now, we'll just create a few example files
         
@@ -1023,13 +1070,14 @@ class Node9AtomSpaceBridge:
             )
     
     def _handle_type_query(self, content: str) -> bool:
-        """Handle a query by type.
+        """
+        Processes a query for atoms of a specified type and stores the results in the namespace.
         
-        Args:
-            content: The type to query for
-            
+        Parameters:
+            content (str): The atom type to query for.
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the query was processed and results stored successfully, False otherwise.
         """
         try:
             # Get atoms of the specified type
@@ -1059,13 +1107,14 @@ class Node9AtomSpaceBridge:
             return False
     
     def _handle_pattern_query(self, content: str) -> bool:
-        """Handle a pattern query.
+        """
+        Executes a pattern query against the AtomSpace and stores the results as a file in the namespace.
         
-        Args:
-            content: The pattern to query for (JSON)
-            
+        Parameters:
+            content (str): JSON string representing the pattern to query.
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the query was processed and results stored successfully, False otherwise.
         """
         try:
             # Parse the pattern
@@ -1101,13 +1150,14 @@ class Node9AtomSpaceBridge:
             return False
     
     def _handle_add_node(self, content: str) -> bool:
-        """Handle adding a node.
+        """
+        Adds a new node to the AtomSpace from a JSON description and creates a corresponding file in the node9 namespace.
         
-        Args:
-            content: JSON representation of the node to add
-            
+        Parameters:
+            content (str): JSON string specifying the node's type, name, and optional truth and attention values.
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the node was successfully added and the file created; False otherwise.
         """
         try:
             # Parse the node data
@@ -1150,13 +1200,16 @@ class Node9AtomSpaceBridge:
             return False
     
     def _handle_add_link(self, content: str) -> bool:
-        """Handle adding a link.
+        """
+        Adds a new link atom to the AtomSpace from a JSON description.
         
-        Args:
-            content: JSON representation of the link to add
-            
+        The JSON input must specify the link type and a list of outgoing atom IDs. Optionally, truth and attention values can be provided. If successful, the new link is added to the AtomSpace and a corresponding file is created in the namespace.
+        
+        Parameters:
+            content (str): JSON string describing the link type, outgoing atom IDs, and optional truth/attention values.
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the link was successfully added and the file created; False otherwise.
         """
         try:
             # Parse the link data
@@ -1209,14 +1262,15 @@ class Node9AtomSpaceBridge:
             return False
     
     def _handle_atom_update(self, atom: Atom, content: str) -> bool:
-        """Handle updating an atom.
+        """
+        Update an atom's truth and attention values from a JSON string and re-add it to the AtomSpace.
         
-        Args:
-            atom: The atom to update
-            content: JSON representation of the updated atom
-            
+        Parameters:
+            atom (Atom): The atom to update.
+            content (str): JSON string containing updated truth and/or attention values.
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the update was successful, False otherwise.
         """
         try:
             # Parse the updated atom data
@@ -1246,14 +1300,17 @@ class Node9AtomSpaceBridge:
             return False
     
     def register_cognitive_module(self, name: str, module_path: str) -> bool:
-        """Register a cognitive module as a virtual process.
+        """
+        Registers a cognitive module as a virtual process within the node9 namespace.
         
-        Args:
-            name: Name of the module
-            module_path: Path to the Python module
-            
+        Creates a directory and control files for the module, adds it to the managed virtual processes, and starts it if the bridge is running.
+        
+        Parameters:
+            name (str): The name to assign to the cognitive module.
+            module_path (str): The filesystem path to the Python module implementing the cognitive module.
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the module was registered successfully, False otherwise.
         """
         try:
             # Create a virtual process
@@ -1298,13 +1355,14 @@ class Node9AtomSpaceBridge:
             return False
     
     def unregister_cognitive_module(self, name: str) -> bool:
-        """Unregister a cognitive module.
+        """
+        Stops and removes a registered cognitive module by name.
         
-        Args:
-            name: Name of the module
-            
+        Parameters:
+            name (str): The name of the cognitive module to unregister.
+        
         Returns:
-            True if successful, False otherwise
+            bool: True if the module was successfully unregistered, False otherwise.
         """
         try:
             # Stop the virtual process
@@ -1322,14 +1380,15 @@ class Node9AtomSpaceBridge:
 # Factory function for creating bridges
 
 def create_bridge(atomspace: AtomSpace, namespace_path: str = "/cog") -> Node9AtomSpaceBridge:
-    """Create a new bridge.
+    """
+    Create a Node9AtomSpaceBridge instance connecting an AtomSpace to a node9 namespace.
     
-    Args:
-        atomspace: The AtomSpace to bridge
-        namespace_path: Path in the node9 namespace
-        
+    Parameters:
+        atomspace (AtomSpace): The AtomSpace instance to expose via the node9 namespace.
+        namespace_path (str, optional): The root path in the node9 namespace where the bridge will be mounted. Defaults to "/cog".
+    
     Returns:
-        A new Node9AtomSpaceBridge instance
+        Node9AtomSpaceBridge: The initialized bridge instance.
     """
     return Node9AtomSpaceBridge(atomspace, namespace_path)
 
@@ -1337,7 +1396,11 @@ def create_bridge(atomspace: AtomSpace, namespace_path: str = "/cog") -> Node9At
 # Command-line interface
 
 def main():
-    """Command-line interface for the bridge."""
+    """
+    Runs the command-line interface for the Node9 AtomSpace Bridge.
+    
+    Parses command-line arguments to configure the AtomSpace backend, namespace path, and optional configuration file. Initializes the AtomSpace and bridge, starts the bridge, and keeps it running until interrupted, at which point it performs a graceful shutdown.
+    """
     import argparse
     
     parser = argparse.ArgumentParser(description="Node9 AtomSpace Bridge")
