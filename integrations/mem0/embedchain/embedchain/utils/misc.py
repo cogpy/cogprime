@@ -341,23 +341,23 @@ def detect_datatype(source: Any) -> DataType:
                 return DataType.CSV
 
             if normalized_path.endswith(".xml"):
-            logger.debug(f"Source of `{formatted_source}` detected as `xml`.")
-            return DataType.XML
+                logger.debug(f"Source of `{formatted_source}` detected as `xml`.")
+                return DataType.XML
 
-        if source.endswith(".mdx") or source.endswith(".md"):
+        if normalized_path.endswith(".mdx") or normalized_path.endswith(".md"):
             logger.debug(f"Source of `{formatted_source}` detected as `mdx`.")
             return DataType.MDX
 
-        if source.endswith(".txt"):
+        if normalized_path.endswith(".txt"):
             logger.debug(f"Source of `{formatted_source}` detected as `text`.")
             return DataType.TEXT_FILE
 
-        if source.endswith(".pdf"):
+        if normalized_path.endswith(".pdf"):
             logger.debug(f"Source of `{formatted_source}` detected as `pdf_file`.")
             return DataType.PDF_FILE
 
-        if source.endswith(".yaml"):
-            with open(source, "r") as file:
+        if normalized_path.endswith(".yaml"):
+            with open(normalized_path, "r") as file:
                 yaml_content = yaml.safe_load(file)
                 if is_openapi_yaml(yaml_content):
                     logger.debug(f"Source of `{formatted_source}` detected as `openapi`.")
@@ -372,11 +372,11 @@ def detect_datatype(source: Any) -> DataType:
                         make sure to add all the required params"
                     )
 
-        if source.endswith(".json"):
+        if normalized_path.endswith(".json"):
             logger.debug(f"Source of `{formatted_source}` detected as `json`.")
             return DataType.JSON
 
-        if os.path.exists(source) and is_readable(open(source).read()):
+        if os.path.exists(normalized_path) and is_readable(open(normalized_path).read()):
             logger.debug(f"Source of `{formatted_source}` detected as `text_file`.")
             return DataType.TEXT_FILE
 
