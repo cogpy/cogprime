@@ -21,7 +21,8 @@ export default function CreateBot() {
     });
 
     if (response.ok) {
-      const botSlug = botName.toLowerCase().replace(/\s+/g, "_");
+      const sanitizedBotName = botName.replace(/[^a-zA-Z0-9\s]/g, "").trim();
+      const botSlug = sanitizedBotName.toLowerCase().replace(/\s+/g, "_");
       router.push(`/${botSlug}/app`);
     } else {
       setBotName("");
