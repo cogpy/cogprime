@@ -296,7 +296,7 @@ def detect_datatype(source: Any) -> DataType:
             logger.debug(f"Source of `{formatted_source}` detected as `docs_site`.")
             return DataType.DOCS_SITE
 
-        if "github.com" in url.netloc:
+        if url.netloc == "github.com" or url.netloc.endswith(".github.com"):
             logger.debug(f"Source of `{formatted_source}` detected as `github`.")
             return DataType.GITHUB
 
