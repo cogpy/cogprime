@@ -1,0 +1,72 @@
+name: Integrate External Repositories
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Target branch to commit to (e.g., feature/distributed-atomspace-integration)'
+        required: true
+        default: 'feature/distributed-atomspace-integration'
+
+jobs:
+  integrate_repos:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Grant write permissions to the GITHUB_TOKEN
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.branch }} # Checkout the specified branch
+        token: ${{ secrets.GITHUB_TOKEN }} # Use GITHUB_TOKEN for write access
+
+    - name: Configure Git
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+
+    - name: Create integrations directory
+      run: mkdir -p integrations
+
+    - name: Clone node9 repository
+      run: git clone https://github.com/drzo/node9.git integrations/node9_temp
+
+    - name: Remove node9 git history
+      run: rm -rf integrations/node9_temp/.git
+
+    - name: Move node9 to final location
+      run: mv integrations/node9_temp integrations/node9
+
+    - name: Clone mem0 repository
+      run: git clone https://github.com/drzo/mem0.git integrations/mem0_temp
+
+    - name: Remove mem0 git history
+      run: rm -rf integrations/mem0_temp/.git
+
+    - name: Move mem0 to final location
+      run: mv integrations/mem0_temp integrations/mem0
+
+    - name: Add integrated repositories to Git
+      run: git add integrations/
+
+    - name: Commit integrated repositories
+      run: |
+        git commit -m "feat: Integrate node9 and mem0 repositories
+
+        This commit adds the full source code of node9 and mem0
+        into the 'integrations/' directory, with their respective
+        git histories removed to create a clean, unified codebase.
+
+        This action is designed to handle large file integrations
+        that might otherwise cause issues with direct pushes.
+
+        Co-authored-by: drzo <d@rzo.io>"
+      env:
+        GIT_COMMITTER_NAME: GitHub Actions
+        GIT_COMMITTER_EMAIL: actions@github.com
+
+    - name: Push changes
+      run: git push origin ${{ github.event.inputs.branch }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use GITHUB_TOKEN for push
