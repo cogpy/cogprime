@@ -79,7 +79,8 @@ class SlackBot(BaseBot):
         def chat():
             # Check if the request is a verification request
             if request.json.get("challenge"):
-                return str(request.json.get("challenge"))
+                from html import escape
+                return escape(str(request.json.get("challenge")))
 
             response = self.handle_message(request.json)
             return str(response)
