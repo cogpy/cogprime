@@ -66,7 +66,7 @@ class SlackBot(BaseBot):
         response = self.client.chat_postMessage(channel=channel, text=message)
         return response
 
-    def start(self, host="0.0.0.0", port=5000, debug=True):
+    def start(self, host="0.0.0.0", port=5000, debug=False):
         app = Flask(__name__)
 
         def signal_handler(sig, frame):
@@ -95,7 +95,7 @@ def start_command():
     args = parser.parse_args()
 
     slack_bot = SlackBot()
-    slack_bot.start(host=args.host, port=args.port)
+    slack_bot.start(host=args.host, port=args.port, debug=False)
 
 
 if __name__ == "__main__":
