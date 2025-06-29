@@ -1,0 +1,53 @@
+name: Generate Development Issues
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: 'Select development phase to generate issues for'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'phase2'
+          - 'phase3'
+          - 'phase4'
+      issue_prefix:
+        description: 'Prefix for issue titles (e.g., [Phase 2], [Core Dev])'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Dry run - only show what issues would be created'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  generate_issues:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        pip install PyYAML requests
+
+    - name: Generate Issue Templates
+      run: |
+        python .github/scripts/generate_issues.py \
+          --phase "${{ github.event.inputs.phase }}" \
+          --prefix "${{ github.event.inputs.issue_prefix }}" \
+          --dry-run "${{ github.event.inputs.dry_run }}" \
+          --token "${{ secrets.GITHUB_TOKEN }}" \
+          --repo "${{ github.repository }}"
