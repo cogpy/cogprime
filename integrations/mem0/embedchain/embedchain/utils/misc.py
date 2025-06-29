@@ -246,6 +246,23 @@ def detect_datatype(source: Any) -> DataType:
 
         if url.path.endswith(".yaml"):
             try:
+                # Validate domain against whitelist
+                ALLOWED_DOMAINS = {"example.com", "api.example.com"}
+                if url.netloc not in ALLOWED_DOMAINS:
+                    raise ValueError(f"Domain `{url.netloc}` is not allowed.")
+
+                # Resolve IP and validate against public ranges
+                import socket
+                resolved_ip = socket.gethostbyname(url.netloc)
+                private_ip_ranges = [
+                    ("10.0.0.0", "10.255.255.255"),
+                    ("172.16.0.0", "172.31.255.255"),
+                    ("192.168.0.0", "192.168.255.255"),
+                    ("127.0.0.0", "127.255.255.255"),
+                ]
+                if any(ip_range[0] <= resolved_ip <= ip_range[1] for ip_range in private_ip_ranges):
+                    raise ValueError(f"Resolved IP `{resolved_ip}` is not allowed.")
+
                 response = requests.get(source)
                 response.raise_for_status()
                 try:
