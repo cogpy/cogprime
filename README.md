@@ -14,6 +14,7 @@ CogPrime is an ambitious project aimed at creating an Artificial General Intelli
 - **Meta-Learning**: Self-improving cognitive strategies and adaptive learning
 - **4E Cognition**: Embodied, embedded, enacted, and extended cognitive processing
 - **Modular Architecture**: Perception, reasoning, action, and learning modules with emergent behaviors
+- **System 4 Implementation**: Campbell's System 4 cognitive architecture with consciousness sets and tensional coupling
 
 ## Architecture Components
 
@@ -141,6 +142,14 @@ advanced_config = {
 - **[SiliconSage Evolution](SiliconSage-v5.md)** - Latest integrated AGI architecture
 - **[OpenCog Prime Foundation](CogPrime%20-%20An%20Integrative%20Architecture%20for%20Embodied%20Artificial%20General%20Intelligence.md)** - Core cognitive principles
 - **[OpenCog Hyperon Extensions](OpenCog%20Hyperon%20-%20A%20Framework%20for%20AGI%20at%20the%20Human%20Level%20and%20Beyond.md)** - Advanced AGI capabilities
+
+### System 4 Implementation (Kawaii Hexapod)
+
+- **[System 4 Architecture](docs/KAWAII_HEXAPOD_SYSTEM4_ARCHITECTURE.md)** - Complete technical architecture with consciousness sets and tensional coupling
+- **[Implementation Guide](docs/KAWAII_HEXAPOD_IMPLEMENTATION_GUIDE.md)** - Detailed developer guide with TypeScript interfaces and API reference
+- **[Actionable Issues](docs/KAWAII_HEXAPOD_ACTIONABLE_ISSUES.md)** - Comprehensive roadmap with 11 prioritized implementation issues
+- **[CogPrime Integration](docs/KAWAII_HEXAPOD_COGPRIME_INTEGRATION.md)** - Integration patterns with P9ML, Hyperon, Vervaeke framework
+- **[Documentation Synthesis](docs/KAWAII_HEXAPOD_DOCUMENTATION_SYNTHESIS.md)** - Complete overview and summary of System 4 documentation
 
 ### Philosophical Foundations
 
