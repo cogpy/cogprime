@@ -321,19 +321,26 @@ def detect_datatype(source: Any) -> DataType:
             "Source is not a string and a valid non-string type could not be detected. If you want to embed it, please stringify it, for instance by using `str(source)` or `(', ').join(source)`."  # noqa: E501
         )
 
-    elif os.path.isfile(source):
-        # For datatypes that support conventional file references.
-        # Note: checking for string is not necessary anymore.
+    elif isinstance(source, str):
+        # Normalize the path to remove any ".." segments
+        normalized_path = os.path.normpath(source)
+        # Define a safe root directory
+        safe_root = "/safe/root/directory"
+        # Ensure the normalized path is within the safe root directory
+        if not normalized_path.startswith(safe_root):
+            raise ValueError(f"Access to the path `{source}` is not allowed.")
 
-        if source.endswith(".docx"):
-            logger.debug(f"Source of `{formatted_source}` detected as `docx`.")
-            return DataType.DOCX
+        if os.path.isfile(normalized_path):
+            # For datatypes that support conventional file references.
+            if normalized_path.endswith(".docx"):
+                logger.debug(f"Source of `{formatted_source}` detected as `docx`.")
+                return DataType.DOCX
 
-        if source.endswith(".csv"):
-            logger.debug(f"Source of `{formatted_source}` detected as `csv`.")
-            return DataType.CSV
+            if normalized_path.endswith(".csv"):
+                logger.debug(f"Source of `{formatted_source}` detected as `csv`.")
+                return DataType.CSV
 
-        if source.endswith(".xml"):
+            if normalized_path.endswith(".xml"):
             logger.debug(f"Source of `{formatted_source}` detected as `xml`.")
             return DataType.XML
 
