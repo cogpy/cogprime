@@ -187,6 +187,26 @@ advanced_config = {
 - [ ] System refinement
 - [ ] Meta-strategic enhancement
 
+### Automated Issue Generation
+
+CogPrime includes GitHub Actions workflows for automatically generating detailed, actionable issues for each development phase. To create comprehensive development issues:
+
+1. Navigate to the **Actions** tab in the GitHub repository
+2. Run the "Generate Development Issues" workflow
+3. Select the phase(s) you want to generate issues for
+4. Optionally add issue title prefixes for organization
+5. Use dry-run mode to preview issues before creating them
+
+Each generated issue includes:
+- Detailed descriptions and context
+- Specific actionable tasks
+- Clear acceptance criteria
+- Priority levels and effort estimates
+- Dependencies and requirements
+- Appropriate labels for organization
+
+For more information, see the [Issue Generation Guide](.github/scripts/README.md).
+
 ## Research Applications
 
 CogPrime is designed for research in:
