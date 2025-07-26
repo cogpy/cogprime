@@ -1,7 +1,7 @@
 fastapi==0.104.0
 uvicorn==0.23.2
 streamlit==1.37.0
-embedchain==0.1.57
+embedchain==0.1.128
 slack-sdk==3.21.3 
 flask==2.3.3
 fastapi-poe==0.0.16
