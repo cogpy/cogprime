@@ -659,6 +659,14 @@ class AtomSpace:
         """
         return self.backend.pattern_match(pattern)
     
+    def get_all_atoms(self) -> List[Atom]:
+        """Get all atoms in the AtomSpace.
+        
+        Returns:
+            List of all atoms
+        """
+        return list(self.backend.atoms_by_id.values())
+    
     def vector_search(self, vector: List[float], limit: int = 10) -> List[Tuple[Atom, float]]:
         """Perform vector similarity search (requires mem0 backend).
         
