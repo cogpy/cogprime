@@ -4,6 +4,9 @@
 local AttentionBank = {}
 AttentionBank.__index = AttentionBank
 
+-- Attention configuration constants
+local STI_TO_LTI_CONVERSION_RATE = 0.1
+
 function AttentionBank.new(atomspace, config)
     local self = setmetatable({}, AttentionBank)
     self.atomspace = atomspace
@@ -140,7 +143,7 @@ function AttentionBank:consolidate_attention()
         
         -- Convert some STI to LTI for atoms with high STI
         if av.sti > self.sti_threshold then
-            local conversion_amount = av.sti * 0.1
+            local conversion_amount = av.sti * STI_TO_LTI_CONVERSION_RATE
             av.sti = av.sti - conversion_amount
             av.lti = av.lti + conversion_amount
             

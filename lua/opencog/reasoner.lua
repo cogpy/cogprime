@@ -4,6 +4,11 @@
 local Reasoner = {}
 Reasoner.__index = Reasoner
 
+-- PLN inference confidence factors
+local DEDUCTION_CONFIDENCE_FACTOR = 0.9
+local INDUCTION_CONFIDENCE_FACTOR = 0.8
+local ABDUCTION_CONFIDENCE_FACTOR = 0.7
+
 function Reasoner.new(atomspace)
     local self = setmetatable({}, Reasoner)
     self.atomspace = atomspace
@@ -37,7 +42,7 @@ function Reasoner:deduction(inheritance_ab, inheritance_bc)
     
     -- PLN deduction formula (simplified)
     local strength = tv_ab.strength * tv_bc.strength
-    local confidence = tv_ab.confidence * tv_bc.confidence * 0.9
+    local confidence = tv_ab.confidence * tv_bc.confidence * DEDUCTION_CONFIDENCE_FACTOR
     
     -- Create new inference
     local inference = Link.new("InheritanceLink", {a, c})
@@ -72,7 +77,7 @@ function Reasoner:induction(inheritance_ab, inheritance_ac)
     
     -- PLN induction formula (simplified)
     local strength = tv_ab.strength * tv_ac.strength
-    local confidence = tv_ab.confidence * tv_ac.confidence * 0.8
+    local confidence = tv_ab.confidence * tv_ac.confidence * INDUCTION_CONFIDENCE_FACTOR
     
     -- Create new inference
     local inference = Link.new("InheritanceLink", {b, c})
@@ -107,7 +112,7 @@ function Reasoner:abduction(inheritance_bc, inheritance_ac)
     
     -- PLN abduction formula (simplified)
     local strength = tv_bc.strength * tv_ac.strength
-    local confidence = tv_bc.confidence * tv_ac.confidence * 0.7
+    local confidence = tv_bc.confidence * tv_ac.confidence * ABDUCTION_CONFIDENCE_FACTOR
     
     -- Create new inference
     local inference = Link.new("InheritanceLink", {a, b})

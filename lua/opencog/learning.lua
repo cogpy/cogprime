@@ -4,6 +4,13 @@
 local Learning = {}
 Learning.__index = Learning
 
+-- Learning configuration constants
+local LTI_DECAY_RATE = 0.9
+local LTI_UPDATE_RATE = 0.1
+local OUTGOING_REWARD_PROPAGATION_RATE = 0.5
+local INCOMING_REWARD_PROPAGATION_RATE = 0.3
+local MIN_REWARD_THRESHOLD = 0.1
+
 function Learning.new(atomspace)
     local self = setmetatable({}, Learning)
     self.atomspace = atomspace
@@ -116,14 +123,14 @@ function Learning:reinforce_atom(atom, reward, visited)
     av.sti = av.sti + reward
     
     -- Update LTI with exponential moving average
-    av.lti = av.lti * 0.9 + reward * 0.1
+    av.lti = av.lti * LTI_DECAY_RATE + reward * LTI_UPDATE_RATE
     
     atom:set_attention_value(av)
     
     -- Propagate reward to related atoms (with decay)
-    if reward > 0.1 then  -- Stop if reward is too small
+    if reward > MIN_REWARD_THRESHOLD then  -- Stop if reward is too small
         if atom:is_link() then
-            local propagated_reward = reward * 0.5
+            local propagated_reward = reward * OUTGOING_REWARD_PROPAGATION_RATE
             for _, outgoing in ipairs(atom.outgoing_set) do
                 self:reinforce_atom(outgoing, propagated_reward, visited)
             end
@@ -131,7 +138,7 @@ function Learning:reinforce_atom(atom, reward, visited)
         
         -- Propagate through incoming set
         for _, incoming in ipairs(atom:get_incoming_set()) do
-            local propagated_reward = reward * 0.3
+            local propagated_reward = reward * INCOMING_REWARD_PROPAGATION_RATE
             self:reinforce_atom(incoming, propagated_reward, visited)
         end
     end

@@ -5,6 +5,9 @@ local Atom = {}
 Atom.__index = Atom
 
 -- UUID generation (simple implementation)
+-- Seed random number generator for better uniqueness
+math.randomseed(os.time() + os.clock() * 1000000)
+
 local function generate_uuid()
     local template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
     return string.gsub(template, '[xy]', function(c)

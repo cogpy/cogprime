@@ -144,14 +144,11 @@ function AtomSpace:query(pattern)
                     for i, pattern_atom in ipairs(pattern.outgoing_set) do
                         local candidate_atom = candidate.outgoing_set[i]
                         
-                        -- Check if it's a wildcard
-                        local is_wildcard = false
-                        if type(pattern_atom) == "table" and pattern_atom._is_wildcard then
-                            is_wildcard = true
-                        end
-                        
-                        -- nil or wildcard is a match
-                        if not is_wildcard and pattern_atom ~= nil then
+                        -- nil or wildcard is a match - skip to next
+                        if pattern_atom == nil or 
+                           (type(pattern_atom) == "table" and pattern_atom._is_wildcard) then
+                            -- Continue to next iteration
+                        else
                             -- Check if atoms match
                             if pattern_atom:is_node() and candidate_atom:is_node() then
                                 if pattern_atom.atom_type ~= candidate_atom.atom_type or
