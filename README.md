@@ -9,6 +9,7 @@ CogPrime is an ambitious project aimed at creating an Artificial General Intelli
 ## Key Features
 
 - **Multi-Framework Integration**: Seamlessly combines OpenCog Prime, OpenCog Hyperon, and Vervaeke's cognitive science insights
+- **OpenCog in Pure Lua**: Complete implementation of OpenCog cognitive architecture in Lua
 - **Cognitive Synergy**: Coordinated interaction between specialized cognitive subsystems
 - **Relevance Realization**: Dynamic attention allocation and meaning-making capabilities
 - **Meta-Learning**: Self-improving cognitive strategies and adaptive learning
@@ -50,15 +51,33 @@ The **SiliconSage** architecture represents the evolution of cognitive integrati
 - Relevance-driven resource allocation
 - Cross-framework synthesis mechanisms
 
+### OpenCog in Pure Lua
+
+A complete implementation of the OpenCog cognitive architecture in pure Lua (`lua/` directory), featuring:
+
+- **AtomSpace**: Hypergraph knowledge representation
+- **PLN**: Probabilistic Logic Networks reasoning
+- **ECAN**: Economic Attention Network allocation
+- **Pattern Matching**: Advanced pattern matching with wildcards
+- **Learning**: Pattern mining, reinforcement learning, concept formation
+
+See [lua/README.md](lua/README.md) for details.
+
 ## Installation
 
 ### Prerequisites
 
+**For Python components:**
 - Python 3.8 or higher
 - PyTorch 1.9.0 or higher
 - CUDA support (optional, for GPU acceleration)
 
+**For Lua components:**
+- Lua 5.3 or higher
+
 ### Setup
+
+**Python Setup:**
 
 1. Clone the repository:
 ```bash
@@ -74,6 +93,29 @@ pip install -r requirements.txt
 3. Run tests to verify installation:
 ```bash
 python -m pytest src/tests/ -v
+```
+
+**Lua Setup:**
+
+1. Install Lua:
+```bash
+# Ubuntu/Debian
+sudo apt-get install lua5.3
+
+# macOS
+brew install lua
+```
+
+2. Run tests:
+```bash
+cd lua
+lua5.3 tests/test_opencog.lua
+```
+
+3. Try the examples:
+```bash
+lua5.3 examples/basic_example.lua
+lua5.3 examples/advanced_example.lua
 ```
 
 ## Quick Start
