@@ -69,7 +69,7 @@ Integrates all modules into a unified cognitive cycle:
 ## File Structure
 
 ```
-src/limbo/
+limbo/
 ├── atomspace.b         # AtomSpace implementation
 ├── atomspace.m         # AtomSpace module interface
 ├── perception.b        # Perception module implementation
