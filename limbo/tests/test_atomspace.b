@@ -6,7 +6,7 @@ implement TestAtomSpace;
 
 include "sys.m";
     sys: Sys;
-include "../atomspace.m";
+include "../opencog/atomspace.m";
     atomspace: Atomspace;
     AtomSpace, Node, Link, TruthValue, AttentionValue: import atomspace;
 

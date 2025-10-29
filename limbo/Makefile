@@ -4,18 +4,18 @@
 LIMBO = limbo
 
 # Directories
-SRC_DIR = .
+SRC_DIR = opencog
 BUILD_DIR = dis/cogprime
 EXAMPLE_DIR = examples
 
 # Module files
 MODULES = \
-	atomspace.b \
-	perception.b \
-	reasoning.b \
-	action.b \
-	learning.b \
-	cogcore.b
+	opencog/atomspace.b \
+	opencog/perception.b \
+	opencog/reasoning.b \
+	opencog/action.b \
+	opencog/learning.b \
+	opencog/cogcore.b
 
 # Example programs
 EXAMPLES = \
@@ -41,29 +41,29 @@ examples: modules $(EXAMPLE_DIS)
 	@$(LIMBO) $<
 
 # Specific module dependencies
-atomspace.dis: atomspace.b atomspace.m
+opencog/atomspace.dis: opencog/atomspace.b opencog/atomspace.m
 	@echo "Compiling AtomSpace module..."
-	@$(LIMBO) atomspace.b
+	@$(LIMBO) opencog/atomspace.b
 
-perception.dis: perception.b perception.m atomspace.dis
+opencog/perception.dis: opencog/perception.b opencog/perception.m opencog/atomspace.dis
 	@echo "Compiling Perception module..."
-	@$(LIMBO) perception.b
+	@$(LIMBO) opencog/perception.b
 
-reasoning.dis: reasoning.b reasoning.m atomspace.dis
+opencog/reasoning.dis: opencog/reasoning.b opencog/reasoning.m opencog/atomspace.dis
 	@echo "Compiling Reasoning module..."
-	@$(LIMBO) reasoning.b
+	@$(LIMBO) opencog/reasoning.b
 
-action.dis: action.b action.m atomspace.dis
+opencog/action.dis: opencog/action.b opencog/action.m opencog/atomspace.dis
 	@echo "Compiling Action module..."
-	@$(LIMBO) action.b
+	@$(LIMBO) opencog/action.b
 
-learning.dis: learning.b learning.m atomspace.dis
+opencog/learning.dis: opencog/learning.b opencog/learning.m opencog/atomspace.dis
 	@echo "Compiling Learning module..."
-	@$(LIMBO) learning.b
+	@$(LIMBO) opencog/learning.b
 
-cogcore.dis: cogcore.b cogcore.m atomspace.dis perception.dis reasoning.dis action.dis learning.dis
+opencog/cogcore.dis: opencog/cogcore.b opencog/cogcore.m opencog/atomspace.dis opencog/perception.dis opencog/reasoning.dis opencog/action.dis opencog/learning.dis
 	@echo "Compiling CogCore module..."
-	@$(LIMBO) cogcore.b
+	@$(LIMBO) opencog/cogcore.b
 
 # Examples
 examples/simple_agent.dis: examples/simple_agent.b modules
@@ -79,12 +79,12 @@ test: modules
 install: modules
 	@echo "Installing modules to $(BUILD_DIR)..."
 	@mkdir -p $(BUILD_DIR)
-	@cp -v *.dis $(BUILD_DIR)/ 2>/dev/null || echo "No .dis files to install"
+	@cp -v opencog/*.dis $(BUILD_DIR)/ 2>/dev/null || echo "No .dis files to install"
 
 # Clean build artifacts
 clean:
 	@echo "Cleaning build artifacts..."
-	@rm -f *.dis
+	@rm -f opencog/*.dis
 	@rm -f examples/*.dis
 	@rm -f $(BUILD_DIR)/*.dis
 
