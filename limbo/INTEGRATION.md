@@ -44,6 +44,10 @@ This document outlines the integration strategy for the Limbo implementation of 
 3. Read/write atoms as files
 4. Query via special control files
 
+**Files to create:**
+- `limbo/bridge/p9_server.b` - 9P server implementation
+- `limbo/bridge/modules/` - Module bridges
+
 **Files:**
 ```
 /cog/
@@ -134,7 +138,7 @@ lib.atomspace_add_node.restype = POINTER(AtomInfo)
 - [ ] Unit tests for bridge
 
 **Deliverables:**
-- `src/limbo/bridge/p9_server.b` - 9P server implementation
+- `limbo/bridge/p9_server.b` - 9P server implementation
 - `src/bridges/limbo_atomspace_bridge.py` - Python client
 - `tests/test_limbo_bridge.py` - Integration tests
 
@@ -147,7 +151,7 @@ lib.atomspace_add_node.restype = POINTER(AtomInfo)
 - [ ] Python wrappers for each module
 
 **Deliverables:**
-- `src/limbo/bridge/modules/` - Module bridges
+- `limbo/bridge/modules/` - Module bridges
 - `src/integration/limbo_modules.py` - Python wrappers
 - Integration examples
 

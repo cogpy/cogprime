@@ -57,7 +57,7 @@ This project successfully implements the core OpenCog cognitive architecture in 
 ## File Structure
 
 ```
-src/limbo/
+limbo/
 ├── atomspace.b (401 lines)      # AtomSpace implementation
 ├── atomspace.m (81 lines)       # AtomSpace interface
 ├── perception.b (220 lines)     # Perception module
