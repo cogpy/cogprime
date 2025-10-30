@@ -19,6 +19,8 @@ void demonstrate_full_integration() {
     std::cout << "FULL 4E FRAMEWORK INTEGRATION" << std::endl;
     std::cout << "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" << std::endl;
     
+    const int NUM_DEMO_CYCLES = 3;
+    
     std::unordered_map<std::string, float> config;
     config["body_schema_lr"] = 0.1f;
     config["adaptation_strength"] = 0.7f;
@@ -28,7 +30,7 @@ void demonstrate_full_integration() {
     
     std::cout << "Running complete 4E cognitive cycles..." << std::endl;
     
-    for (int cycle = 0; cycle < 3; ++cycle) {
+    for (int cycle = 0; cycle < NUM_DEMO_CYCLES; ++cycle) {
         std::cout << "\n--- Cycle " << (cycle + 1) << " ---" << std::endl;
         
         std::vector<float> sensory = {

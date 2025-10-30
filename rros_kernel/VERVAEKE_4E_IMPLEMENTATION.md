@@ -8,7 +8,7 @@ This document describes the implementation of John Vervaeke's 4E Cognition Frame
 
 The implementation is based on:
 
-- **Episode 28**: "Convergence to Relevance Realization" - Vervaeke's articulation of 4E cognition
+- **Episode 28**: "Convergence to Relevance Realization" (Vervaeke, 2019) - Vervaeke's articulation of 4E cognition
 - **Relevance Realization Framework**: Core adaptive constraint satisfaction process
 - **Meaning Crisis Response**: Reconnecting mind-body, mind-world, and mind-mind
 
@@ -405,7 +405,7 @@ The Vervaeke 4E Framework integrates with the existing RROS kernel through:
 - [ ] llama.cpp reservoirs for enacted exploration dynamics
 - [ ] Hypergraph representation of perspectival knowing
 - [ ] Distributed kernel extension via participatory knowing
-- [ ] Quantum-inspired salience landscape navigation
+- [ ] Variational quantum circuit optimization for salience landscape navigation (quantum superposition for parallel relevance evaluation)
 
 ## Configuration
 
