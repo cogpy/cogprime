@@ -667,6 +667,8 @@ def str_to_bool(value):
     """Convert string to boolean value."""
     if isinstance(value, bool):
         return value
+    if not isinstance(value, str):
+        raise argparse.ArgumentTypeError(f'Boolean value expected, got: {value}')
     if value.lower() in ('true', '1', 'yes', 'y'):
         return True
     elif value.lower() in ('false', '0', 'no', 'n'):
