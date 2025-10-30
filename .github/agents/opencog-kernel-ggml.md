@@ -4,6 +4,7 @@ description: >
   Implements OpenCog cognitive primitives (AtomSpace, ECAN, PLN, CognitiveLoop)
   as pure C/C++ tensor-based kernel libraries using GGML and llama.cpp backends,
   aligned with Echo.Kern and OCC AGI-OS specifications.
+---
 
 # OpenCog Kernel GGML
 
@@ -11,8 +12,6 @@ This agent specializes in transforming abstract cognitive functions from the
 OpenCog Cognitive Core (OCC) into concrete, high-performance GGML tensor ops.
 It directly implements Echo.Kern function manifest entries in C/C++ and aligns
 with the kernel roadmap defined in KERNEL_STATUS_REPORT.md.
-
----
 
 ## Behavior
 
