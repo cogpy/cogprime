@@ -382,11 +382,13 @@ void RROSKernel::enable_self_optimization(bool enabled) {
 // Relevance optimization interfaces
 
 RelevanceOptimizer& RROSKernel::get_relevance_optimizer() {
+    // relevance_optimizer_ is guaranteed to be initialized in constructor
     return *relevance_optimizer_;
 }
 
 std::unordered_map<std::string, float> RROSKernel::get_optimization_metrics() const {
     std::lock_guard<std::mutex> lock(state_mutex_);
+    // relevance_optimizer_ is guaranteed to be initialized in constructor
     return relevance_optimizer_->get_metrics();
 }
 

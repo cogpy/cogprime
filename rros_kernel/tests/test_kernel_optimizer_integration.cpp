@@ -190,6 +190,9 @@ bool test_memory_optimization() {
         rros::RROSKernel kernel;
         auto& optimizer = kernel.get_relevance_optimizer();
         
+        // Seed for reproducible tests
+        std::srand(42);
+        
         // Create a memory pool
         std::vector<std::vector<float>> memories;
         for (int i = 0; i < 20; ++i) {
@@ -230,9 +233,12 @@ int main() {
     int passed = 0;
     int total = 0;
     
-    if (test_kernel_optimizer_integration()) ++passed; ++total;
-    if (test_performance_enhancement()) ++passed; ++total;
-    if (test_memory_optimization()) ++passed; ++total;
+    if (test_kernel_optimizer_integration()) ++passed;
+    ++total;
+    if (test_performance_enhancement()) ++passed;
+    ++total;
+    if (test_memory_optimization()) ++passed;
+    ++total;
     
     std::cout << "\n" << std::string(60, '=') << "\n";
     std::cout << "📊 Test Summary: " << passed << "/" << total << " integration tests passed\n";
