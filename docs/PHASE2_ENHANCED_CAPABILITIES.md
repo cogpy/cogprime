@@ -91,7 +91,7 @@ print(f"Attention stability: {metrics['attention_stability']:.3f}")
 
 ### 4. Goal Hierarchies and Planning
 
-**Implementation:** `src.modules.action.py` - `GoalHierarchy`, `Goal`
+**Implementation:** `src/modules/action.py` - `GoalHierarchy`, `Goal`
 
 Enhanced goal management with hierarchical structures and temporal constraints:
 
