@@ -240,7 +240,7 @@ uint32_t num_biases = kernel.detect_cognitive_biases();
 - Bias detector: ~200KB for detection history
 - Self-optimizer: ~150KB for strategy history
 
-Total memory footprint: < 2MB with default configurations
+**Total memory footprint: < 2.5MB with default configurations** (including allocator overhead and alignment padding)
 
 ## Acceptance Criteria Validation
 
@@ -274,9 +274,10 @@ Total memory footprint: < 2MB with default configurations
 - Isotonic regression applied for adjustment
 
 ✅ **System maintains efficiency while adding self-reflection capabilities**
-- < 35µs overhead per cognitive cycle
-- Memory footprint < 2MB
+- < 35µs self-reflection overhead per cognitive cycle
+- Memory footprint < 2.5MB
 - All components lock-free for read-heavy operations
+- Core RROS targets maintained: ≤5µs scheduler tick, ≤100ns memory ops (separate from self-reflection overhead)
 
 ## Testing
 
@@ -373,5 +374,5 @@ Contributions welcome! Areas of interest:
 
 **Implementation Status**: ✅ Complete (Phase 2)
 **Test Coverage**: 100% of core functionality
-**Performance**: Within target specifications (≤5µs scheduler tick, ≤100ns memory ops)
+**Performance**: Self-reflection adds <35µs overhead; core system maintains targets (≤5µs scheduler, ≤100ns memory)
 **Integration**: Fully integrated into RROS kernel
