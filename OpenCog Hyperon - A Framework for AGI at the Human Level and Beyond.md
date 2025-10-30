@@ -1,8 +1,8 @@
 
 # OpenCog Hyperon: A Framework for AGI at the Human Level and Beyond – High-Level Background & Introduction
 
-Ben Goertzel,VitalyBogdanov,MichaelDuncan,DeborahDuong,ZarathustraGoertzel,JanHorlings,MatthewIkle's,LuciusGregMeredith,AlexeyPotapov,Andre' LuizdeSenna,HedraSeid,AndresSuarez,AdamVandervorst,RobertWerko * 
-October31,2023 
+Ben Goertzel, Vitaly Bogdanov, Michael Duncan, Deborah Duong, Zarathustra Goertzel, Jan Horlings, Matthew Ikle's, Lucius Greg Meredith, Alexey Potapov, Andre' Luis de Senna, Hedra Seid, Andres Suarez, Adam Vandervorst, Robert Werko * 
+October 31, 2023 
 
 Abstract 
 An introduction to the OpenCog Hyperon framework for Artificial General Intelligence is presented. Hyperon is a new, mostly from-the-ground-up rewrite/redesign of the OpenCog AGI framework, based on similar conceptual and cognitive principles to the previous OpenCog version, but incorporating a variety of new ideas at the mathematical, software architecture and AI-algorithm level. This review lightly summarizes 
@@ -17,7 +17,7 @@ An introduction to the OpenCog Hyperon framework for Artificial General Intellig
 • the prospects seen for advanced aspects like reflective self-modification and self-improvement of the codebase 
 
 
-*Goertzel is primary author with affiliations SingularityNET, TrueAGI, OpenCog; other co-authors arelistedalphabetically 
+*Goertzel is primary author with affiliations SingularityNET, TrueAGI, OpenCog; other co-authors are listed alphabetically 
 1 
 • the tentative development roadmap and various challenges expected to be faced 
 • the thinking of the Hyperon team regarding how to guide this sort of work in a beneficial direction. 
@@ -67,7 +67,9 @@ The Distributed Atomspace
 .................. 31 
 3.4 
 Decentralized Deployment via Blockchain Integration 
-......... 33 3.5 
+......... 33 
+
+3.5 
 Compiling MeTTa to Rholang for Rapid Secure Decentralized Execution 
 37 
 3.6 
@@ -146,14 +148,7 @@ Hyperon as a Foundation for Superintelligence
 Hyperon and Universal AI Methods 
 . . . . . . . . . . . . . . 83 
 4.6.2 
-Complexity, 
-Self-Organization 
-and 
-Emergence 
-on 
-the 
-Path 
-toSuperintelligence 
+Complexity, Self-Organization and Emergence on the Path to Superintelligence 
 ........................ 85 
 5 
 Hyperon's 
@@ -173,30 +168,16 @@ Commercialization
 Achieving Beneficial AGI 
 ........................ 92 
 6 
-Concluding 
-Remarks 
+Concluding Remarks 
 95 
 1 Introduction 
 The initial goal of the AI field, at its founding in the middle of the last century, was the creation of machines with general intelligence capability at the human level and then beyond. When this proved more difficult than anticipated, however, the AI field shifted substantially toward "narrow AI" systems focused on carrying out particular tasks effectively rather than on more general-purpose adaptation and self-and world-understanding.
 With modern compute power, sensor power and data availability, though, enthusiasm for Artificial General Intelligence is resurgent and at an all time high. It is no longer uncommon to hear ambitious projections regarding human-level AGI potentially being achievable in some single-digit number of years.
 The authors of this article have been optimistic about the outlook for AGI for much longer than this sort of attitude has been fashionable; however, we also feel that to achieve the grand goal of general intelligence at the human level and then beyond, it will be necessary to grapple with the subtlety of the problem. Human-level AGI is not the end-all of AGI by any means, but it does have quite a lot of interdependent dimensions, and we believe it will defy achievement via simplistic cognitive architectures (like current LLMs or anything centered on these).
-What 
-we 
-describe 
-here 
-is 
-OpenCog 
-Hyperon 
-[GP21], 
-a 
-cognitive 
-architecture 
-and AIsystem design that we believe possesses the breadth and complexity to achieve AGI at the human level and beyond, via a combination of autonomous learning and human education and supervision. Hyperon is a new system in the OpenCog lineage, founded on the same core cognitive theories and high-level design concepts as the earlier"OpenCog Classic" system [Goe10], but redesigned from the ground up for greater scalability, usability and mathematical elegance. We give here a high level overview of the OpenCog Hyperon system, inclusive of various theoretical and practical pursuits that have evolved around this in-progress software system and its design.
+What we describe here is OpenCog Hyperon [GP21], a cognitive architecture and AI system design that we believe possesses the breadth and complexity to achieve AGI at the human level and beyond, via a combination of autonomous learning and human education and supervision. Hyperon is a new system in the OpenCog lineage, founded on the same core cognitive theories and high-level design concepts as the earlier "OpenCog Classic" system [Goe10], but redesigned from the ground up for greater scalability, usability and mathematical elegance. We give here a high level overview of the OpenCog Hyperon system, inclusive of various theoretical and practical pursuits that have evolved around this in-progress software system and its design.
 Those who have been in the AI or AGI field for a while understand that "branded software systems" like Hyperon are generally not as fundamentally significant as they may appear from a technological standpoint, though they are clearly important from a sociological, marketing, or attention-gathering perspective. Under the name "OpenCog Hyperon", we are bringing together diverse algorithms, data structures, mathematical ideas, cognitive system theories, and code – which have rich interrelationship and also independent meaning, and common use inputting together, using and understanding the Hyperon software system. Some of the discussions here will be specifically about the OpenCog Hyperon codebase and practical applications, while others will touch upon theoretical ideas and concepts that have been integrated into Hyperon from various sources, and also have significant value beyond the scope of Hyperon.
-The discussion here is mostly at a high-level technical overview level. The http: 
-//hyperon.opencog.org 
-website contains links to various documents, videos and code repositories that delve into more specific aspects. The reader interested in a more thorough treatment of cognitive theory related to Hyperon is also referred to Goertzel's 2021 paper on General Theory of General Intelligence [Goe21d].
-A brief note on expository style: This is an informal text put together by a group of authors who have been working together to make Hyperon a reality. We've chosen aslightly unusual format, in which third-person prose is intermixed with direct quotes in the first person from various contributors. The purpose of this is to make things a little less dry and impersonal, and to get across the reality that this sort of R&D and engineering is not an abstract and faceless pursuit but rather the intersection and synergy of the work, passion and insight of a community of specific human beings, each of whom bring their own perspective and peculiarities to the project. 1 
+The discussion here is mostly at a high-level technical overview level. The http://hyperon.opencog.org website contains links to various documents, videos and code repositories that delve into more specific aspects. The reader interested in a more thorough treatment of cognitive theory related to Hyperon is also referred to Goertzel's 2021 paper on General Theory of General Intelligence [Goe21d].
+A brief note on expository style: This is an informal text put together by a group of authors who have been working together to make Hyperon a reality. We've chosen a slightly unusual format, in which third-person prose is intermixed with direct quotes in the first person from various contributors. The purpose of this is to make things a little less dry and impersonal, and to get across the reality that this sort of R&D and engineering is not an abstract and faceless pursuit but rather the intersection and synergy of the work, passion and insight of a community of specific human beings, each of whom bring their own perspective and peculiarities to the project. 1 
 
 
 2 Snapshots Along the Path to Hyperon 
@@ -255,34 +236,21 @@ Goertzel's AGI-23 talk continued to explicitly recount how these conceptual inve
 "The Novamente AGI initiative was successful in producing research papers exploring different AGI algorithms and achieving some limited practical deployments, especially in natural language processing and signals analysis. In 2008, significant portions of the system were open-sourced as OpenCog, and a community of contributors began to build upon this codebase. One significant contribution was the OpenCog Pattern Matcher, developed by Linas Vepstas. Initially, the Pattern Matcher was a system for recognizing patterns in the Atomspace knowledge graph. Eventually, it evolved into a functional and logic programming framework with recursive pattern matching capabilities. 
 "However, as OpenCog evolved, certain limitations were encountered, primarily related to scalability and ease of use. To address these challenges, some of the developers began experimenting with neurosymbolic systems. Alexey Potapov and Vitaly Bogdanov interfaced Torch, a deep learning library, with OpenCog, which allowed for combining symbolic and neural processes. However, this integration was found to be somewhat inefficient, as OpenCog was considerably slower than modern neural network frameworks, especially when running on GPUs. 
 "Which is a meaningful part of what led us toward the AGI infrastructure design now referred to as OpenCog Hyperon." 
-The need for a more scalable and usable system than OpenCog circa 2020 led anumber of OpenCog developers to consider rebuilding the system almost from scratch. This was coupled with ongoing developments in mathematics and theory which these developers wanted to incorporate more directly into the AI system. One such concept was cognitive synergy, which stemmed from an understanding of how different types of memory and learning mechanisms in the human brain interact. Cognitive synergy highlighted how the brain translates a problem from one kind of memory to another kind when it gets stuck, essentially employing different kinds of learning mechanisms.
-To formalize this interaction between declarative, procedural, and sensory knowledge, category theory and other related mathematical concepts were used to map various AI algorithms into operations over a metagraph. It began to seem feasible to incorporate this mathematical framework more deeply into OpenCog to make it more efficient. This conceptual and formal direction also seemed promising in terms of making more elegant and efficient interfaces between OpenCog systems and external AIsystems like scalabledeeplearning frameworks.
-Eventually, based on these needs and inspirations, a new system called OpenCog Hyperon was developed. 'Hyperon' is then name of an elementary particle; the name was basically chosen to continue the physics metaphor theme originated in 'Atomspace', and for its resonance with 'hypergraph' (since Atomspace is a generalized hypergraph aka Metagraph).
+The need for a more scalable and usable system than OpenCog circa 2020 led a number of OpenCog developers to consider rebuilding the system almost from scratch. This was coupled with ongoing developments in mathematics and theory which these developers wanted to incorporate more directly into the AI system. One such concept was cognitive synergy, which stemmed from an understanding of how different types of memory and learning mechanisms in the human brain interact. Cognitive synergy highlighted how the brain translates a problem from one kind of memory to another kind when it gets stuck, essentially employing different kinds of learning mechanisms.
+To formalize this interaction between declarative, procedural, and sensory knowledge, category theory and other related mathematical concepts were used to map various AI algorithms into operations over a metagraph. It began to seem feasible to incorporate this mathematical framework more deeply into OpenCog to make it more efficient. This conceptual and formal direction also seemed promising in terms of making more elegant and efficient interfaces between OpenCog systems and external AI systems like scalable deep learning frameworks.
+Eventually, based on these needs and inspirations, a new system called OpenCog Hyperon was developed. 'Hyperon' is the name of an elementary particle; the name was basically chosen to continue the physics metaphor theme originated in 'Atomspace', and for its resonance with 'hypergraph' (since Atomspace is a generalized hypergraph aka Metagraph).
 Tongue partly in cheek, it was proposed that the next huge overhaul might be called OpenCog Tachyon, incorporated quantum computing constructs at the core, or maybe computational acceleration using novel hardware incorporating closed timelike loops!(But we'll leave that to a later document...) 
 
 
 3 OpenCog Hyperon: A Modern, Scalable Infrastructure for AGI 
 Now let us finally go into a little detail about Hyperon as a software framework!
-Figure 
-1 
-gives 
-a 
-rough 
-overall 
-depiction 
-of 
-many 
-of 
-the 
-key 
-components, 
-thoughthe interrelation of these components is highly diverse and dynamic and defies simple accurate diagrammatization. 
+Figure 1 gives a rough overall depiction of many of the key components, though the interrelation of these components is highly diverse and dynamic and defies simple accurate diagrammatization. 
 3.1 Atomspace and MeTTa: The Core Constructs of OpenCog 
 The core construct of Hyperon, like that of OpenCog and Novamente Cognition Engine before it, is the Atomspace, a metagraph comprised of nodes and links with complex interlinkage structures. This metagraph is highly versatile and allows for labeling nodes and links with various kinds of data, including subgraphs. This labeling mechanism can also facilitate the embedding of complex type systems in the metagraph.
 A new ingredient of Hyperon, qualitatively different from anything in earlier OpenCog versions, is the programming language called MeTTa. MeTTa programs are sub-metagraphs 
 
 Figure 1: High-level illustration of key components in Hyperon architecture, including integration into TrueAGI application framework. 
-in Atomspace, and are interpretable as procedures for rewriting portions of Atom-space into modified or additional portions of Atomspace. (In a trivial way, every sub-metagraph in Atomspace is asort of MeTTa program, in the sense that every Atom that's not interpretable as some instruction by the MeTTa interpreter is still a "constant" item of data processable by MeTTA programs.)
+in Atomspace, and are interpretable as procedures for rewriting portions of Atomspace into modified or additional portions of Atomspace. (In a trivial way, every sub-metagraph in Atomspace is a sort of MeTTa program, in the sense that every Atom that's not interpretable as some instruction by the MeTTa interpreter is still a "constant" item of data processable by MeTTA programs.)
 The prior version of OpenCog, which in the Hyperon era has come to be called 'OpenCog Classic', featured a sophisticated pattern matcher (designed and implemented by the heroic OpenCog developer Linas Vepstas) which had added into it a variety of sophisticated functions allowing it to do more than just match patterns in a traditional sense, but also execute various transformations on the Atomspace while in the course of doing pattern matching. This is a reasonable and interesting design, but in Hyperon it was decided to do things a bit differently, and to instead: 
 • Make the Hyperon pattern matcher more of a standard, static pattern matcher (though with plenty of special aspects, such as subtle handling of patterns involving variables, efficient execution of matching involving Atoms belonging to type systems with efficient type inference associated with them, and matching of variables against whole subgraphs rather than individual Atoms) 
 
@@ -319,8 +287,8 @@ MeTTa
 [WPVG22]. 
 The 
 sets 
-in this theory can contain themselves as elements or can have cyclical containment. This implementation made use of circular graphs to represent non-well-founded sets in the Atomspace, establishing rules to rewrite them. This allows among other things an elegant implementation of probabilistic reasoning on infinite-order probabilities, which Goertzel has proposed as a way to handle uncertain shared social knowledge ("webothhaveintuitiveknowledgethatwebothknowthisstatementisprobablytrue" and other more useful variations like the shared understanding that characterizes every I-Thou relationship and every robust culture).
-There are close connections between Stephen Wolfram's concept of the Ruliad, pur-sued from a theoretical physics perspective, and MeTTa's Atomspace. Both are meta-graph structures representing patterns among patterns among patterns ... (without any recursion limit)... and both can be modeled using infinity groupoids and infinity comma 
+in this theory can contain themselves as elements or can have cyclical containment. This implementation made use of circular graphs to represent non-well-founded sets in the Atomspace, establishing rules to rewrite them. This allows among other things an elegant implementation of probabilistic reasoning on infinite-order probabilities, which Goertzel has proposed as a way to handle uncertain shared social knowledge ("we both have intuitive knowledge that we both know this statement is probably true" and other more useful variations like the shared understanding that characterizes every I-Thou relationship and every robust culture).
+There are close connections between Stephen Wolfram's concept of the Ruliad, pursued from a theoretical physics perspective, and MeTTa's Atomspace. Both are metagraph structures representing patterns among patterns among patterns ... (without any recursion limit)... and both can be modeled using infinity groupoids and infinity comma 
 2 https://github.com/Adam-Vandervorst/FormalMeTTa 
 
 one categories, among other related mathematical constructs. The specific portions of the Ruliad Wolfram has been interested to explore in his physics-inspired work is however different from the specific sorts of metagraphs that appear most useful in an AGI context in the near term. 
@@ -337,7 +305,7 @@ Alexey Potapov reiterates these points in more detail: "After long consideration
 MeTTa is an elegant language and getting used to it requires letting go of some traditional ways of thinking about programming, and acquisition of some new habits ... no quick overview is going to provide a fully effective shortcut in this regard. However, for readers who have sufficient technical background, it seems a brief summary of highlights and differentiating aspects may still be of some value! 3 
 
 Programs in MeTTa are collections of expressions, which are placed into a container called Atomspace. Expressions are tuples of atoms, which can be either other expressions, or pure symbols, or grounded atoms, entities that wrap some (subsym-bolic, not fully described by the MeTTa program itself) data. For example, MySymbol , (A (B C D) E) and (''point'' (10 10)) are valid expressions, where ''point'' and 10 are supposed to be turned into grounded atoms by the parser.
-Atomspaces differ from other containers in that they support special types of queries for retrieving expressions from them. While MeTTa expressions can be treated as edges in the metagraph, and the whole Atomspace can be treated as a metagraph data/knowledgebase with a querying engine efficiently operating over an indexed content, Atomspace queries can be understood also as a generalization of pattern-matching in functionallanguages. Queries are expressions typically containing a special type of atoms, variables (in the current syntax they are distinguished from ordinary symbols by placing $ at the beginning of their name). Expressions with variables can be referred to as patterns. For example, expression (A (B C D) A) can be retrieved by queries (or matched against patterns) (A $x A) or (A (B $x $y) A) or ($x (B C D) $x), but not by (A ($x $y C) A) or (A (B C D) (A $x)) or ($x ($x C D) A). 
+Atomspaces differ from other containers in that they support special types of queries for retrieving expressions from them. While MeTTa expressions can be treated as edges in the metagraph, and the whole Atomspace can be treated as a metagraph data/knowledgebase with a querying engine efficiently operating over an indexed content, Atomspace queries can be understood also as a generalization of pattern-matching in functional languages. Queries are expressions typically containing a special type of atoms, variables (in the current syntax they are distinguished from ordinary symbols by placing $ at the beginning of their name). Expressions with variables can be referred to as patterns. For example, expression (A (B C D) A) can be retrieved by queries (or matched against patterns) (A $x A) or (A (B $x $y) A) or ($x (B C D) $x), but not by (A ($x $y C) A) or (A (B C D) (A $x)) or ($x ($x C D) A). 
 The difference between Atomspaces and many other database containers is that they can contain expressions with variables, and queries are matched with such expressions if variables both in queries and in expressions can be bound to some subexpressions in a non-contradictory way. For example, (A ($a $a) A) can be matched against ($b (B B) $b), but cannot be matched against ($b (B B) C) or ($b (B $b) $b). In the latter cases, we cannot find such a substitution for both $a and b, which will make the setwo expressions identical.
 The core pattern matching function receives a query pattern and a result pattern as its parameters. It searches for expressions in the specified Atomspace, which can 
 3 This section was written by Alexey Potapov 
@@ -395,7 +363,7 @@ those
 with 
 a 
 more 
-strongly mathe-matical bent, Greg Meredith's write-up of the MeTTa operational semantics will shed some clarity [MGWV23].
+strongly mathematical bent, Greg Meredith's write-up of the MeTTa operational semantics will shed some clarity [MGWV23].
 While a lot has been done to get MeTTa to the point where it is now – and the language is already being used for some experimentation with AGI-oriented algorithms 
 – there is a lot of work needed to progress MeTTa to the point it needs to be in order to serve effectively as the underlying language for development of and reflective self-programming of a human-level (and beyond) AGI. Readers who have gone through some of the above in-depth materials on MeTTa may be interested in Adam Vander-vorst's comments on some of the challenges faced in the next phase of MeTTa development. Adam's Formal MeTTa codebase is also interesting to look at, and has been very useful as a sort of intermediary between the purely mathematical view of MeTTa and the primary Rust codebase that has been the focus of proto-AGI experimentation.
 Adam summarizes some of his thoughts on the present and future of MeTTa as follows: 
@@ -772,7 +740,7 @@ SingularityNET Chief AI Officer Matt Ikle', who has been working on variations o
 4.3.3 Procedural Memory 
 Procedural memory, in Hyperon, consists at the most basic level of MeTTa programs. However, MeTTa is a meta-language by nature, and by implementing different type systems in MeTTa one can make it "impersonate" a variety of different programming languages, logic-programming and functional-programming paradigms being the most natural. Using this facility, procedures of different sorts (e.g. cognitive heuristics for proving math theorems, procedures for controlling movements of a robot, procedures 
 6 Some prototype work measuring Tononi Phi in OpenCog Classic while carrying out practical tasks is described in [SCA+] 
-for directing the flow of a natural language dialogue) may potentially be implemented in different sub-languages represented by different MeTTa type systems. Such type systems can initially be implemented by human programmers, but the reflective nature of MeTTa also makes it natural for type systems to originate via the system's own learning and reasoning.? It's also key to understand the role played by appropriate abstraction in the representation of cognitively meaningful procedures. Much of the procedural knowledge relevant to human-like cognition is vague and uncertain, and consists of higher-level processes that need to be instantiated as particular processes in a context-dependent way, using intuitive reasoning. This meansthat procedure execution is sometimes straightforward MeTTa program execution, and sometimes as a subtlercognitive process of mapping a vague/abstract network of Atoms into a precise MeTTa program suitable for direct execution.
+for directing the flow of a natural language dialogue) may potentially be implemented in different sub-languages represented by different MeTTa type systems. Such type systems can initially be implemented by human programmers, but the reflective nature of MeTTa also makes it natural for type systems to originate via the system's own learning and reasoning.? It's also key to understand the role played by appropriate abstraction in the representation of cognitively meaningful procedures. Much of the procedural knowledge relevant to human-like cognition is vague and uncertain, and consists of higher-level processes that need to be instantiated as particular processes in a context-dependent way, using intuitive reasoning. This means that procedure execution is sometimes straightforward MeTTa program execution, and sometimes as a subtler cognitive process of mapping a vague/abstract network of Atoms into a precise MeTTa program suitable for direct execution.
 The vague/abstract networks of Atoms representing general procedures will often leverage special Atom types referring to temporal or causal relationships. Significant prototyping work has recently been done involving temporal reasoning on Atomspaces, for instance in the context of controlling simple agents in Minecraft [PG22], or playing games like Pong 7. 
 Conversion between procedural and declarative knowledge then takes the form of Curry-Howard-like correspondences (e.g. Greg Meredith's OSLF) between programs and logical expressions [Mer23]. 
 
@@ -1101,9 +1069,9 @@ This suggests that, alongside notions from Universal AI theory, notions from the
 "Artificial General Intelligence (AGI) research is riddled with many large foundational and definitional questions. What are intelligence, consciousness, and life, after all? How did the first single cell organism form? How can one create "something from nothing"? How can one take silicon, alter its electrical properties, add electricity and a fair bit of programming, and end up with AGI? 
 "Partial answers to these questions may lie in the large class of "chaos-theory" related disciplines such as nonlinear phenomena, self-similarity, fractals, complex dynamical systems, self-organizing maps, self-modifying systems, phase transitions, and emergent phenomena. 
 "The importance of such nonlinear phenomena for creating AGI appears to be born out in current neuroscience research. In a recent week-long neuroscience experiment (XX https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10081438/), human EEG dynamics were described as 
-"patterns of" punctuated equilibrium": periodswhennetworkswouldremaininstablestates that corresponded to behavior and were interrupted by transitory bursts that were difficult to predict, displayed chaotic characteristics, and coincided with behavioral transitions. Brain state statistics displayed power laws characteristic of critical dynamics that are a trait of systems where complexity emerges from simple and stable building blocks. These results indicate that the com-plex and flexible brain dynamics that underpin real-world behavior are an emergent property of mixtures of individual, stable networks with simple dynamics. 
+"patterns of" punctuated equilibrium": periods when networks would remain in stable states that corresponded to behavior and were interrupted by transitory bursts that were difficult to predict, displayed chaotic characteristics, and coincided with behavioral transitions. Brain state statistics displayed power laws characteristic of critical dynamics that are a trait of systems where complexity emerges from simple and stable building blocks. These results indicate that the complex and flexible brain dynamics that underpin real-world behavior are an emergent property of mixtures of individual, stable networks with simple dynamics. 
 "Such punctuated equilibrium activity patterns are remarkably similar to the strange attractors of the complex dynamical systems theory underpinning Hyperon. At first these attractors will pertain to knowledge gained by the system within the framework of human-supplied cognitive algorithms; then later they will pertain to the formation and modification of the system's cognitive algorithms and low-level implementation code as well." 
-Complex systems theory was also one of the main inspirations for the theory of Open-Ended Intelligence mentioned above, which views general intelligence as a self-organizing process combining dynamics of individuation and self-transcendence. In the OEI perspective, reaching toward Universal Intelligence is something that general intelligences do in an effort to exceed their limitations and self-transcend, and an ef-fort to outsmart conditionsthat threaten or weaken their individuation. Understanding what happens as OEIs reach further and further toward universal intelligence in various ways is important, but is only one among many interesting aspects of the complex self-organizing emergent dynamics of the evolving and overlapping intelligences that comprise the most fascinating partsof our world. In this view, the success of a system like Hyperon as an Open-Ended Intelligence will come if the system survives for a reasonable period of time, and while doing so, transforms itself into a radically broader and richer kind of system than anything its human creators or its initial version could possibly have conceived. 
+Complex systems theory was also one of the main inspirations for the theory of Open-Ended Intelligence mentioned above, which views general intelligence as a self-organizing process combining dynamics of individuation and self-transcendence. In the OEI perspective, reaching toward Universal Intelligence is something that general intelligences do in an effort to exceed their limitations and self-transcend, and an effort to outsmart conditions that threaten or weaken their individuation. Understanding what happens as OEIs reach further and further toward universal intelligence in various ways is important, but is only one among many interesting aspects of the complex self-organizing emergent dynamics of the evolving and overlapping intelligences that comprise the most fascinating parts of our world. In this view, the success of a system like Hyperon as an Open-Ended Intelligence will come if the system survives for a reasonable period of time, and while doing so, transforms itself into a radically broader and richer kind of system than anything its human creators or its initial version could possibly have conceived. 
 
 
 5 Hyperon's Development Path 
