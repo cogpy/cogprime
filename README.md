@@ -231,8 +231,15 @@ advanced_config = {
 
 ### Automated Issue Generation
 
-CogPrime includes GitHub Actions workflows for automatically generating detailed, actionable issues for each development phase. To create comprehensive development issues:
+CogPrime includes comprehensive development issues ready to be created on GitHub. **All 15 issues for Phases 2-4 are available as markdown files in the `issues_to_create/` directory.**
 
+**Quick Start - Create All 15 Issues:**
+```bash
+cd issues_to_create
+bash create_all_issues.sh
+```
+
+**Alternative Methods:**
 1. Navigate to the **Actions** tab in the GitHub repository
 2. Run the "Generate Development Issues" workflow
 3. Select the phase(s) you want to generate issues for
@@ -241,13 +248,16 @@ CogPrime includes GitHub Actions workflows for automatically generating detailed
 
 Each generated issue includes:
 - Detailed descriptions and context
-- Specific actionable tasks
-- Clear acceptance criteria
+- Specific actionable tasks (8 per issue)
+- Clear acceptance criteria (7-8 per issue)
 - Priority levels and effort estimates
 - Dependencies and requirements
 - Appropriate labels for organization
 
-For more information, see the [Issue Generation Guide](.github/scripts/README.md).
+For more information, see:
+- [Issue Files and Batch Creation](issues_to_create/README.md) - All 15 issues ready to create
+- [Creation Guide](CREATE_ISSUES.md) - Multiple methods for creating issues
+- [Issue Generation Script](.github/scripts/README.md) - Technical documentation
 
 ## Research Applications
 
