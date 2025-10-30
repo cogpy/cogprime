@@ -1,0 +1,97 @@
+name: Create CogPrime Development Issues
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "CREATE" to confirm issue creation'
+        required: true
+        type: string
+
+jobs:
+  create-issues:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+
+    steps:
+    - name: Validate confirmation
+      run: |
+        if [ "${{ github.event.inputs.confirm }}" != "CREATE" ]; then
+          echo "❌ Issue creation not confirmed. Please type 'CREATE' to proceed."
+          exit 1
+        fi
+        echo "✅ Confirmation received. Proceeding with issue creation..."
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        pip install PyYAML requests
+
+    - name: Create all 15 CogPrime development issues
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+      run: |
+        echo "=================================================="
+        echo "Creating 15 CogPrime Development Issues"
+        echo "Repository: $GITHUB_REPOSITORY"
+        echo "=================================================="
+        echo
+        
+        python .github/scripts/generate_issues.py \
+          --phase all \
+          --dry-run False \
+          --token "$GITHUB_TOKEN" \
+          --repo "$GITHUB_REPOSITORY"
+        
+        exit_code=$?
+        
+        echo
+        echo "=================================================="
+        if [ $exit_code -eq 0 ]; then
+          echo "✅ Issue creation completed successfully!"
+          echo "View issues at: https://github.com/$GITHUB_REPOSITORY/issues"
+        else
+          echo "❌ Issue creation failed. Check logs above for details."
+          exit 1
+        fi
+        echo "=================================================="
+
+    - name: Summary
+      if: success()
+      run: |
+        echo "### ✅ Successfully Created CogPrime Development Issues" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "All 15 development issues for CogPrime roadmap (Phases 2-4) have been created." >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Phase 2: Advanced Features (5 issues)**" >> $GITHUB_STEP_SUMMARY
+        echo "1. Enhanced Cognitive Capabilities Implementation" >> $GITHUB_STEP_SUMMARY
+        echo "2. Self-Reflection Mechanisms Development" >> $GITHUB_STEP_SUMMARY
+        echo "3. Meta-Learning Systems Implementation" >> $GITHUB_STEP_SUMMARY
+        echo "4. Cross-Domain Integration Framework" >> $GITHUB_STEP_SUMMARY
+        echo "5. Relevance Optimization System" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Phase 3: Framework Integration (5 issues)**" >> $GITHUB_STEP_SUMMARY
+        echo "6. Vervaeke Framework Components Integration" >> $GITHUB_STEP_SUMMARY
+        echo "7. Historical Context Integration System" >> $GITHUB_STEP_SUMMARY
+        echo "8. Meaning-Making Systems Development" >> $GITHUB_STEP_SUMMARY
+        echo "9. Relevance Realization Implementation" >> $GITHUB_STEP_SUMMARY
+        echo "10. Meta-Cognitive Synthesis Framework" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Phase 4: Optimization (5 issues)**" >> $GITHUB_STEP_SUMMARY
+        echo "11. Performance Tuning and Optimization" >> $GITHUB_STEP_SUMMARY
+        echo "12. Resource Management System" >> $GITHUB_STEP_SUMMARY
+        echo "13. Scalability Improvements" >> $GITHUB_STEP_SUMMARY
+        echo "14. System Refinement and Integration" >> $GITHUB_STEP_SUMMARY
+        echo "15. Meta-Strategic Enhancement System" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "View all issues: https://github.com/${{ github.repository }}/issues" >> $GITHUB_STEP_SUMMARY
