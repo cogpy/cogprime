@@ -2,6 +2,11 @@
 #include "relevance_engine.hpp"
 #include "attention_manager.hpp"
 #include "memory_core.hpp"
+#include "meta_cognitive_monitor.hpp"
+#include "decision_quality_tracker.hpp"
+#include "confidence_estimator.hpp"
+#include "bias_detector.hpp"
+#include "self_optimizer.hpp"
 #include "../episodes/episode_processor.hpp"
 #include <algorithm>
 #include <numeric>
@@ -55,6 +60,13 @@ void RROSKernel::initialize_subsystems() {
     attention_manager_ = std::make_unique<AttentionManager>(config_);
     memory_core_ = std::make_unique<MemoryCore>(config_);
     episode_processor_ = std::make_unique<EpisodeProcessor>(config_);
+    
+    // Initialize self-reflection subsystems
+    meta_monitor_ = std::make_unique<MetaCognitiveMonitor>(config_);
+    quality_tracker_ = std::make_unique<DecisionQualityTracker>(config_);
+    confidence_estimator_ = std::make_unique<ConfidenceEstimator>(config_);
+    bias_detector_ = std::make_unique<BiasDetector>(config_);
+    self_optimizer_ = std::make_unique<SelfOptimizer>(config_);
 }
 
 CognitiveState RROSKernel::cognitive_cycle(
@@ -324,6 +336,43 @@ float RROSKernel::get_episode_weight(Episode episode) const {
     
     auto it = base_weights.find(episode);
     return it != base_weights.end() ? it->second : 0.5f;  // Default weight
+}
+
+// Self-reflection methods
+
+std::unordered_map<std::string, float> RROSKernel::introspect_cognitive_state(
+    uint32_t lookback_cycles
+) {
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    return meta_monitor_->introspect_state(lookback_cycles);
+}
+
+std::unordered_map<std::string, float> RROSKernel::get_decision_quality_metrics() {
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    return quality_tracker_->get_statistics();
+}
+
+uint32_t RROSKernel::detect_cognitive_biases() {
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    
+    // Create a simple decision history for bias detection
+    std::vector<std::vector<float>> recent_decisions;
+    std::vector<float> confidences;
+    
+    // Use recent cognitive states as proxy for decisions
+    for (int i = 0; i < 10; i++) {
+        recent_decisions.push_back({current_state_.global_relevance, 
+                                   current_state_.attention_focus});
+        confidences.push_back(current_state_.confidence);
+    }
+    
+    auto detected_biases = bias_detector_->detect_biases(recent_decisions, confidences);
+    return static_cast<uint32_t>(detected_biases.size());
+}
+
+void RROSKernel::enable_self_optimization(bool enabled) {
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    self_optimizer_->set_autonomous_mode(enabled);
 }
 
 } // namespace rros

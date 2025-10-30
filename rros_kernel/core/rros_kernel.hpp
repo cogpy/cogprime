@@ -16,6 +16,11 @@ class RelevanceEngine;
 class AttentionManager;
 class MemoryCore;
 class EpisodeProcessor;
+class MetaCognitiveMonitor;
+class DecisionQualityTracker;
+class ConfidenceEstimator;
+class BiasDetector;
+class SelfOptimizer;
 struct RelevanceResult;
 
 /**
@@ -223,6 +228,33 @@ public:
      * @return Current activation for each episode
      */
     std::unordered_map<Episode, float> get_episode_activations() const;
+    
+    // Self-reflection interfaces
+    
+    /**
+     * @brief Get meta-cognitive introspection of current state
+     * @param lookback_cycles Number of recent cycles to analyze
+     * @return Introspection metrics
+     */
+    std::unordered_map<std::string, float> introspect_cognitive_state(uint32_t lookback_cycles = 100);
+    
+    /**
+     * @brief Get decision quality metrics
+     * @return Quality metrics for cognitive decisions
+     */
+    std::unordered_map<std::string, float> get_decision_quality_metrics();
+    
+    /**
+     * @brief Detect cognitive biases in recent processing
+     * @return Number of biases detected
+     */
+    uint32_t detect_cognitive_biases();
+    
+    /**
+     * @brief Enable autonomous self-optimization
+     * @param enabled True to enable, false to disable
+     */
+    void enable_self_optimization(bool enabled);
 
 private:
     // Core subsystems
@@ -230,6 +262,13 @@ private:
     std::unique_ptr<AttentionManager> attention_manager_;
     std::unique_ptr<MemoryCore> memory_core_;
     std::unique_ptr<EpisodeProcessor> episode_processor_;
+    
+    // Self-reflection subsystems
+    std::unique_ptr<MetaCognitiveMonitor> meta_monitor_;
+    std::unique_ptr<DecisionQualityTracker> quality_tracker_;
+    std::unique_ptr<ConfidenceEstimator> confidence_estimator_;
+    std::unique_ptr<BiasDetector> bias_detector_;
+    std::unique_ptr<SelfOptimizer> self_optimizer_;
     
     // Current state
     CognitiveState current_state_;
