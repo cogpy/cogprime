@@ -47,12 +47,12 @@ build_modules() {
     print_info "Building OpenCog Limbo modules..."
     
     modules=(
-        "atomspace"
-        "perception"
-        "reasoning"
-        "action"
-        "learning"
-        "cogcore"
+        "opencog/atomspace"
+        "opencog/perception"
+        "opencog/reasoning"
+        "opencog/action"
+        "opencog/learning"
+        "opencog/cogcore"
     )
     
     for module in "${modules[@]}"; do
@@ -102,7 +102,7 @@ run_tests() {
 # Clean build artifacts
 clean() {
     print_info "Cleaning build artifacts..."
-    rm -f *.dis
+    rm -f opencog/*.dis
     rm -f examples/*.dis
     print_info "Clean complete"
 }
@@ -146,7 +146,7 @@ main() {
                 build_modules && build_examples
             else
                 print_info "Limbo compiler not available - showing file structure instead"
-                ls -lh *.b *.m 2>/dev/null || true
+                ls -lh opencog/*.b opencog/*.m 2>/dev/null || true
                 [ -d examples ] && ls -lh examples/*.b 2>/dev/null || true
             fi
             ;;

@@ -8,7 +8,7 @@ This project successfully implements the core OpenCog cognitive architecture in 
 
 ### Core Modules (2,066 lines of Limbo code)
 
-1. **AtomSpace Module** (atomspace.b + atomspace.m)
+1. **AtomSpace Module** (opencog/atomspace.b + opencog/atomspace.m)
    - Hypergraph knowledge representation
    - Node and Link types for vertices and hyperedges
    - TruthValue for probabilistic reasoning (strength, confidence)
@@ -16,34 +16,34 @@ This project successfully implements the core OpenCog cognitive architecture in 
    - Efficient multi-index storage (by ID, type, type-name)
    - Pattern matching and query capabilities
 
-2. **Perception Module** (perception.b + perception.m)
+2. **Perception Module** (opencog/perception.b + opencog/perception.m)
    - Multi-modal sensory input processing (visual, auditory, tactile)
    - Attention mechanism with salience-based allocation
    - Attention spreading through the hypergraph
    - Sensory encoding into perception nodes
 
-3. **Reasoning Module** (reasoning.b + reasoning.m)
+3. **Reasoning Module** (opencog/reasoning.b + opencog/reasoning.m)
    - Working memory with configurable capacity
    - Activation-based item retention
    - Episodic memory for event storage
    - Pattern recognition and matching
    - Basic inference capabilities
 
-4. **Action Module** (action.b + action.m)
+4. **Action Module** (opencog/action.b + opencog/action.m)
    - Action representation with parameters
    - Expected reward tracking
    - Epsilon-greedy action selection
    - Goal-directed behavior
    - Experience-based evaluation
 
-5. **Learning Module** (learning.b + learning.m)
+5. **Learning Module** (opencog/learning.b + opencog/learning.m)
    - Experience buffer for reinforcement learning
    - Skill acquisition and proficiency tracking
    - Truth value updates from experience
    - Pattern consolidation
    - Adaptive learning rates
 
-6. **Cognitive Core** (cogcore.b + cogcore.m)
+6. **Cognitive Core** (opencog/cogcore.b + opencog/cogcore.m)
    - Integrated cognitive cycle:
      1. Perception phase
      2. Attention allocation
@@ -58,26 +58,27 @@ This project successfully implements the core OpenCog cognitive architecture in 
 
 ```
 limbo/
-├── atomspace.b (401 lines)      # AtomSpace implementation
-├── atomspace.m (81 lines)       # AtomSpace interface
-├── perception.b (220 lines)     # Perception module
-├── perception.m (47 lines)      # Perception interface
-├── reasoning.b (238 lines)      # Reasoning module
-├── reasoning.m (54 lines)       # Reasoning interface
-├── action.b (173 lines)         # Action module
-├── action.m (40 lines)          # Action interface
-├── learning.b (251 lines)       # Learning module
-├── learning.m (49 lines)        # Learning interface
-├── cogcore.b (227 lines)        # Cognitive core
-├── cogcore.m (33 lines)         # Cognitive core interface
+├── opencog/                       # Core OpenCog implementation
+│   ├── atomspace.b (401 lines)    # AtomSpace implementation
+│   ├── atomspace.m (81 lines)     # AtomSpace interface
+│   ├── perception.b (220 lines)   # Perception module
+│   ├── perception.m (47 lines)    # Perception interface
+│   ├── reasoning.b (238 lines)    # Reasoning module
+│   ├── reasoning.m (54 lines)     # Reasoning interface
+│   ├── action.b (173 lines)       # Action module
+│   ├── action.m (40 lines)        # Action interface
+│   ├── learning.b (251 lines)     # Learning module
+│   ├── learning.m (49 lines)      # Learning interface
+│   ├── cogcore.b (227 lines)      # Cognitive core
+│   └── cogcore.m (33 lines)       # Cognitive core interface
 ├── examples/
 │   └── simple_agent.b (184 lines)  # Example cognitive agent
 ├── tests/
 │   └── test_atomspace.b (196 lines)  # Unit tests
-├── README.md                    # Quick start guide
-├── GUIDE.md                     # Comprehensive API reference
-├── INTEGRATION.md               # Integration plan with Python
-├── Makefile                     # Build system
+├── README.md                      # Quick start guide
+├── GUIDE.md                       # Comprehensive API reference
+├── INTEGRATION.md                 # Integration plan with Python
+├── Makefile                       # Build system
 └── build.sh                     # Build script
 ```
 
