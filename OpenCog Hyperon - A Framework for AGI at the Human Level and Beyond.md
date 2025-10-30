@@ -471,7 +471,7 @@ on this as follows:
 
 3.4 Decentralized Deployment via Blockchain Integration 
 Through appropriate blockchain integration, a distributed Hyperon instance can be spread across many machines worldwide, without need for any single owner or central controller. One can have coordination among many agents running on different machines without requiring complete trust between the parties involved.
-The use of blockchain infrastructure has a variety of advantages. It opens up a host of compute resources for usage by distributed Hyperon systems, including spare resources on home computers and phones and dedicated home compute boxes, and server farms historically used for cryptomining. Italsoleadsnaturallytoinfrastructurethatissecurebydesign,andrespectsthesovereigntyoftheindividualsandentitieswhohave provided data to train and teach early-stage AI systems. It encourages the use of creative tokenomic models to incentivize provision of hardware, data and educational interaction to these systems.
+The use of blockchain infrastructure has a variety of advantages. It opens up a host of compute resources for usage by distributed Hyperon systems, including spare resources on home computers and phones and dedicated home compute boxes, and server farms historically used for cryptomining. It also leads naturally to infrastructure that is secure by design, and respects the sovereignty of the individuals and entities who have provided data to train and teach early-stage AI systems. It encourages the use of creative tokenomic models to incentivize provision of hardware, data and educational interaction to these systems.
 Ben Goertzel observes that, "As progress advances further toward human-level AGI, the use of decentralized infrastructure also decreases the odds of any single party achieving autocratic power over powerful AGI systems. A core intuition here is that decentralized, participant-governed systems like the Internet and the Linux operating system provide a better model for the coordination and operation of powerful AGI than centralized IT systems such as those currently offered by e.g. US and Chinese Big Tech companies." 
 Key decentralized tools currently planned for deep integration into Hyperon architecture include: 
 • SingularityNET protocol for coordination among decentralized AI agents 
@@ -904,7 +904,7 @@ and subtlety to encompass natural language. What can be done by putting LLMs and
 4.3.7 Multimodal Perception 
 Multimodal perception, in a sense, is currently handled fairly well via deep neural networks; however, the sense in which these networks really understand what they are perceiving is fairly limited, which presents a challenge in terms of using them as the perceptual cortices of an integrated cognition system.
 The natural solution to this conundrum is to build explicit links between concepts and relationships in Atomspace with concepts and relationships as represented in the weight and activation patterns in neural networks. This could be done in various ways; the most straightforward approach would be simply to learn linear or nonlinear functions mapping specific Atoms into combinations of neurons in the networks inside neural spaces. So for instance, if a Hyperon system sees a number of images labeled with the word "cat", it can then learn a mapping from the Atom representing the word "cat" to a combination of neural in the visual neural space.
-The next step is inductive learning of the probability distribution characterizing a large ensemble of such learned mappings. By probabilistic synthesis based on this distribution, new mappings can be inferred in cases where there is scant or even nolabeled data. 
+The next step is inductive learning of the probability distribution characterizing a large ensemble of such learned mappings. By probabilistic synthesis based on this distribution, new mappings can be inferred in cases where there is scant or even no labeled data. 
 4.3.8 Action Learning and Coordinated Action 
 Action learning in CogPrime is not fundamentally distinct from other sorts of learning. It can be carried out via RL-like methods as mentioned above; or it can be carried out more purely by PLN inference or probabilistic program synthesis not tied to any particular reward function, "merely" the pursuit of concise generalization of existing procedural knowledge. 
 4.3.9 Goal Refinement and Goal System Management 
@@ -933,22 +933,15 @@ The "worldmodel" of an AGI system does not have to be a distinct component as it
 e.g. in some robot control systems, it can be implicit across a variety of the system's knowledge stores.
 However, implicit world models can still vary widely and can be more or less so-phisticated and more or less useful. It is clear for instance that LLMs have a badly insufficient world model except in some particular cases; the root cause here seems to be that their knowledge is overly particularized, consisting mainly of a vast number of special cases. They do have some implicit abstractions in their knowledge, but their ability to adaptively deploy these abstractions is relatively minimal compared to their ability to find and morph appropriate particularities.
 A Hyperon system's world model, to some extent, consists of the abstractions it has learned from particular cases via methods like PLN and concept creation. The learning of explicit causal relationships is an important part of this. RL type methods also can play an important role in learning causal relationships, often of a more concrete character, but also subject to inferential abstraction.
-Computational systems also possess capabilities for world modeling not open to biological brains. For instance, a Hyperon instance can model. a physical system by explicitly running a physics engine; it can model a computer network that's part of its infrastructure by explicitly running a network simulation, etc. It can tune the parameters of these simulations to match its abstract understanding, and/or run these simulations under various conditionstolearn new potentially relevant abstractions, etc. This illustrates the approach where in, while Hyperon's core cognitive architecture is to a significant degree inspired by (human) cognitive science, fundamentally (until we get to OpenCog Tachyon anyway) it is a digital-computational system and our inclination is to allow it to leverage whatever advantages its digital underpinnings allow. 
+Computational systems also possess capabilities for world modeling not open to biological brains. For instance, a Hyperon instance can model a physical system by explicitly running a physics engine; it can model a computer network that's part of its infrastructure by explicitly running a network simulation, etc. It can tune the parameters of these simulations to match its abstract understanding, and/or run these simulations under various conditions to learn new potentially relevant abstractions, etc. This illustrates the approach where in, while Hyperon's core cognitive architecture is to a significant degree inspired by (human) cognitive science, fundamentally (until we get to OpenCog Tachyon anyway) it is a digital-computational system and our inclination is to allow it to leverage whatever advantages its digital underpinnings allow. 
 4.4.2 Emotion 
-Joscha Bach's MicroPsimodel of human-like intelligence [Bac09] (depicted roughly in Figures 
-18 
-and 
-19), 
-drawing 
-on 
-Dietrich 
-Dorner's 
+Joscha Bach's MicroPsi model of human-like intelligence [Bac09] (depicted roughly in Figures 18 and 19), drawing on Dietrich Dorner's 
 earlier 
 Psi 
 model 
 [Dor02] 
 grounds the common human emotions interms of parameters of cognitive subsystems concerned with action, perception and memory. Cai Zhenhua's 2011 PhD thesis [CGZ+11] explored 
-the implementation of this model in OpenCog Classic, in the context of simple virtual agentsexploring a 3D simulation world. We have also connected this model with Schrerer's Component-Process Model of emotion [Sch09], in the context of guiding implementation of emotion models for humanoid robots and avatars [DG23]
+the implementation of this model in OpenCog Classic, in the context of simple virtual agents exploring a 3D simulation world. We have also connected this model with Schrerer's Component-Process Model of emotion [Sch09], in the context of guiding implementation of emotion models for humanoid robots and avatars [DG23]
 
 While in some ways crude and somewhat oversimplified, we believe this line of development 
 • Adequately explains the connection between emotions and other aspects of a cognitive system 
@@ -977,7 +970,9 @@ Creativity in CogPrime, in an art, literature, mathematics, science, or social o
 
 • The sort of reflective self-understanding that people have much more of than dogs, dogs have more of than worms, adults have much more of than babies, etc. 
 
-• Qualia – the raw, subjective feeling of being aware Basicawareness/responsivenesstotheenvironmentofthesortthatarguablyeveryelementaryparticledisplays 
+• Qualia – the raw, subjective feeling of being aware 
+
+• Basic awareness/responsiveness to the environment of the sort that arguably every elementary particle displays 
 
 
 There are debates about whether digital computer systems can ever be conscious in the sense that people are, which are difficult to resolve scientifically given that the connection between conscious experience and physical/biological activity is not well scientifically understood yet even in humans. Ben Goertzel has proposed using brain-brain and brain-computer interfacing to investigate these issues in new ways [Goe15a].
@@ -1026,18 +1021,12 @@ General
 Intelligence" articulated 
 in 
 [Goe21d] gives 
-some reasonable tools for thinking about the spectrum of systems between something like a "Hyperon 1.0" and a mature GOLEM system. GTGI's formulation of cognitive algorithms intermsof Galois connections leverages a representation of the cognitive algorithms as special cases of a "Combinatory-Operation-Based Function Optimization" (COFO) 
+some reasonable tools for thinking about the spectrum of systems between something like a "Hyperon 1.0" and a mature GOLEM system. GTGI's formulation of cognitive algorithms in terms of Galois connections leverages a representation of the cognitive algorithms as special cases of a "Combinatory-Operation-Based Function Optimization" (COFO) 
 process 
 as 
 roughly 
 depicted 
-in 
-Figure 
-21. 
-This sort of process can be carried out with great precision if one has closer-to-infinite compute resources, and then in various more or less heuristic ways if one has currently-realistic compute resources 
-– where human-like intelligence then corresponds to a particular network of heuristicsthat are especially valuable in historically human-relevant environments. Looking at how COFO works when one has tremendously but not insanely more compute resources is interesting and could give insights into potential continuous paths of evolution between HCAGI and radical ASI. This relatestothethoughtsinthearticle Robust Cognitive Strategies for Resource-Rich Minds [Goe], 
-which 
-explores 
+in Figure 21. This sort of process can be carried out with great precision if one has closer-to-infinite compute resources, and then in various more or less heuristic ways if one has currently-realistic compute resources – where human-like intelligence then corresponds to a particular network of heuristics that are especially valuable in historically human-relevant environments. Looking at how COFO works when one has tremendously but not insanely more compute resources is interesting and could give insights into potential continuous paths of evolution between HCAGI and radical ASI. This relates to the thoughts in the article Robust Cognitive Strategies for Resource-Rich Minds [Goe], which explores 
 cognitive 
 strategies like 
 • Statistically sampling from neighboring possible worlds in the multiverse. 
@@ -1182,6 +1171,6 @@ There is much to be learned here, and the spirit and ethics of the groups of hum
 6 Concluding Remarks 
 It appears to us that we have an extraordinary opportunity in the next (let's say) 3-10 years to achieve human-level AGI. While the exact timing is uncertain, it seems at least plausible that building a large-scale Hyperon system and allowing it to learn via interacting with it in a suitable variety of application areas could lead to human-level general intelligence.
 And as we have reviewed above, one thing we can plausibly teach a Hyperon system to do is design and write software code. LLMs are already passable at this in simple contexts; Hyperon is designed to augment this capability with deeper creativity and more capable multi-stage reasoning. Once we have a system that can design and write code well enough to improve upon itself and write subsequent versions, we enter a realm that could lead to a full-on intelligence explosion and Technological Singularity.
-While we are not yet at a point of having an AGI capable of rapidly self-modifying itselftoward Singularity, nevertheless, Hyperon development is currently at a very interesting stage. We have preliminary versions of a MeTTa interpreter and Distributed Atomspace, enabling experimentation and development. And as we've noted, alpha versions of these are currently tentatively scheduled for the end of Q1 2024.
+While we are not yet at a point of having an AGI capable of rapidly self-modifying itself toward Singularity, nevertheless, Hyperon development is currently at a very interesting stage. We have preliminary versions of a MeTTa interpreter and Distributed Atomspace, enabling experimentation and development. And as we've noted, alpha versions of these are currently tentatively scheduled for the end of Q1 2024.
 While the system's scalability is still a work in progress, and comprehensive tools and documentation are lacking, these are all on the roadmap and coming fairly soon. Upon launch of the alpha, we are extremely eager to involve more individuals in the open-source community, whether they are experienced AGI researchers or dedicated AI or application developers. The potential for rapid advancement toward true, beneficial AGI is enormous. 
 Hyperon and CogPrime are complex designs and fully understanding them is a work in progress for all of us. Our aim here has been to outline the highlights, and hopefully to pique the reader's interest in exploring more deeply, for example in the documents, videos and code linked from http//hyperon.opencog.org. 
