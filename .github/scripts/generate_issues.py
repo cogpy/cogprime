@@ -663,6 +663,20 @@ The meta-strategic system should continuously improve the system's ability to se
         return success_count == total_count
 
 
+def str_to_bool(value):
+    """Convert string to boolean value."""
+    if isinstance(value, bool):
+        return value
+    if not isinstance(value, str):
+        raise argparse.ArgumentTypeError(f'Boolean value expected, got: {value}')
+    if value.lower() in ('true', '1', 'yes', 'y'):
+        return True
+    elif value.lower() in ('false', '0', 'no', 'n'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError(f'Boolean value expected, got: {value}')
+
+
 def main():
     """Main entry point for the issue generator."""
     
@@ -672,7 +686,7 @@ def main():
                        help="Phase to generate issues for")
     parser.add_argument("--prefix", default="", 
                        help="Prefix for issue titles")
-    parser.add_argument("--dry-run", type=bool, default=False,
+    parser.add_argument("--dry-run", type=str_to_bool, default=False,
                        help="Dry run mode - don't actually create issues")
     parser.add_argument("--token", required=True,
                        help="GitHub API token")
