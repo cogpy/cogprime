@@ -92,6 +92,7 @@ public:
      * @return Computed dynamic priority
      */
     float calculate_dynamic_priority(const std::string& goal_name) const;
+
     
     /**
      * @brief Get goal by name
@@ -132,6 +133,9 @@ public:
     void clear();
 
 private:
+    static constexpr float URGENCY_SCALING_FACTOR = 2.0f;
+    static constexpr size_t MAX_HIERARCHY_DEPTH = 100;
+    
     std::unordered_map<std::string, Goal> goals_;
     std::vector<std::string> active_goals_;
     std::vector<std::string> completed_goals_;

@@ -53,6 +53,9 @@ public:
     
     /**
      * @brief Retrieve k most similar memories to query
+     * 
+     * Note: This method modifies access counts for tracking purposes.
+     * 
      * @param query Query vector
      * @param k Number of memories to retrieve
      * @return Vector of memory indices sorted by relevance

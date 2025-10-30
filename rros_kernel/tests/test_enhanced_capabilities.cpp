@@ -81,6 +81,10 @@ bool test_memory_consolidation() {
     
     MemoryConsolidator consolidator(512, 50, 0.7f);
     
+    // Use seeded random for reproducible test
+    static std::mt19937 test_rng(123);
+    std::uniform_real_distribution<float> noise_dist(0.0f, 0.02f);
+    
     // Store similar memories
     auto base_memory = generate_random_vector(512);
     size_t initial_stores = 20;
@@ -89,7 +93,7 @@ bool test_memory_consolidation() {
         // Create similar memories with small variations
         auto memory = base_memory;
         for (size_t j = 0; j < memory.size(); ++j) {
-            memory[j] += (rand() % 20) / 1000.0f;  // Very small noise for high similarity
+            memory[j] += noise_dist(test_rng);  // Very small noise for high similarity
         }
         float importance = 0.5f + i * 0.01f;
         consolidator.store_memory(memory, importance);
@@ -195,6 +199,8 @@ bool test_goal_hierarchy_planning() {
 bool test_dynamic_resource_allocation() {
     print_test_header("Dynamic Resource Allocation");
     
+    constexpr float FLOAT_TOLERANCE = 0.01f;
+    
     DynamicResourceAllocator allocator(100.0f);
     
     print_metric("Initial resources", allocator.get_available_resources());
@@ -231,7 +237,7 @@ bool test_dynamic_resource_allocation() {
     assert(allocator.get_utilization() > 0.0f);
     assert(optimal.size() == 3);
     // The optimal allocation should use available resources efficiently
-    assert(total_optimal > 0.0f && total_optimal <= allocator.get_available_resources() + 0.01f);
+    assert(total_optimal > 0.0f && total_optimal <= allocator.get_available_resources() + FLOAT_TOLERANCE);
     
     print_pass("Dynamic resource allocation passed");
     return true;

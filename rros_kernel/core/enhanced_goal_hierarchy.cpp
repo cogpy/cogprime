@@ -118,7 +118,7 @@ float EnhancedGoalHierarchy::calculate_dynamic_priority(const std::string& goal_
     
     // Factor in urgency (deadline proximity)
     float urgency = calculate_urgency(goal);
-    dynamic_priority += urgency * 2.0f;  // Urgency can significantly boost priority
+    dynamic_priority += urgency * URGENCY_SCALING_FACTOR;  // Urgency can significantly boost priority
     
     // Factor in parent goal importance
     if (!goal.parent_goal.empty()) {
@@ -229,13 +229,15 @@ size_t EnhancedGoalHierarchy::get_goal_depth(const std::string& goal_name) const
     size_t depth = 0;
     std::string current = goal_name;
     
-    // Traverse up the hierarchy
+    // Traverse up the hierarchy with cycle detection
     while (!goals_.at(current).parent_goal.empty()) {
         depth++;
         current = goals_.at(current).parent_goal;
         
-        // Prevent infinite loops
-        if (depth > 100) break;
+        // Prevent infinite loops from circular dependencies
+        if (depth > MAX_HIERARCHY_DEPTH) {
+            break;
+        }
     }
     
     return depth;

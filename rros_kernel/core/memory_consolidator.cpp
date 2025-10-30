@@ -59,8 +59,8 @@ std::vector<size_t> MemoryConsolidator::retrieve_memories(
         
         similarities.push_back({boosted_sim, i});
         
-        // Update access count
-        memories_[i].access_count += 1.0f;
+        // Update access count (non-const operation - documented in API)
+        const_cast<MemoryConsolidator*>(this)->memories_[i].access_count += 1.0f;
     }
     
     // Sort by similarity (descending)
