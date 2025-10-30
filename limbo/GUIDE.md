@@ -46,7 +46,7 @@ This guide provides comprehensive documentation for the OpenCog implementation i
 
 ### AtomSpace Module
 
-**File**: `atomspace.b`, `atomspace.m`
+**File**: `opencog/atomspace.b`, `opencog/atomspace.m`
 
 Core hypergraph knowledge representation.
 
@@ -92,7 +92,7 @@ AtomSpace: adt {
 
 ### Perception Module
 
-**File**: `perception.b`, `perception.m`
+**File**: `opencog/perception.b`, `opencog/perception.m`
 
 Handles sensory processing and attention allocation.
 
@@ -115,7 +115,7 @@ PerceptionModule: adt {
 
 ### Reasoning Module
 
-**File**: `reasoning.b`, `reasoning.m`
+**File**: `opencog/reasoning.b`, `opencog/reasoning.m`
 
 Pattern recognition, inference, and memory management.
 
@@ -137,7 +137,7 @@ ReasoningModule: adt {
 
 ### Action Module
 
-**File**: `action.b`, `action.m`
+**File**: `opencog/action.b`, `opencog/action.m`
 
 Action selection and goal-directed behavior.
 
@@ -159,7 +159,7 @@ ActionModule: adt {
 
 ### Learning Module
 
-**File**: `learning.b`, `learning.m`
+**File**: `opencog/learning.b`, `opencog/learning.m`
 
 Experience-based learning and skill acquisition.
 
@@ -181,7 +181,7 @@ LearningModule: adt {
 
 ### Cognitive Core Module
 
-**File**: `cogcore.b`, `cogcore.m`
+**File**: `opencog/cogcore.b`, `opencog/cogcore.m`
 
 Integrated cognitive architecture.
 
@@ -315,12 +315,12 @@ Use the existing `node9_atomspace_bridge.py` as a reference for bridging:
 Requires Limbo compiler (Inferno or compatible):
 
 ```bash
-limbo atomspace.b
-limbo perception.b
-limbo reasoning.b
-limbo action.b
-limbo learning.b
-limbo cogcore.b
+limbo opencog/atomspace.b
+limbo opencog/perception.b
+limbo opencog/reasoning.b
+limbo opencog/action.b
+limbo opencog/learning.b
+limbo opencog/cogcore.b
 ```
 
 ### Testing

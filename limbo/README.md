@@ -69,22 +69,27 @@ Integrates all modules into a unified cognitive cycle:
 ## File Structure
 
 ```
-src/limbo/
-├── atomspace.b         # AtomSpace implementation
-├── atomspace.m         # AtomSpace module interface
-├── perception.b        # Perception module implementation
-├── perception.m        # Perception module interface
-├── reasoning.b         # Reasoning module implementation
-├── reasoning.m         # Reasoning module interface
-├── action.b            # Action module implementation
-├── action.m            # Action module interface
-├── learning.b          # Learning module implementation
-├── learning.m          # Learning module interface
-├── cogcore.b           # Cognitive core implementation
-├── cogcore.m           # Cognitive core interface
-├── README.md           # This file
-└── examples/           # Example programs
-    └── simple_agent.b  # Simple cognitive agent example
+limbo/
+├── opencog/             # Core OpenCog implementation
+│   ├── atomspace.b      # AtomSpace implementation
+│   ├── atomspace.m      # AtomSpace module interface
+│   ├── perception.b     # Perception module implementation
+│   ├── perception.m     # Perception module interface
+│   ├── reasoning.b      # Reasoning module implementation
+│   ├── reasoning.m      # Reasoning module interface
+│   ├── action.b         # Action module implementation
+│   ├── action.m         # Action module interface
+│   ├── learning.b       # Learning module implementation
+│   ├── learning.m       # Learning module interface
+│   ├── cogcore.b        # Cognitive core implementation
+│   └── cogcore.m        # Cognitive core interface
+├── examples/            # Example programs
+│   └── simple_agent.b   # Simple cognitive agent example
+├── tests/               # Unit tests
+│   └── test_atomspace.b # AtomSpace module tests
+├── README.md            # This file
+├── Makefile             # Build system
+└── build.sh             # Build script
 ```
 
 ## Building
@@ -93,12 +98,12 @@ To compile the Limbo modules (requires Inferno or compatible Limbo compiler):
 
 ```bash
 # Compile modules
-limbo atomspace.b
-limbo perception.b
-limbo reasoning.b
-limbo action.b
-limbo learning.b
-limbo cogcore.b
+limbo opencog/atomspace.b
+limbo opencog/perception.b
+limbo opencog/reasoning.b
+limbo opencog/action.b
+limbo opencog/learning.b
+limbo opencog/cogcore.b
 
 # Compile examples
 cd examples
