@@ -1,5 +1,6 @@
 #include "rros_kernel.hpp"
 #include "relevance_engine.hpp"
+#include "relevance_optimizer.hpp"
 #include "attention_manager.hpp"
 #include "memory_core.hpp"
 #include "meta_cognitive_monitor.hpp"
@@ -57,6 +58,7 @@ RROSKernel::~RROSKernel() = default;
 
 void RROSKernel::initialize_subsystems() {
     relevance_engine_ = std::make_unique<RelevanceEngine>(config_);
+    relevance_optimizer_ = std::make_unique<RelevanceOptimizer>(config_);
     attention_manager_ = std::make_unique<AttentionManager>(config_);
     memory_core_ = std::make_unique<MemoryCore>(config_);
     episode_processor_ = std::make_unique<EpisodeProcessor>(config_);
@@ -176,6 +178,7 @@ void RROSKernel::update_config(const std::unordered_map<std::string, float>& con
     
     // Update subsystem configurations
     relevance_engine_->update_config(config_);
+    relevance_optimizer_->update_config(config_);
     attention_manager_->update_config(config_);
     memory_core_->update_config(config_);
     episode_processor_->update_config(config_);
@@ -190,6 +193,7 @@ void RROSKernel::reset() {
     
     // Reset subsystems
     relevance_engine_->reset();
+    relevance_optimizer_->reset();
     attention_manager_->reset();
     memory_core_->reset();
     episode_processor_->reset();
@@ -373,6 +377,17 @@ uint32_t RROSKernel::detect_cognitive_biases() {
 void RROSKernel::enable_self_optimization(bool enabled) {
     std::lock_guard<std::mutex> lock(state_mutex_);
     self_optimizer_->set_autonomous_mode(enabled);
+}
+
+// Relevance optimization interfaces
+
+RelevanceOptimizer& RROSKernel::get_relevance_optimizer() {
+    return *relevance_optimizer_;
+}
+
+std::unordered_map<std::string, float> RROSKernel::get_optimization_metrics() const {
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    return relevance_optimizer_->get_metrics();
 }
 
 } // namespace rros

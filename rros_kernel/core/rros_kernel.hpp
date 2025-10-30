@@ -13,6 +13,7 @@ namespace rros {
 
 // Forward declarations
 class RelevanceEngine;
+class RelevanceOptimizer;
 class AttentionManager;
 class MemoryCore;
 class EpisodeProcessor;
@@ -255,10 +256,25 @@ public:
      * @param enabled True to enable, false to disable
      */
     void enable_self_optimization(bool enabled);
+    
+    // Relevance optimization interfaces
+    
+    /**
+     * @brief Get the relevance optimizer for direct access
+     * @return Reference to the relevance optimizer
+     */
+    RelevanceOptimizer& get_relevance_optimizer();
+    
+    /**
+     * @brief Get optimization metrics from relevance optimizer
+     * @return Optimization performance metrics
+     */
+    std::unordered_map<std::string, float> get_optimization_metrics() const;
 
 private:
     // Core subsystems
     std::unique_ptr<RelevanceEngine> relevance_engine_;
+    std::unique_ptr<RelevanceOptimizer> relevance_optimizer_;
     std::unique_ptr<AttentionManager> attention_manager_;
     std::unique_ptr<MemoryCore> memory_core_;
     std::unique_ptr<EpisodeProcessor> episode_processor_;
