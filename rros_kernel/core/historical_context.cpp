@@ -137,14 +137,56 @@ size_t HistoricalContextSystem::learn_temporal_rules(
                 const auto& test2 = temporal_knowledge_->get_event(j + 1);
                 const auto& test3 = temporal_knowledge_->get_event(j + 2);
                 
-                // Check if antecedent pattern matches
-                bool antecedent_match = true;
-                // Simplified matching - in practice, use more sophisticated similarity
+                // Check if antecedent pattern matches using cosine similarity
+                float sim1 = 0.0f, sim2 = 0.0f;
+                
+                if (!event1.state_vector.empty() && !test1.state_vector.empty()) {
+                    float dot = 0.0f, norm1 = 0.0f, norm2 = 0.0f;
+                    size_t min_size = std::min(event1.state_vector.size(), test1.state_vector.size());
+                    for (size_t k = 0; k < min_size; ++k) {
+                        dot += event1.state_vector[k] * test1.state_vector[k];
+                        norm1 += event1.state_vector[k] * event1.state_vector[k];
+                        norm2 += test1.state_vector[k] * test1.state_vector[k];
+                    }
+                    if (norm1 > 0 && norm2 > 0) {
+                        sim1 = dot / (std::sqrt(norm1) * std::sqrt(norm2));
+                    }
+                }
+                
+                if (!event2.state_vector.empty() && !test2.state_vector.empty()) {
+                    float dot = 0.0f, norm1 = 0.0f, norm2 = 0.0f;
+                    size_t min_size = std::min(event2.state_vector.size(), test2.state_vector.size());
+                    for (size_t k = 0; k < min_size; ++k) {
+                        dot += event2.state_vector[k] * test2.state_vector[k];
+                        norm1 += event2.state_vector[k] * event2.state_vector[k];
+                        norm2 += test2.state_vector[k] * test2.state_vector[k];
+                    }
+                    if (norm1 > 0 && norm2 > 0) {
+                        sim2 = dot / (std::sqrt(norm1) * std::sqrt(norm2));
+                    }
+                }
+                
+                bool antecedent_match = (sim1 > 0.8f && sim2 > 0.8f);
                 
                 if (antecedent_match) {
                     total_opportunities++;
+                    
                     // Check if consequent follows
-                    bool consequent_match = true; // Simplified
+                    float sim3 = 0.0f;
+                    if (!event3.state_vector.empty() && !test3.state_vector.empty()) {
+                        float dot = 0.0f, norm1 = 0.0f, norm2 = 0.0f;
+                        size_t min_size = std::min(event3.state_vector.size(), test3.state_vector.size());
+                        for (size_t k = 0; k < min_size; ++k) {
+                            dot += event3.state_vector[k] * test3.state_vector[k];
+                            norm1 += event3.state_vector[k] * event3.state_vector[k];
+                            norm2 += test3.state_vector[k] * test3.state_vector[k];
+                        }
+                        if (norm1 > 0 && norm2 > 0) {
+                            sim3 = dot / (std::sqrt(norm1) * std::sqrt(norm2));
+                        }
+                    }
+                    
+                    bool consequent_match = (sim3 > 0.8f);
                     if (consequent_match) {
                         support_count++;
                     }

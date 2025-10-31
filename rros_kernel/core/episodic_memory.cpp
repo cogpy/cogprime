@@ -35,6 +35,8 @@ size_t EpisodicMemorySystem::encode_memory(
     if (memories_.size() >= capacity_) {
         size_t to_remove = find_least_important_memory();
         if (to_remove < memories_.size()) {
+            size_t memory_id = memories_[to_remove].memory_id;
+            
             // Remove from temporal index
             uint64_t time_bin = compute_time_bin(memories_[to_remove].encoding_time);
             auto& index = temporal_indices_[time_bin];
@@ -43,7 +45,17 @@ size_t EpisodicMemorySystem::encode_memory(
                 index.memory_ids.end()
             );
             
+            // Remove from ID mapping
+            memory_id_to_index_.erase(memory_id);
+            
             memories_.erase(memories_.begin() + to_remove);
+            
+            // Update remaining indices
+            for (auto& pair : memory_id_to_index_) {
+                if (pair.second > to_remove) {
+                    pair.second--;
+                }
+            }
         }
     }
     
@@ -59,6 +71,7 @@ size_t EpisodicMemorySystem::encode_memory(
     
     size_t memory_idx = memories_.size();
     memories_.push_back(memory);
+    memory_id_to_index_[memory.memory_id] = memory_idx;
     
     // Update temporal index
     update_temporal_index(memory_idx, memory.encoding_time);
@@ -282,23 +295,21 @@ void EpisodicMemorySystem::tag_emotion(
     const std::string& emotion,
     float intensity
 ) {
-    for (auto& memory : memories_) {
-        if (memory.memory_id == memory_id) {
-            memory.emotional_tags[emotion] = std::max(0.0f, std::min(1.0f, intensity));
-            // Emotional memories are more vivid
-            memory.vividness = std::min(1.0f, memory.vividness + intensity * 0.1f);
-            return;
-        }
+    auto it = memory_id_to_index_.find(memory_id);
+    if (it != memory_id_to_index_.end()) {
+        auto& memory = memories_[it->second];
+        memory.emotional_tags[emotion] = std::max(0.0f, std::min(1.0f, intensity));
+        // Emotional memories are more vivid
+        memory.vividness = std::min(1.0f, memory.vividness + intensity * 0.1f);
     }
 }
 
 const EpisodicMemory& EpisodicMemorySystem::get_memory(size_t memory_id) const {
-    for (const auto& memory : memories_) {
-        if (memory.memory_id == memory_id) {
-            return memory;
-        }
+    auto it = memory_id_to_index_.find(memory_id);
+    if (it == memory_id_to_index_.end()) {
+        throw std::out_of_range("Memory ID not found");
     }
-    throw std::out_of_range("Memory ID not found");
+    return memories_[it->second];
 }
 
 float EpisodicMemorySystem::compute_content_similarity(
@@ -420,6 +431,7 @@ std::unordered_map<std::string, float> EpisodicMemorySystem::get_statistics() co
 
 void EpisodicMemorySystem::clear() {
     memories_.clear();
+    memory_id_to_index_.clear();
     temporal_indices_.clear();
     next_memory_id_ = 0;
 }

@@ -34,7 +34,23 @@ size_t TemporalKnowledge::add_event(
                 return a.importance < b.importance;
             });
         if (min_it != events_.end()) {
+            // Remove from ID mapping
+            size_t removed_index = std::distance(events_.begin(), min_it);
+            // Find and remove the ID mapping
+            for (auto it = event_id_to_index_.begin(); it != event_id_to_index_.end(); ++it) {
+                if (it->second == removed_index) {
+                    event_id_to_index_.erase(it);
+                    break;
+                }
+            }
             events_.erase(min_it);
+            
+            // Update remaining indices
+            for (auto& pair : event_id_to_index_) {
+                if (pair.second > removed_index) {
+                    pair.second--;
+                }
+            }
         }
     }
     
@@ -44,9 +60,19 @@ size_t TemporalKnowledge::add_event(
     event.importance = std::max(0.0f, std::min(1.0f, importance));
     
     size_t event_id = next_event_id_++;
+    size_t event_index = events_.size();
     events_.push_back(event);
+    event_id_to_index_[event_id] = event_index;
     
     return event_id;
+}
+
+size_t TemporalKnowledge::get_event_index(size_t event_id) const {
+    auto it = event_id_to_index_.find(event_id);
+    if (it == event_id_to_index_.end()) {
+        throw std::out_of_range("Invalid event ID");
+    }
+    return it->second;
 }
 
 void TemporalKnowledge::add_causal_relation(
@@ -55,9 +81,9 @@ void TemporalKnowledge::add_causal_relation(
     float strength,
     float confidence
 ) {
-    if (cause_id >= events_.size() || effect_id >= events_.size()) {
-        throw std::out_of_range("Invalid event ID in causal relation");
-    }
+    // Validate event IDs exist
+    size_t cause_idx = get_event_index(cause_id);
+    size_t effect_idx = get_event_index(effect_id);
     
     CausalRelation relation;
     relation.cause_event = cause_id;
@@ -66,16 +92,14 @@ void TemporalKnowledge::add_causal_relation(
     relation.confidence = std::max(0.0f, std::min(1.0f, confidence));
     
     // Calculate time lag
-    if (effect_id < events_.size() && cause_id < events_.size()) {
-        uint64_t cause_time = events_[cause_id].timestamp;
-        uint64_t effect_time = events_[effect_id].timestamp;
-        relation.time_lag = (effect_time > cause_time) ? 
-            (effect_time - cause_time) : 0;
-    }
+    uint64_t cause_time = events_[cause_idx].timestamp;
+    uint64_t effect_time = events_[effect_idx].timestamp;
+    relation.time_lag = (effect_time > cause_time) ? 
+        (effect_time - cause_time) : 0;
     
     // Update event causal links
-    events_[cause_id].causal_successors.push_back(effect_id);
-    events_[effect_id].causal_predecessors.push_back(cause_id);
+    events_[cause_idx].causal_successors.push_back(effect_id);
+    events_[effect_idx].causal_predecessors.push_back(cause_id);
     
     causal_relations_.push_back(relation);
 }
@@ -113,10 +137,8 @@ std::vector<size_t> TemporalKnowledge::get_events_in_range(
 }
 
 const TemporalEvent& TemporalKnowledge::get_event(size_t event_id) const {
-    if (event_id >= events_.size()) {
-        throw std::out_of_range("Invalid event ID");
-    }
-    return events_[event_id];
+    size_t index = get_event_index(event_id);
+    return events_[index];
 }
 
 std::vector<CausalRelation> TemporalKnowledge::get_causal_predecessors(
@@ -161,13 +183,14 @@ size_t TemporalKnowledge::create_abstraction(
     abstraction.component_events = event_ids;
     
     // Compute abstract features by averaging event states
-    size_t feature_dim = events_[event_ids[0]].state_vector.size();
+    size_t first_idx = get_event_index(event_ids[0]);
+    size_t feature_dim = events_[first_idx].state_vector.size();
     abstraction.abstract_features.resize(feature_dim, 0.0f);
     
     for (size_t event_id : event_ids) {
-        if (event_id >= events_.size()) continue;
+        size_t idx = get_event_index(event_id);
         
-        const auto& event = events_[event_id];
+        const auto& event = events_[idx];
         for (size_t i = 0; i < feature_dim && i < event.state_vector.size(); ++i) {
             abstraction.abstract_features[i] += event.state_vector[i];
         }
@@ -181,9 +204,9 @@ size_t TemporalKnowledge::create_abstraction(
     // Compute coherence based on variance
     float variance = 0.0f;
     for (size_t event_id : event_ids) {
-        if (event_id >= events_.size()) continue;
+        size_t idx = get_event_index(event_id);
         
-        const auto& event = events_[event_id];
+        const auto& event = events_[idx];
         for (size_t i = 0; i < feature_dim && i < event.state_vector.size(); ++i) {
             float diff = event.state_vector[i] - abstraction.abstract_features[i];
             variance += diff * diff;

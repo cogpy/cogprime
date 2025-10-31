@@ -167,6 +167,7 @@ private:
     uint64_t time_bin_size_;
     
     std::vector<EpisodicMemory> memories_;
+    std::unordered_map<size_t, size_t> memory_id_to_index_; // Map memory ID to vector index
     std::unordered_map<uint64_t, TemporalIndex> temporal_indices_;
     
     size_t next_memory_id_;

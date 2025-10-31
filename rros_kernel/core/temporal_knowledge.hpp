@@ -173,6 +173,7 @@ private:
     size_t pattern_capacity_;
     
     std::vector<TemporalEvent> events_;
+    std::unordered_map<size_t, size_t> event_id_to_index_; // Map event ID to vector index
     std::vector<TemporalPattern> patterns_;
     std::vector<CausalRelation> causal_relations_;
     std::vector<TemporalAbstraction> abstractions_;
@@ -186,6 +187,7 @@ private:
         const std::vector<std::vector<float>>& seq1,
         const std::vector<std::vector<float>>& seq2
     ) const;
+    size_t get_event_index(size_t event_id) const;
 };
 
 } // namespace rros
