@@ -531,15 +531,24 @@ int main() {
     int total = 0;
     
     // Run all tests
-    if (test_multi_scale_assessment()) ++passed; ++total;
-    if (test_adaptive_thresholds()) ++passed; ++total;
-    if (test_attention_guidance()) ++passed; ++total;
-    if (test_memory_guidance()) ++passed; ++total;
-    if (test_knowledge_integration()) ++passed; ++total;
-    if (test_learning_adaptation()) ++passed; ++total;
-    if (test_relevance_propagation()) ++passed; ++total;
-    if (test_action_coupling()) ++passed; ++total;
-    if (test_contextual_relevance_identification()) ++passed; ++total;
+    if (test_multi_scale_assessment()) ++passed;
+    ++total;
+    if (test_adaptive_thresholds()) ++passed;
+    ++total;
+    if (test_attention_guidance()) ++passed;
+    ++total;
+    if (test_memory_guidance()) ++passed;
+    ++total;
+    if (test_knowledge_integration()) ++passed;
+    ++total;
+    if (test_learning_adaptation()) ++passed;
+    ++total;
+    if (test_relevance_propagation()) ++passed;
+    ++total;
+    if (test_action_coupling()) ++passed;
+    ++total;
+    if (test_contextual_relevance_identification()) ++passed;
+    ++total;
     
     // Summary
     std::cout << "\n" << std::string(70, '=') << "\n";

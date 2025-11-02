@@ -175,7 +175,7 @@ AttentionDirective RelevanceRealizationSystem::guide_attention(
     
     directive.focus_weights.resize(num_features, 0.1f);
     
-    // Boost critical features
+    // Boost critical features (with bounds checking)
     for (size_t idx : relevance.critical_features) {
         if (idx < directive.focus_weights.size()) {
             directive.focus_weights[idx] = 1.0f;
@@ -643,12 +643,15 @@ float RelevanceRealizationSystem::compute_conceptual_relevance(const std::vector
         for (float& val : normalized) {
             val /= sum;
         }
+    } else {
+        // Handle zero or negative sum
+        return 0.0f;
     }
     
     float entropy = 0.0f;
     for (float p : normalized) {
         if (p > 0.0f) {
-            entropy -= p * std::log(p + 1e-10f);
+            entropy -= p * std::log(p);
         }
     }
     

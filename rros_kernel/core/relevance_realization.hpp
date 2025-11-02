@@ -24,9 +24,9 @@ namespace rros {
  */
 enum class TimeScale {
     IMMEDIATE,      // < 100ms - sensory processing
-    SHORT_TERM,     // 100ms - 5s - working memory
-    MEDIUM_TERM,    // 5s - 5min - task context
-    LONG_TERM,      // > 5min - goals and knowledge
+    SHORT_TERM,     // 100ms - 4.99s - working memory
+    MEDIUM_TERM,    // 5s - 4min 59s - task context
+    LONG_TERM,      // 5min - hours - goals and knowledge
     HISTORICAL      // Days/weeks - learning patterns
 };
 
