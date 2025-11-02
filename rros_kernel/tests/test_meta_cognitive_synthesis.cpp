@@ -23,7 +23,7 @@ bool test_initialization() {
     try {
         std::unordered_map<std::string, float> config = {
             {"learning_rate", 0.01f},
-            {"max_history_size", 1000.0f}
+            {"max_history_size", 1000}
         };
         
         rros::MetaCognitiveSynthesis synthesis(config);

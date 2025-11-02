@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <string>
 #include <functional>
+#include <chrono>
+#include <mutex>
 #include "meta_cognitive_monitor.hpp"
 
 namespace rros {
