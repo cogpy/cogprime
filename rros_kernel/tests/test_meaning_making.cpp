@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <cassert>
 #include <cmath>
+#include <chrono>
 
 using namespace rros::meaning;
 

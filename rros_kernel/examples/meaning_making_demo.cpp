@@ -151,6 +151,7 @@ int main() {
             case MeaningLevel::NARRATIVE: level_name = "NARRATIVE"; break;
             case MeaningLevel::ABSTRACT: level_name = "ABSTRACT"; break;
             case MeaningLevel::META: level_name = "META"; break;
+            default: level_name = "UNKNOWN"; break;
         }
         std::cout << "  " << level_name << ": " << concepts.size() << " concepts\n";
     }
