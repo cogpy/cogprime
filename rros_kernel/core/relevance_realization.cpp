@@ -280,9 +280,20 @@ IntegrationPriority RelevanceRealizationSystem::prioritize_knowledge_integration
     
     // Assess relevance of each knowledge item
     for (const auto& item : knowledge_items) {
+        if (item.empty() || current_knowledge.empty()) {
+            // Empty items or knowledge get default mid-range relevance
+            priority.knowledge_relevance.push_back(0.5f);
+            continue;
+        }
+        
         // Compute similarity to current knowledge (lower = more novel)
         float similarity = 0.0f;
         size_t min_size = std::min(item.size(), current_knowledge.size());
+        if (min_size == 0) {
+            priority.knowledge_relevance.push_back(0.5f);
+            continue;
+        }
+        
         for (size_t i = 0; i < min_size; ++i) {
             similarity += item[i] * current_knowledge[i];
         }
@@ -422,9 +433,18 @@ ActionCoupling RelevanceRealizationSystem::couple_to_action(
     
     // Assess relevance of each action
     for (const auto& action : available_actions) {
+        if (state.empty() || action.empty()) {
+            coupling.action_relevance.push_back(0.0f);
+            continue;
+        }
+        
         // Compute expected state-action relevance
         float action_relevance = 0.0f;
         size_t min_size = std::min(state.size(), action.size());
+        if (min_size == 0) {
+            coupling.action_relevance.push_back(0.0f);
+            continue;
+        }
         
         for (size_t i = 0; i < min_size; ++i) {
             action_relevance += state[i] * action[i];
@@ -546,8 +566,12 @@ float RelevanceRealizationSystem::compute_medium_term_relevance(
     
     float max_alignment = 0.0f;
     for (const auto& goal : goals) {
+        if (goal.empty()) continue;
+        
         float alignment = 0.0f;
         size_t min_size = std::min(input.size(), goal.size());
+        if (min_size == 0) continue;
+        
         for (size_t i = 0; i < min_size; ++i) {
             alignment += input[i] * goal[i];
         }
@@ -566,17 +590,23 @@ float RelevanceRealizationSystem::compute_long_term_relevance(
     if (input.empty() || goals.empty()) return 0.0f;
     
     float cumulative_alignment = 0.0f;
+    size_t valid_goals = 0;
     for (const auto& goal : goals) {
+        if (goal.empty()) continue;
+        
         float alignment = 0.0f;
         size_t min_size = std::min(input.size(), goal.size());
+        if (min_size == 0) continue;
+        
         for (size_t i = 0; i < min_size; ++i) {
             alignment += input[i] * goal[i];
         }
         alignment /= min_size;
         cumulative_alignment += alignment;
+        ++valid_goals;
     }
     
-    return std::min(1.0f, cumulative_alignment / goals.size());
+    return valid_goals > 0 ? std::min(1.0f, cumulative_alignment / valid_goals) : 0.0f;
 }
 
 float RelevanceRealizationSystem::compute_historical_relevance(
@@ -590,9 +620,11 @@ float RelevanceRealizationSystem::compute_historical_relevance(
     
     // Compare with historical contexts that had high actual relevance
     for (const auto& feedback : feedback_history_) {
-        if (feedback.actual_relevance > 0.6f) {
+        if (feedback.actual_relevance > 0.6f && !feedback.context_state.empty()) {
             float similarity = 0.0f;
             size_t min_size = std::min(input.size(), feedback.context_state.size());
+            if (min_size == 0) continue;
+            
             for (size_t i = 0; i < min_size; ++i) {
                 similarity += input[i] * feedback.context_state[i];
             }
