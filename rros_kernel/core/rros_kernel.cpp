@@ -8,10 +8,12 @@
 #include "confidence_estimator.hpp"
 #include "bias_detector.hpp"
 #include "self_optimizer.hpp"
+#include "resource_manager.hpp"
 #include "../episodes/episode_processor.hpp"
 #include <algorithm>
 #include <numeric>
 #include <cmath>
+#include <stdexcept>
 
 namespace rros {
 
@@ -69,6 +71,9 @@ void RROSKernel::initialize_subsystems() {
     confidence_estimator_ = std::make_unique<ConfidenceEstimator>(config_);
     bias_detector_ = std::make_unique<BiasDetector>(config_);
     self_optimizer_ = std::make_unique<SelfOptimizer>(config_);
+    
+    // Initialize resource manager
+    resource_manager_ = std::make_unique<ResourceManager>(config_);
 }
 
 CognitiveState RROSKernel::cognitive_cycle(
@@ -391,5 +396,70 @@ std::unordered_map<std::string, float> RROSKernel::get_optimization_metrics() co
     // relevance_optimizer_ is guaranteed to be initialized in constructor
     return relevance_optimizer_->get_metrics();
 }
+
+// Resource management interfaces
+
+ResourceManager& RROSKernel::get_resource_manager() {
+    // resource_manager_ is guaranteed to be initialized in constructor
+    if (!resource_manager_) {
+        throw std::runtime_error("ResourceManager not initialized");
+    }
+    return *resource_manager_;
+}
+
+std::unordered_map<std::string, float> RROSKernel::get_resource_metrics() const {
+    if (!resource_manager_) {
+        return {};
+    }
+    
+    auto metrics = resource_manager_->get_metrics();
+    auto utilization = resource_manager_->get_utilization();
+    
+    // Add utilization metrics
+    for (const auto& [type, util] : utilization) {
+        std::string key;
+        switch (type) {
+            case ResourceType::COMPUTATIONAL:
+                key = "computational_utilization";
+                break;
+            case ResourceType::MEMORY:
+                key = "memory_utilization";
+                break;
+            case ResourceType::ATTENTION:
+                key = "attention_utilization";
+                break;
+            case ResourceType::IO:
+                key = "io_utilization";
+                break;
+            case ResourceType::NETWORK:
+                key = "network_utilization";
+                break;
+        }
+        metrics[key] = util;
+    }
+    
+    return metrics;
+}
+
+bool RROSKernel::allocate_cognitive_resources(float amount, int priority) {
+    if (!resource_manager_) {
+        return false;
+    }
+    
+    ResourceRequest req("rros_kernel", ResourceType::COMPUTATIONAL, 
+                       static_cast<Priority>(priority), amount);
+    auto allocation = resource_manager_->allocate_resource(req);
+    
+    return allocation.fully_satisfied;
+}
+
+void RROSKernel::release_cognitive_resources(float amount) {
+    if (!resource_manager_) {
+        return;
+    }
+    
+    resource_manager_->release_resource("rros_kernel", ResourceType::COMPUTATIONAL, amount);
+}
+
 
 } // namespace rros

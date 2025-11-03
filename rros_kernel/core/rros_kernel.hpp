@@ -22,6 +22,7 @@ class DecisionQualityTracker;
 class ConfidenceEstimator;
 class BiasDetector;
 class SelfOptimizer;
+class ResourceManager;
 struct RelevanceResult;
 
 /**
@@ -270,6 +271,34 @@ public:
      * @return Optimization performance metrics
      */
     std::unordered_map<std::string, float> get_optimization_metrics() const;
+    
+    // Resource management interfaces
+    
+    /**
+     * @brief Get the resource manager for direct access
+     * @return Reference to the resource manager
+     */
+    ResourceManager& get_resource_manager();
+    
+    /**
+     * @brief Get resource utilization metrics
+     * @return Resource usage across all types
+     */
+    std::unordered_map<std::string, float> get_resource_metrics() const;
+    
+    /**
+     * @brief Allocate computational resources for a cognitive operation
+     * @param amount Amount of computational resources needed
+     * @param priority Priority level
+     * @return True if allocation succeeded
+     */
+    bool allocate_cognitive_resources(float amount, int priority = 2);
+    
+    /**
+     * @brief Release computational resources
+     * @param amount Amount to release
+     */
+    void release_cognitive_resources(float amount);
 
 private:
     // Core subsystems
@@ -285,6 +314,9 @@ private:
     std::unique_ptr<ConfidenceEstimator> confidence_estimator_;
     std::unique_ptr<BiasDetector> bias_detector_;
     std::unique_ptr<SelfOptimizer> self_optimizer_;
+    
+    // Resource management
+    std::unique_ptr<ResourceManager> resource_manager_;
     
     // Current state
     CognitiveState current_state_;
