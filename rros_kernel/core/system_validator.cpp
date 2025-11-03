@@ -163,6 +163,10 @@ SystemValidator::SystemValidator() {
         "Cache Hit Rate", "cache_hit_rate", 0.4f, true));
     
     // Consistency validators
+    // Note: Probability normalization validator commented out as 'uncertainty' 
+    // metric is not yet implemented in the kernel. This can be enabled when
+    // the kernel provides uncertainty estimates.
+    /*
     add_validator(std::make_shared<ConsistencyValidator>(
         "Probability Normalization",
         std::vector<std::string>{"confidence", "uncertainty"},
@@ -172,6 +176,7 @@ SystemValidator::SystemValidator() {
             return std::abs(sum - 1.0f) < 0.1f; // Allow small margin
         }
     ));
+    */
 }
 
 void SystemValidator::add_validator(std::shared_ptr<Validator> validator) {
@@ -266,6 +271,13 @@ std::string SystemValidator::generate_report_summary(const ValidationReport& rep
     return oss.str();
 }
 
+namespace {
+    // Validation severity thresholds
+    constexpr float SEVERITY_CRITICAL = 0.8f;
+    constexpr float SEVERITY_WARNING = 0.5f;
+    constexpr float SEVERITY_INFO = 0.0f;
+}
+
 bool SystemValidator::is_system_healthy(
     const std::unordered_map<std::string, float>& data) {
     
@@ -273,7 +285,7 @@ bool SystemValidator::is_system_healthy(
     
     // System is healthy if all critical validators pass
     for (const auto& result : report.results) {
-        if (!result.passed && result.severity >= 0.8f) {
+        if (!result.passed && result.severity >= SEVERITY_CRITICAL) {
             return false; // Critical validation failed
         }
     }

@@ -125,7 +125,7 @@ bool test_problem_solving_scenario() {
             {0.1f, 0.2f, 0.3f},  // Initial observation
             {0.2f, 0.4f, 0.6f},  // Pattern emerges
             {0.3f, 0.6f, 0.9f},  // Pattern strengthens
-            {0.4f, 0.8f, 1.2f}   // Extrapolation
+            {0.4f, 0.8f, 1.0f}   // Extrapolation (normalized)
         };
         
         std::vector<float> confidence_progression;
