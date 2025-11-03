@@ -262,7 +262,21 @@ void* ResourceManager::allocate_memory(size_t size, const std::string& requester
     }
     
     // Actually allocate the memory
-    void* ptr = new char[size];
+    void* ptr = nullptr;
+    try {
+        ptr = new(std::nothrow) char[size];
+        if (!ptr) {
+            // Allocation failed
+            release_resource(requester_id, ResourceType::MEMORY, 
+                           static_cast<float>(size));
+            return nullptr;
+        }
+    } catch (const std::bad_alloc&) {
+        // Allocation failed, release the resource reservation
+        release_resource(requester_id, ResourceType::MEMORY, 
+                       static_cast<float>(size));
+        return nullptr;
+    }
     
     std::lock_guard<std::mutex> lock(memory_mutex_);
     MemoryBlock block;
@@ -335,7 +349,12 @@ size_t ResourceManager::run_garbage_collection() {
             }
         }
         
-        delete[] static_cast<char*>(ptr);
+        // Delete outside the lock to avoid holding lock during deallocation
+        try {
+            delete[] static_cast<char*>(ptr);
+        } catch (...) {
+            // Catch any exceptions during deallocation
+        }
         release_resource(requester_id, ResourceType::MEMORY, static_cast<float>(size));
     }
     
@@ -867,8 +886,17 @@ std::vector<float> ResourceManager::predict_time_series(const std::vector<float>
     }
     
     // Simple moving average prediction
+    if (history.empty()) {
+        return predictions;
+    }
+    
     size_t window = std::min(size_t(10), history.size());
+    if (window == 0) {
+        return predictions;
+    }
+    
     float sum = 0.0f;
+    // Safe indexing: iterate from (size - window) to size
     for (size_t i = history.size() - window; i < history.size(); ++i) {
         sum += history[i];
     }

@@ -447,7 +447,7 @@ bool test_allocation_latency() {
     
     float avg_latency = duration.count() / 100.0f;
     
-    bool test = avg_latency < 1000.0f;  // < 1ms per allocation (requirement is 1ms total response)
+    bool test = avg_latency < 1000.0f;  // < 1ms per allocation (individual latency target)
     
     std::cout << "  Average allocation latency: " << avg_latency << " μs" << std::endl;
     

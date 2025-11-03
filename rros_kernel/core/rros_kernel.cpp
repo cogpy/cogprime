@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <numeric>
 #include <cmath>
+#include <stdexcept>
 
 namespace rros {
 
@@ -400,6 +401,9 @@ std::unordered_map<std::string, float> RROSKernel::get_optimization_metrics() co
 
 ResourceManager& RROSKernel::get_resource_manager() {
     // resource_manager_ is guaranteed to be initialized in constructor
+    if (!resource_manager_) {
+        throw std::runtime_error("ResourceManager not initialized");
+    }
     return *resource_manager_;
 }
 
