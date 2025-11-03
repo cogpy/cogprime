@@ -15,6 +15,10 @@
 
 using namespace rros;
 
+// Test constants
+constexpr double MAX_PROCESS_TIME_US = 1000.0;  // Maximum acceptable process time
+constexpr int MAX_CYCLE_TIME_US = 10000;        // Real-time requirement (10ms)
+
 void test_optimized_relevance_engine() {
     std::cout << "Testing OptimizedRelevanceEngine..." << std::endl;
     
@@ -54,7 +58,7 @@ void test_optimized_relevance_engine() {
     std::cout << "  Cache hit rate: " << (stats.cache_hit_rate * 100.0f) << "%" << std::endl;
     std::cout << "  Avg process time: " << stats.avg_process_time_us << " µs" << std::endl;
     
-    assert(stats.avg_process_time_us < 1000.0);  // Should be < 1ms
+    assert(stats.avg_process_time_us < MAX_PROCESS_TIME_US);
     
     std::cout << "  ✓ OptimizedRelevanceEngine tests passed" << std::endl;
 }
@@ -217,8 +221,8 @@ void test_real_time_operation() {
     std::cout << "    Avg: " << avg_time << " µs" << std::endl;
     std::cout << "    Max: " << max_time << " µs" << std::endl;
     
-    // Real-time requirement: <10ms (10000 µs)
-    if (max_time < 10000) {
+    // Real-time requirement check
+    if (max_time < MAX_CYCLE_TIME_US) {
         std::cout << "  ✓ Meets real-time requirement (<10ms)" << std::endl;
     } else {
         std::cout << "  ! Warning: Max time exceeds 10ms" << std::endl;
@@ -231,7 +235,7 @@ void test_real_time_operation() {
     
     std::cout << "  " << percent_under_1ms << "% of cycles <1ms" << std::endl;
     
-    assert(max_time < 10000);  // Must meet 10ms requirement
+    assert(max_time < MAX_CYCLE_TIME_US);
 }
 
 int main() {

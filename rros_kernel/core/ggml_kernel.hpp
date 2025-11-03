@@ -41,9 +41,9 @@ constexpr size_t HGFS_POOL_SIZE = 64 * 1024 * 1024;  // 64MB default pool
 /**
  * Performance targets from kernel specifications
  */
-constexpr uint64_t SCHED_TICK_TARGET_NS = 5000;      // ≤5µs scheduler tick
-constexpr uint64_t MEM_OP_TARGET_NS = 100;           // ≤100ns memory ops
-constexpr uint64_t COGNITIVE_CYCLE_TARGET_NS = 10000000;  // ≤10ms critical cycles
+constexpr uint64_t SCHED_TICK_TARGET_NS = 5000;         // ≤5µs scheduler tick
+constexpr uint64_t MEM_OP_TARGET_NS = 100;              // ≤100ns memory ops
+constexpr uint64_t COGNITIVE_CYCLE_TARGET_NS = 10'000'000;  // ≤10ms critical cycles
 
 /**
  * @struct MemoryStats

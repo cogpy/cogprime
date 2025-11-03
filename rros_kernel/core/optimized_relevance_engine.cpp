@@ -12,6 +12,9 @@
 
 namespace rros {
 
+// Default context value for missing context dimensions
+constexpr float DEFAULT_CONTEXT_VALUE = 0.3f;
+
 OptimizedRelevanceEngine::OptimizedRelevanceEngine(
     const std::unordered_map<std::string, float>& config,
     const OptimizationConfig& opt_config)
@@ -71,7 +74,7 @@ RelevanceResult OptimizedRelevanceEngine::process(
     
     // Ensure context has same dimensionality as input
     if (context_vec.empty() || context_vec.size() < input_data.size()) {
-        context_vec.resize(input_data.size(), 0.3f);  // Default context value
+        context_vec.resize(input_data.size(), DEFAULT_CONTEXT_VALUE);
     }
     
     // Compute relevance using optimized tensor operations

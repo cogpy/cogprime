@@ -13,6 +13,11 @@
 namespace rros {
 namespace ggml {
 
+// Threshold constants for adaptive relevance
+constexpr float MIN_THRESHOLD = 0.1f;
+constexpr float MAX_THRESHOLD = 0.8f;
+constexpr float THRESHOLD_BLEND_FACTOR = 0.9f;
+
 //=============================================================================
 // TensorAttention Implementation
 //=============================================================================
@@ -228,9 +233,22 @@ float TensorRelevance::compute_relevance(
         if (cache_->retrieve(key.str(), cached) && !cached.empty()) {
             return cached[0];
         }
+        
+        // Compute relevance as cosine similarity
+        float relevance = OptimizedCognitiveOps::cosine_similarity(input, context);
+        
+        // Apply threshold
+        if (relevance < current_threshold_) {
+            relevance = 0.0f;
+        }
+        
+        // Store in cache
+        cache_->store(key.str(), {relevance});
+        
+        return relevance;
     }
     
-    // Compute relevance as cosine similarity
+    // No cache path
     float relevance = OptimizedCognitiveOps::cosine_similarity(input, context);
     
     // Apply threshold
@@ -265,10 +283,11 @@ void TensorRelevance::update_threshold(const std::vector<float>& recent_scores) 
     float mean = std::accumulate(recent_scores.begin(), recent_scores.end(), 0.0f) 
                  / recent_scores.size();
     
-    current_threshold_ = 0.9f * current_threshold_ + 0.1f * mean;
+    current_threshold_ = THRESHOLD_BLEND_FACTOR * current_threshold_ + 
+                         (1.0f - THRESHOLD_BLEND_FACTOR) * mean;
     
     // Clamp to reasonable range
-    current_threshold_ = std::max(0.1f, std::min(0.8f, current_threshold_));
+    current_threshold_ = std::max(MIN_THRESHOLD, std::min(MAX_THRESHOLD, current_threshold_));
 }
 
 //=============================================================================
