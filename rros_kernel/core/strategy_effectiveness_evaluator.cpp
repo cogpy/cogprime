@@ -387,19 +387,25 @@ void StrategyEffectivenessEvaluator::train_prediction_model(
         return;
     }
     
+    // Validate that contexts and targets have the same size
+    if (training_contexts.size() != training_targets.size()) {
+        return;  // Cannot train with mismatched data
+    }
+    
+    // Validate that first context is not empty
+    if (training_contexts[0].empty()) {
+        // Use default dimension of 1 for empty contexts
+        model.weights.resize(1, 0.0f);
+    } else {
+        // Determine input dimension from first context
+        size_t input_dim = training_contexts[0].size();
+        model.weights.resize(input_dim, 0.0f);
+    }
+    
     // Simple linear regression model
     model.model_type = "linear";
     
-    // Determine input dimension
-    size_t input_dim = training_contexts[0].size();
-    if (input_dim == 0) {
-        input_dim = 1;
-    }
-    
-    // Initialize weights if needed
-    if (model.weights.size() != input_dim) {
-        model.weights.resize(input_dim, 0.0f);
-    }
+    // Initialize biases if needed
     if (model.biases.empty()) {
         model.biases.push_back(0.0f);
     }

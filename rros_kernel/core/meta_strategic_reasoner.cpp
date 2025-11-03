@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <numeric>
+#include <random>
 
 namespace rros {
 
@@ -632,8 +633,10 @@ float MetaStrategicReasoner::estimate_transfer_effectiveness(
 }
 
 bool MetaStrategicReasoner::should_explore() const {
-    // Epsilon-greedy exploration
-    float random_val = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    // Epsilon-greedy exploration using modern C++ random
+    static thread_local std::mt19937 gen(std::random_device{}());
+    static thread_local std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+    float random_val = dist(gen);
     return random_val < planning_state_.exploration_rate;
 }
 
