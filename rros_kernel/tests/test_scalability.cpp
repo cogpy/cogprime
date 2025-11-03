@@ -197,8 +197,8 @@ bool test_fault_tolerance() {
     
     // Test failover
     auto replacement = manager.initiate_failover("node2");
-    print_result(!replacement.empty() || replacement.empty(), 
-                "Failover attempted");
+    print_result(true, "Failover attempted, replacement: " + 
+                (replacement.empty() ? "none" : replacement));
     
     // Restore from checkpoint
     bool restored = manager.restore_from_checkpoint(checkpoint_id);

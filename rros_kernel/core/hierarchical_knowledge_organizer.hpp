@@ -22,8 +22,8 @@ struct HierarchicalNode {
     std::vector<float> data;                       // Node data/embedding
     float importance;                              // Node importance score
     std::unordered_map<std::string, float> attributes;  // Node attributes
-    uint64_t access_count;                         // Access frequency
-    std::chrono::high_resolution_clock::time_point last_access;
+    mutable uint64_t access_count;                 // Access frequency (mutable for stats)
+    mutable std::chrono::high_resolution_clock::time_point last_access;  // Last access time (mutable)
 };
 
 /**
@@ -430,6 +430,9 @@ void BTree<KeyType, ValueType>::split_child(
     size_t mid = BTreeNode<KeyType, ValueType>::ORDER / 2;
     
     // Move half of keys/values to new child
+    // Note: Using vector insert for clarity. For production, consider
+    // pre-allocating capacity or using a different container (e.g., std::deque)
+    // to avoid O(n) element shifting during splits.
     new_child->keys.assign(child->keys.begin() + mid, child->keys.end());
     new_child->values.assign(child->values.begin() + mid, child->values.end());
     

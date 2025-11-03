@@ -107,9 +107,9 @@ std::pair<bool, HierarchicalNode> HierarchicalKnowledgeOrganizer::get_node(
     std::lock_guard<std::mutex> lock(nodes_mutex_);
     
     if (nodes_.count(node_id)) {
-        auto& node = const_cast<HierarchicalNode&>(nodes_.at(node_id));
-        node.access_count++;
-        node.last_access = std::chrono::high_resolution_clock::now();
+        // Update access statistics (members are mutable)
+        nodes_.at(node_id).access_count++;
+        nodes_.at(node_id).last_access = std::chrono::high_resolution_clock::now();
         return {true, nodes_.at(node_id)};
     }
     

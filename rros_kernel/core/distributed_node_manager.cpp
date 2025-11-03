@@ -211,8 +211,9 @@ void DistributedNodeManager::report_task_completion(
         
         ++total_tasks_completed_;
         
-        // If all replicas completed, remove task
-        // (simplified - real implementation would track individual completions)
+        // Note: In production, should track completion per replica
+        // and only remove when all replicas complete or timeout.
+        // For now, simplified implementation removes on first completion.
         tasks_.erase(task_id);
     }
 }
