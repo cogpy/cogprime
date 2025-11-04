@@ -1,0 +1,70 @@
+graph TB
+    subgraph "🧠 CogPrime Core"
+        CC[Cognitive Core]
+        PM[Perception Module]
+        RM[Reasoning Module]
+        AM[Action Module]
+        LM[Learning Module]
+        
+        CC --> PM
+        CC --> RM
+        CC --> AM
+        CC --> LM
+    end
+    
+    subgraph "📊 Metrics Extraction"
+        ME[Metrics Extractor]
+        CS[Consciousness Level]
+        RR[Relevance Realization]
+        AE[Attention Entropy]
+        PD[Pattern Diversity]
+        ML[Meta-Learning Rate]
+        
+        CC --> ME
+        ME --> CS
+        ME --> RR
+        ME --> AE
+        ME --> PD
+        ME --> ML
+    end
+    
+    subgraph "🔌 Backend Server"
+        WS[WebSocket Server]
+        REST[REST API]
+        BG[Background Tasks]
+        
+        ME --> WS
+        ME --> REST
+        WS --> BG
+    end
+    
+    subgraph "🌐 Frontend Dashboard"
+        HTML[HTML5 Canvas]
+        THREE[Three.js 3D]
+        PLOT[Plotly Charts]
+        WSC[WebSocket Client]
+        
+        WS --> WSC
+        REST --> WSC
+        WSC --> HTML
+        HTML --> THREE
+        HTML --> PLOT
+    end
+    
+    subgraph "🎨 Visualizations"
+        CL[3D Consciousness Landscape]
+        MT[Real-time Metrics]
+        EV[Evolution Charts]
+        AT[Attention Allocation]
+        
+        THREE --> CL
+        PLOT --> EV
+        PLOT --> AT
+        HTML --> MT
+    end
+    
+    style CC fill:#7c3aed,stroke:#a78bfa,stroke-width:3px,color:#fff
+    style ME fill:#10b981,stroke:#34d399,stroke-width:3px,color:#fff
+    style WS fill:#3b82f6,stroke:#60a5fa,stroke-width:3px,color:#fff
+    style THREE fill:#f59e0b,stroke:#fbbf24,stroke-width:3px,color:#fff
+    style CL fill:#ec4899,stroke:#f472b6,stroke-width:3px,color:#fff
