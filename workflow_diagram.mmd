@@ -1,0 +1,86 @@
+graph TB
+    Start([Push/PR Trigger]) --> Quality
+    
+    subgraph "Phase 1: Code Quality"
+        Quality[🎨 Code Quality]
+        Quality --> Black[Black Format]
+        Quality --> Isort[Import Sort]
+        Quality --> Ruff[Ruff Lint]
+        Quality --> MyPy[Type Check]
+    end
+    
+    Quality --> CoreTests
+    Quality --> LuaTests
+    Quality --> Security
+    Quality --> Docs
+    
+    subgraph "Phase 2-3: Testing"
+        CoreTests[🧪 Core Tests]
+        CoreTests --> Py38[Python 3.8]
+        CoreTests --> Py39[Python 3.9]
+        CoreTests --> Py310[Python 3.10]
+        CoreTests --> Py311[Python 3.11]
+        
+        LuaTests[🌙 Lua Tests]
+        LuaTests --> LuaCore[OpenCog Tests]
+        LuaTests --> LuaExamples[Examples]
+    end
+    
+    CoreTests --> Integration
+    LuaTests --> Integration
+    
+    subgraph "Phase 4-5: Integration"
+        Integration[🔗 Integration Tests]
+        Integration --> ModuleInt[Module Integration]
+        Integration --> MetricsInt[Metrics Validation]
+        
+        Integration --> Dashboard
+        Dashboard[🎨 Dashboard Build]
+        Dashboard --> DashServer[Server Test]
+        Dashboard --> DashFront[Frontend Validation]
+    end
+    
+    Integration --> Performance
+    
+    subgraph "Phase 6: Performance"
+        Performance[⚡ Benchmarks]
+        Performance --> CycleSpeed[Cycle Speed]
+        Performance --> Throughput[Throughput]
+        Performance --> Regression[Regression Check]
+    end
+    
+    subgraph "Phase 7-8: Quality Assurance"
+        Security[🔒 Security Scan]
+        Security --> Trivy[Trivy Scanner]
+        Security --> Secrets[Secret Detection]
+        
+        Docs[📚 Documentation]
+        Docs --> DocStats[Statistics]
+        Docs --> DocBuild[Sphinx Build]
+    end
+    
+    Performance --> Summary
+    Dashboard --> Summary
+    Security --> Summary
+    Docs --> Summary
+    
+    subgraph "Phase 9-10: Finalization"
+        Summary[📋 Build Summary]
+        Summary --> Report[Generate Report]
+        Report --> Deploy{Deploy?}
+        Deploy -->|Yes| DeployDash[🚀 Deploy Dashboard]
+        Deploy -->|No| Complete
+        DeployDash --> Complete
+    end
+    
+    Complete([✅ Build Complete])
+    
+    style Quality fill:#7c3aed,stroke:#a78bfa,stroke-width:3px,color:#fff
+    style CoreTests fill:#3b82f6,stroke:#60a5fa,stroke-width:3px,color:#fff
+    style LuaTests fill:#10b981,stroke:#34d399,stroke-width:3px,color:#fff
+    style Integration fill:#f59e0b,stroke:#fbbf24,stroke-width:3px,color:#fff
+    style Dashboard fill:#ec4899,stroke:#f472b6,stroke-width:3px,color:#fff
+    style Performance fill:#8b5cf6,stroke:#a78bfa,stroke-width:3px,color:#fff
+    style Security fill:#ef4444,stroke:#f87171,stroke-width:3px,color:#fff
+    style Summary fill:#06b6d4,stroke:#22d3ee,stroke-width:3px,color:#fff
+    style Complete fill:#10b981,stroke:#34d399,stroke-width:4px,color:#fff
