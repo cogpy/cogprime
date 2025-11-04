@@ -17,7 +17,7 @@ from enum import Enum
 import copy
 
 # Import AtomSpace components
-from ..atomspace import AtomSpace, Atom, Node, Link, TruthValue, AttentionValue
+from src.atomspace import AtomSpace, Atom, Node, Link, TruthValue, AttentionValue
 
 
 class EvolutionaryOperator(ABC):

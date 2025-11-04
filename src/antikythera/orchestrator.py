@@ -18,8 +18,8 @@ import json
 from .cycles import CivilizationalCycle, MetaCycle, PhaseType
 from .temporal import TemporalCoordinator, TimeScale
 from .integration import CognitiveIntegration, EvolutionaryIntegration
-from ..atomspace import AtomSpace, Node, Link, TruthValue, AttentionValue
-from ..evolution import EvolutionaryOrchestrator, MosesEngine, Individual
+from src.atomspace import AtomSpace, Node, Link, TruthValue, AttentionValue
+from src.evolution import EvolutionaryOrchestrator, MosesEngine, Individual
 
 # Configure logging
 logger = logging.getLogger(__name__)

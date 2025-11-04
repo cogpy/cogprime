@@ -50,7 +50,7 @@ except ImportError:
     MEM0_AVAILABLE = False
     
 # Import CogPrime components
-from ..core.cognitive_core import CognitiveState
+from ..core.cognitive_state import CognitiveState
 
 # Configure logging
 logger = logging.getLogger(__name__)

@@ -18,7 +18,7 @@ from concurrent.futures import ThreadPoolExecutor, Future
 from .moses_engine import MosesEngine, Individual, EvolutionHistory
 from .population import Population, PopulationInitializer, RandomInitializer
 from .selection import SelectionStrategy, TournamentSelection, AdaptiveSelection
-from ..atomspace import AtomSpace, Atom, Node, Link
+from src.atomspace import AtomSpace, Atom, Node, Link
 
 # Configure logging
 logger = logging.getLogger(__name__)

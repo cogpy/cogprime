@@ -13,8 +13,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from abc import ABC, abstractmethod
 
-from ..atomspace import AtomSpace, Node, Link, TruthValue, AttentionValue
-from ..evolution import MosesEngine, Individual
+from src.atomspace import AtomSpace, Node, Link, TruthValue, AttentionValue
+from src.evolution import MosesEngine, Individual
 
 
 class PhaseType(Enum):

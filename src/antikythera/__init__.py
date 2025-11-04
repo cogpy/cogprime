@@ -23,13 +23,14 @@ Usage:
     orchestrator.start_orchestration()
 """
 
-from .orchestrator import AntikytheraOrchestrator
+from .orchestrator import AntikytheraOrchestrator, OrchestrationConfig
 from .cycles import CivilizationalCycle, CyclePhase, PhaseType
 from .temporal import TemporalCoordinator, TimeScale, TemporalPattern
 from .integration import CognitiveIntegration, EvolutionaryIntegration
 
 __all__ = [
     'AntikytheraOrchestrator',
+    'OrchestrationConfig',
     'CivilizationalCycle', 
     'CyclePhase',
     'PhaseType',

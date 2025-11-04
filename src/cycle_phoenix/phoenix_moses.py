@@ -12,8 +12,8 @@ import logging
 from typing import List, Dict, Any, Optional, Callable, Tuple
 from dataclasses import dataclass
 
-from ..atomspace import AtomSpace, Node, Link, TruthValue, AttentionValue  
-from ..evolution import MosesEngine, Individual, Gene, FitnessFunction
+from src.atomspace import AtomSpace, Node, Link, TruthValue, AttentionValue  
+from src.evolution import MosesEngine, Individual, Gene, FitnessFunction
 from .civilizational_engine import TransformationPhase, TransformationMetrics
 
 # Configure logging

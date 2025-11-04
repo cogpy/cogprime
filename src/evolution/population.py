@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 
 from .moses_engine import Individual, Gene
-from ..atomspace import Atom, Node, Link
+from src.atomspace import Atom, Node, Link
 
 
 class PopulationInitializer(ABC):

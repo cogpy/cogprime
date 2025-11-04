@@ -1,7 +1,6 @@
 import torch
 import numpy as np
 from typing import Dict, List, Any, Optional, Tuple, Callable
-from dataclasses import dataclass
 from ..modules.perception import PerceptionModule, SensoryInput
 from ..modules.reasoning import ReasoningModule, Thought
 from ..modules.action import ActionSelectionModule, Action
@@ -9,20 +8,8 @@ from ..modules.learning import ReinforcementLearner, Experience
 
 # Import the new AtomSpace and Memory modules
 from ..atomspace import AtomSpace, Node, Link, BackendType
+from .cognitive_state import CognitiveState
 from ..memory import Memory
-
-@dataclass
-class CognitiveState:
-    """Represents the current cognitive state of the system"""
-    attention_focus: torch.Tensor
-    working_memory: Dict[str, Any]
-    emotional_valence: float
-    goal_stack: List[str]
-    sensory_buffer: Dict[str, torch.Tensor]
-    current_thought: Thought = None
-    last_action: Action = None
-    last_reward: float = 0.0
-    total_reward: float = 0.0
 
 class CogPrimeCore:
     """

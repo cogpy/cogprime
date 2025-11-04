@@ -11,8 +11,8 @@ from typing import List, Dict, Any, Optional, Callable, Tuple
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
-from ..atomspace import AtomSpace, Node, Link, TruthValue, AttentionValue
-from ..evolution import EvolutionaryOrchestrator, MosesEngine, Individual
+from src.atomspace import AtomSpace, Node, Link, TruthValue, AttentionValue
+from src.evolution import EvolutionaryOrchestrator, MosesEngine, Individual
 from .cycles import CivilizationalCycle, MetaCycle, PhaseType
 
 # Configure logging
@@ -626,7 +626,7 @@ class EvolutionaryIntegration(IntegrationModule):
             selected_atoms = [all_atoms[i % len(all_atoms)] for i in range(num_genes)]
             
             for atom in selected_atoms:
-                from ..evolution.moses_engine import Gene
+                from src.evolution.moses_engine import Gene
                 gene = Gene(atom=atom, weight=0.5, active=True)
                 individual.add_gene(gene)
             

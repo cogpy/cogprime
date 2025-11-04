@@ -12,9 +12,9 @@ from typing import List, Dict, Any, Optional, Callable
 from dataclasses import dataclass
 from enum import Enum
 
-from ..atomspace import AtomSpace
-from ..evolution import EvolutionaryOrchestrator, EvolutionConfig
-from ..antikythera import AntikytheraOrchestrator, OrchestrationConfig, CivilizationalCycle
+from src.atomspace import AtomSpace
+from src.evolution import EvolutionaryOrchestrator, EvolutionConfig
+from src.antikythera import AntikytheraOrchestrator, OrchestrationConfig, CivilizationalCycle
 from .civilizational_engine import CivilizationalEngine, TransformationPhase
 from .phoenix_moses import PhoenixMOSES, CivilizationalFitness
 

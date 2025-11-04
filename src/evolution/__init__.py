@@ -22,7 +22,7 @@ Usage:
 """
 
 from .moses_engine import MosesEngine, EvolutionaryOperator, FitnessFunction
-from .orchestrator import EvolutionaryOrchestrator
+from .orchestrator import EvolutionaryOrchestrator, EvolutionConfig
 from .population import Population, Individual, Gene
 from .selection import SelectionStrategy, TournamentSelection, RouletteSelection
 
@@ -31,6 +31,7 @@ __all__ = [
     'EvolutionaryOperator',
     'FitnessFunction',
     'EvolutionaryOrchestrator',
+    'EvolutionConfig',
     'Population',
     'Individual', 
     'Gene',
