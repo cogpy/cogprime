@@ -15,7 +15,7 @@ protobuf>=4.21.0       # Protocol buffers for serialization
 grpcio>=1.50.0         # gRPC for distributed AtomSpace
 grpcio-tools>=1.50.0   # gRPC code generation
 
-#---------- mem0 Dependencies ----------#
+#---------- mem0 Dependencies (using mem0ai package name) ----------#
 # Memory system with vector search, graph memory, and persistence
 mem0ai>=0.1.0          # Main mem0 package (correct package name)
 langchain>=0.0.267     # For LLM chains and agents

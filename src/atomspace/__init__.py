@@ -791,3 +791,34 @@ def create_cognitive_binding(atomspace: AtomSpace, perception_module,
                              lambda atom: action_module.process_atom(atom))
     
     # TODO: Implement more sophisticated bindings
+
+
+# Export public API
+__all__ = [
+    # Core classes
+    'Atom',
+    'Node',
+    'Link',
+    'TruthValue',
+    'AttentionValue',
+    'AtomSpace',
+    
+    # Backend classes
+    'AtomSpaceBackend',
+    'LocalAtomSpaceBackend',
+    'Node9AtomSpaceBackend',
+    'Mem0AtomSpaceBackend',
+    
+    # Factory functions
+    'create_node',
+    'create_link',
+    
+    # Integration functions
+    'register_cognitive_module',
+    'create_cognitive_binding',
+    
+    # Type definitions
+    'AtomType',
+    'AtomValue',
+    'AtomID',
+]
