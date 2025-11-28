@@ -402,121 +402,77 @@ class LocalAtomSpaceBackend(AtomSpaceBackend):
         return []
 
 
-class Node9AtomSpaceBackend(AtomSpaceBackend):
-    """AtomSpace backend that uses node9 namespace for distributed operation."""
-    
-    def __init__(self, namespace_path: str = "/cog/space"):
-        """Initialize a node9 namespace-based AtomSpace backend.
+# Import the full Node9 backend implementation
+try:
+    from .node9_backend import Node9AtomSpaceBackend
+except ImportError:
+    # Fallback implementation if node9_backend is not available
+    class Node9AtomSpaceBackend(AtomSpaceBackend):
+        """AtomSpace backend that uses node9 namespace for distributed storage."""
         
-        Args:
-            namespace_path: Path in the node9 namespace for AtomSpace
-        """
-        self.namespace_path = namespace_path
-        # TODO: Implement node9 namespace integration
-        logger.warning("Node9AtomSpaceBackend is not fully implemented yet")
+        def __init__(self, namespace_path: str = '/cog/space'):
+            self.namespace_path = namespace_path
+            logger.warning("Node9AtomSpaceBackend module not found, using local backend")
+            self._local_backend = LocalAtomSpaceBackend()
         
-        # Temporary fallback to local backend
-        self._local_backend = LocalAtomSpaceBackend()
-    
-    def add_atom(self, atom: Atom) -> Atom:
-        """Add an atom to the node9 namespace."""
-        # TODO: Implement node9 namespace integration
-        return self._local_backend.add_atom(atom)
-    
-    def remove_atom(self, atom: Atom) -> bool:
-        """Remove an atom from the node9 namespace."""
-        # TODO: Implement node9 namespace integration
-        return self._local_backend.remove_atom(atom)
-    
-    def get_atom(self, atom_id: AtomID) -> Optional[Atom]:
-        """Get an atom by ID from the node9 namespace."""
-        # TODO: Implement node9 namespace integration
-        return self._local_backend.get_atom(atom_id)
-    
-    def get_atom_by_type_name(self, atom_type: AtomType, name: str) -> Optional[Node]:
-        """Get a node by type and name from the node9 namespace."""
-        # TODO: Implement node9 namespace integration
-        return self._local_backend.get_atom_by_type_name(atom_type, name)
-    
-    def get_atoms_by_type(self, atom_type: AtomType) -> List[Atom]:
-        """Get all atoms of a given type from the node9 namespace."""
-        # TODO: Implement node9 namespace integration
-        return self._local_backend.get_atoms_by_type(atom_type)
-    
-    def query(self, pattern: Atom) -> List[Atom]:
-        """Query atoms matching a pattern in the node9 namespace."""
-        # TODO: Implement node9 namespace integration
-        return self._local_backend.query(pattern)
-    
-    def pattern_match(self, pattern: Dict) -> List[Dict]:
-        """Perform advanced pattern matching in the node9 namespace."""
-        # TODO: Implement node9 namespace integration
-        return self._local_backend.pattern_match(pattern)
+        def add_atom(self, atom: Atom) -> Atom:
+            return self._local_backend.add_atom(atom)
+        
+        def remove_atom(self, atom: Atom) -> bool:
+            return self._local_backend.remove_atom(atom)
+        
+        def get_atom(self, atom_id: AtomID) -> Optional[Atom]:
+            return self._local_backend.get_atom(atom_id)
+        
+        def get_atom_by_type_name(self, atom_type: AtomType, name: str) -> Optional[Node]:
+            return self._local_backend.get_atom_by_type_name(atom_type, name)
+        
+        def get_atoms_by_type(self, atom_type: AtomType) -> List[Atom]:
+            return self._local_backend.get_atoms_by_type(atom_type)
+        
+        def query(self, pattern: Atom) -> List[Atom]:
+            return self._local_backend.query(pattern)
+        
+        def pattern_match(self, pattern: Dict) -> List[Dict]:
+            return self._local_backend.pattern_match(pattern)
 
 
-class Mem0AtomSpaceBackend(AtomSpaceBackend):
-    """AtomSpace backend that uses mem0 for persistence and vector search."""
-    
-    def __init__(self, config: Dict = None):
-        """Initialize a mem0-based AtomSpace backend.
+# Import the full Mem0 backend implementation
+try:
+    from .mem0_backend import Mem0AtomSpaceBackend
+except ImportError:
+    # Fallback implementation if mem0_backend is not available
+    class Mem0AtomSpaceBackend(AtomSpaceBackend):
+        """AtomSpace backend that uses mem0 for persistence and vector search."""
         
-        Args:
-            config: Configuration for mem0 integration
-        """
-        self.config = config or {}
-        # TODO: Implement mem0 integration
-        logger.warning("Mem0AtomSpaceBackend is not fully implemented yet")
+        def __init__(self, config: Dict = None):
+            self.config = config or {}
+            logger.warning("Mem0AtomSpaceBackend module not found, using local backend")
+            self._local_backend = LocalAtomSpaceBackend()
         
-        # Temporary fallback to local backend
-        self._local_backend = LocalAtomSpaceBackend()
-    
-    def add_atom(self, atom: Atom) -> Atom:
-        """Add an atom to mem0 storage."""
-        # TODO: Implement mem0 integration
-        return self._local_backend.add_atom(atom)
-    
-    def remove_atom(self, atom: Atom) -> bool:
-        """Remove an atom from mem0 storage."""
-        # TODO: Implement mem0 integration
-        return self._local_backend.remove_atom(atom)
-    
-    def get_atom(self, atom_id: AtomID) -> Optional[Atom]:
-        """Get an atom by ID from mem0 storage."""
-        # TODO: Implement mem0 integration
-        return self._local_backend.get_atom(atom_id)
-    
-    def get_atom_by_type_name(self, atom_type: AtomType, name: str) -> Optional[Node]:
-        """Get a node by type and name from mem0 storage."""
-        # TODO: Implement mem0 integration
-        return self._local_backend.get_atom_by_type_name(atom_type, name)
-    
-    def get_atoms_by_type(self, atom_type: AtomType) -> List[Atom]:
-        """Get all atoms of a given type from mem0 storage."""
-        # TODO: Implement mem0 integration
-        return self._local_backend.get_atoms_by_type(atom_type)
-    
-    def query(self, pattern: Atom) -> List[Atom]:
-        """Query atoms matching a pattern in mem0 storage."""
-        # TODO: Implement mem0 integration
-        return self._local_backend.query(pattern)
-    
-    def pattern_match(self, pattern: Dict) -> List[Dict]:
-        """Perform advanced pattern matching in mem0 storage."""
-        # TODO: Implement mem0 integration
-        return self._local_backend.pattern_match(pattern)
-    
-    def vector_search(self, vector: List[float], limit: int = 10) -> List[Tuple[Atom, float]]:
-        """Perform vector similarity search using mem0.
+        def add_atom(self, atom: Atom) -> Atom:
+            return self._local_backend.add_atom(atom)
         
-        Args:
-            vector: The query vector
-            limit: Maximum number of results to return
-            
-        Returns:
-            List of (atom, similarity_score) tuples
-        """
-        # TODO: Implement mem0 vector search integration
-        return []
+        def remove_atom(self, atom: Atom) -> bool:
+            return self._local_backend.remove_atom(atom)
+        
+        def get_atom(self, atom_id: AtomID) -> Optional[Atom]:
+            return self._local_backend.get_atom(atom_id)
+        
+        def get_atom_by_type_name(self, atom_type: AtomType, name: str) -> Optional[Node]:
+            return self._local_backend.get_atom_by_type_name(atom_type, name)
+        
+        def get_atoms_by_type(self, atom_type: AtomType) -> List[Atom]:
+            return self._local_backend.get_atoms_by_type(atom_type)
+        
+        def query(self, pattern: Atom) -> List[Atom]:
+            return self._local_backend.query(pattern)
+        
+        def pattern_match(self, pattern: Dict) -> List[Dict]:
+            return self._local_backend.pattern_match(pattern)
+        
+        def vector_search(self, vector: List[float], limit: int = 10) -> List[Tuple[Atom, float]]:
+            return []
 
 
 class BackendType(Enum):

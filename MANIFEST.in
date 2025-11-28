@@ -1,0 +1,12 @@
+include README.md
+include LICENSE
+include requirements.txt
+include requirements-dev.txt
+recursive-include src *.py
+recursive-include docs *.md *.rst
+recursive-include examples *.py *.md
+recursive-include lua *.lua *.md
+recursive-exclude integrations *
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude .DS_Store
