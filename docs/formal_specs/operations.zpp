@@ -1,0 +1,744 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% CogPrime Operations - Z++ Formal Specification
+%% File: operations.zpp
+%% Purpose: Formal specification of core system operations including
+%%          cognitive cycle, perception processing, reasoning, action
+%%          selection, learning, and memory operations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Import required specifications
+import data_model
+import system_state
+
+%% =====================================================================
+%% Cognitive Cycle Operations
+%% =====================================================================
+
+%% CognitiveCycle: Main cognitive processing cycle
+%%
+%% Pre-conditions:
+%% - System is in a valid state
+%% - Sensory input is provided
+%% - Reward signal is available
+%%
+%% Post-conditions:
+%% - All modules process in sequence
+%% - State is updated consistently
+%% - Action is selected and executed
+%% - Learning occurs from experience
+%%
+schema CognitiveCycle
+  ΔSystemState
+  input? : SensoryInput
+  reward? : ℝ
+  action! : Action
+where
+  %% Pre-conditions
+  %% System must be in valid initial state (implicit from SystemState)
+  
+  %% Perception phase
+  perception' = ProcessPerception(perception, input?)
+  
+  %% Reasoning phase  
+  reasoning' = ProcessReasoning(reasoning, perception'.integrated_features)
+  
+  %% Action selection phase
+  action_selection' = SelectAction(action_selection, reasoning'.current_thought)
+  action! = action_selection'.selected_action
+  
+  %% Learning phase
+  learning' = UpdateLearning(learning, cognitive_state, action!, reward?)
+  
+  %% Update cognitive state
+  cognitive_state' = UpdateCognitiveState(
+    cognitive_state,
+    perception'.integrated_features,
+    reasoning'.current_thought,
+    action!,
+    reward?
+  )
+  
+  %% Update cycle tracking
+  cycle_count' = cycle_count + 1
+  
+  %% AtomSpace and memory remain unchanged during cycle
+  %% (updated by individual operations within modules)
+  atomspace' = atomspace
+  global_memory' = global_memory
+  config' = config
+  
+  %% Performance metrics updated
+  overall_performance' = CalculatePerformance(
+    perception', reasoning', action_selection', learning'
+  )
+  
+  %% Post-condition: Cycle completes successfully
+  action! ≠ none
+end
+
+%% =====================================================================
+%% Perception Operations
+%% =====================================================================
+
+%% ProcessPerception: Process sensory input through perception module
+%%
+%% Pre-conditions:
+%% - Sensory input contains at least one modality
+%% - Attention budget is available
+%%
+%% Post-conditions:
+%% - Sensory data encoded through modality-specific encoders
+%% - Cross-modal integration performed
+%% - Attention allocated adaptively
+%% - Integrated features produced
+%%
+schema ProcessPerception
+  ΞPerceptionModuleState  %% State changes, but some parts preserved
+  input? : SensoryInput
+  output! : FEATURE_VECTOR
+where
+  %% Encode visual input if present
+  input?.visual = some(v) ⇒
+    visual_encoder_state' = some(EncodeVisual(v))
+  
+  %% Encode auditory input if present
+  input?.auditory = some(a) ⇒
+    audio_encoder_state' = some(EncodeAudio(a))
+  
+  %% Encode proprioceptive input if present
+  input?.proprioceptive = some(p) ⇒
+    proprioceptive_encoder_state' = some(EncodeProprio(p))
+  
+  %% Cross-modal integration
+  let active_modalities == [
+    visual_encoder_state',
+    audio_encoder_state',
+    proprioceptive_encoder_state'
+  ] |> filter(x ↦ x ≠ none) •
+  
+  #active_modalities ≥ 2 ⇒
+    integrated_features' = some(IntegrateModalities(active_modalities))
+  
+  %% Attention allocation
+  attention_weights' = AllocateAttention(
+    active_modalities,
+    attention_history,
+    attention_budget
+  )
+  
+  %% Update attention history
+  attention_history' = append(attention_history, attention_weights')
+  if #attention_history' > 50 then
+    attention_history' = tail₅₀(attention_history')
+  
+  %% Saliency detection
+  integrated_features' = some(features) ⇒
+    saliency_map' = some(DetectSaliency(features))
+    high_saliency_regions' = ExtractHighSaliency(saliency_map')
+  
+  %% Integration quality assessment
+  integration_quality' = AssessIntegrationQuality(
+    active_modalities,
+    integrated_features'
+  )
+  
+  %% Output
+  integrated_features' = some(features) ⇒ output! = features
+  
+  %% Performance metrics
+  perception_accuracy' = MeasurePerceptionAccuracy(
+    integrated_features',
+    input?
+  )
+end
+
+%% AllocateAttention: Adaptive attention allocation across modalities
+%%
+%% Pre-conditions:
+%% - At least one modality is active
+%% - Attention budget is positive
+%%
+%% Post-conditions:
+%% - Attention weights sum to 1.0
+%% - Weights reflect saliency and context
+%%
+function AllocateAttention(
+  modalities : seq (FEATURE_VECTOR option),
+  history : seq (seq PROB),
+  budget : ℝ⁺
+) : seq PROB ≙
+  let active == [m | m : modalities, m ≠ none] •
+  let saliency_scores == [ComputeSaliency(m) | m : active] •
+  let context_weights == 
+    if #history > 0 then average_last_n(history, 5)
+    else uniform_weights(#active)
+  •
+  let combined == [
+    s × 0.7 + c × 0.3
+    | s : saliency_scores, c : context_weights
+  ] •
+  normalize(combined)
+
+%% =====================================================================
+%% Reasoning Operations
+%% =====================================================================
+
+%% ProcessReasoning: Process attended features through reasoning module
+%%
+%% Pre-conditions:
+%% - Input features are available
+%% - Working memory has capacity
+%%
+%% Post-conditions:
+%% - Patterns recognized and classified
+%% - Memory queried for relevant associations
+%% - Thought produced with confidence estimate
+%% - Working memory updated
+%%
+schema ProcessReasoning
+  ΔReasoningModuleState
+  input? : FEATURE_VECTOR option
+  thought! : Thought
+where
+  %% Pattern recognition
+  input? = some(features) ⇒
+    current_patterns' = RecognizePatterns(
+      features,
+      pattern_recognizer_state
+    )
+  
+  %% Query episodic memory
+  let retrieved_memories == RetrieveMemories(
+    episodic_memory,
+    input?,
+    k = 5
+  ) •
+  
+  %% Update working memory with new thought
+  working_memory' = UpdateWorkingMemory(
+    working_memory,
+    input?,
+    retrieved_memories
+  )
+  
+  %% Confidence estimation
+  confidence_estimates' = [
+    EstimateConfidence(p, retrieved_memories)
+    | p : current_patterns'
+  ]
+  
+  %% Uncertainty quantification
+  uncertainty_level' = 1.0 - average(confidence_estimates')
+  
+  %% Create thought
+  let dominant_pattern == argmax(current_patterns', p ↦ p.2) •
+  thought! = Thought{
+    content = input?,
+    salience = ComputeSalience(input?),
+    associations = ExtractAssociations(retrieved_memories),
+    timestamp = current_time(),
+    confidence = confidence_estimates'[dominant_pattern],
+    pattern_type = dominant_pattern.1
+  }
+  
+  %% Store thought in episodic memory
+  episodic_memory' = StoreMemory(episodic_memory, thought!)
+  
+  %% Periodic memory consolidation
+  cycle_count mod 100 = 0 ⇒
+    episodic_memory' = ConsolidateMemory(episodic_memory')
+    consolidation_savings' = CalculateConsolidationSavings(
+      episodic_memory,
+      episodic_memory'
+    )
+end
+
+%% RecognizePatterns: Identify cognitive patterns in input
+%%
+%% Pre-conditions:
+%% - Input features are non-empty
+%%
+%% Post-conditions:
+%% - One or more patterns identified
+%% - Each pattern has type and confidence
+%%
+function RecognizePatterns(
+  features : FEATURE_VECTOR,
+  state : FEATURE_VECTOR
+) : seq (PATTERN_TYPE × PROB) ≙
+  let causal_score == DetectCausalPattern(features, state) •
+  let analogical_score == DetectAnalogicalPattern(features, state) •
+  let hierarchical_score == DetectHierarchicalPattern(features, state) •
+  let temporal_score == DetectTemporalPattern(features, state) •
+  [
+    (causal, causal_score),
+    (analogical, analogical_score),
+    (hierarchical, hierarchical_score),
+    (temporal, temporal_score)
+  ] |> filter(p ↦ p.2 > 0.3)  %% Threshold for detection
+
+%% RetrieveMemories: Query episodic memory for relevant memories
+%%
+%% Pre-conditions:
+%% - Query features provided
+%% - k ≥ 1
+%%
+%% Post-conditions:
+%% - Returns up to k most similar memories
+%% - Memories ranked by similarity
+%% - Access counts updated
+%%
+function RetrieveMemories(
+  memory : EpisodicMemory,
+  query : FEATURE_VECTOR option,
+  k : ℕ₁
+) : seq Thought ≙
+  query = some(q) ⇒
+    let similarities == [
+      (m, CosineSimilarity(q, m.content))
+      | m : memory.memories
+    ] •
+    let boosted == [
+      (m, sim × (1.0 + 0.3 × memory.importance_scores[index(m)]))
+      | (m, sim) : similarities
+    ] •
+    let sorted == sort_desc(boosted, (_, s) ↦ s) •
+    let top_k == take(k, sorted) •
+    [m | (m, _) : top_k]
+
+%% ConsolidateMemory: Merge similar memories to save space
+%%
+%% Pre-conditions:
+%% - Memory has sufficient entries (≥ 10)
+%%
+%% Post-conditions:
+%% - Similar memories merged
+%% - Storage reduced by 10-20%
+%% - Important information preserved
+%%
+function ConsolidateMemory(
+  memory : EpisodicMemory
+) : EpisodicMemory ≙
+  let similarity_matrix == [
+    [CosineSimilarity(m1.content, m2.content) | m2 : memory.memories]
+    | m1 : memory.memories
+  ] •
+  let merge_pairs == [
+    (i, j) | i, j : indices(memory.memories),
+    i < j,
+    similarity_matrix[i][j] > memory.consolidation_threshold
+  ] •
+  MergeSimilarMemories(memory, merge_pairs)
+
+%% =====================================================================
+%% Action Selection Operations
+%% =====================================================================
+
+%% SelectAction: Select action based on current thought and goals
+%%
+%% Pre-conditions:
+%% - Thought is available from reasoning
+%% - Goal hierarchy is valid
+%% - Resources are available
+%%
+%% Post-conditions:
+%% - Action selected based on goals and resources
+%% - Resources allocated to action
+%% - Goal progress updated
+%%
+schema SelectAction
+  ΔActionSelectionModuleState
+  thought? : Thought option
+  action! : Action
+where
+  %% Update goal priorities based on urgency
+  active_goal_priorities' = SortGoalsByUrgency(
+    goal_hierarchy.active_goals,
+    goal_hierarchy.goals
+  )
+  
+  %% Allocate resources to high-priority goals
+  allocated_resources' = AllocateResources(
+    active_goal_priorities',
+    total_resources
+  )
+  
+  %% Generate candidate actions from goals
+  candidate_actions' = GenerateCandidateActions(
+    active_goal_priorities',
+    goal_hierarchy.goals,
+    thought?
+  )
+  
+  %% Select action using policy network
+  selected_action' = some(SelectActionByPolicy(
+    candidate_actions',
+    action_policy_state,
+    thought?
+  ))
+  
+  action! = selected_action'
+  
+  %% Update goal completion if action contributes
+  ∀ g : dom goal_hierarchy.goals •
+    action!.name ∈ goal_hierarchy.goals(g).required_actions ⇒
+      goal_hierarchy' = UpdateGoalProgress(
+        goal_hierarchy,
+        g,
+        0.1  %% Incremental progress
+      )
+  
+  %% Calculate resource utilization
+  resource_utilization' = 
+    Σ(ran allocated_resources') / total_resources
+  
+  %% Update planning latency
+  planning_latency' = MeasurePlanningTime()
+end
+
+%% AllocateResources: Distribute resources among goals
+%%
+%% Pre-conditions:
+%% - Goals are prioritized
+%% - Total resources > 0
+%%
+%% Post-conditions:
+%% - Resources allocated proportionally to priority
+%% - Total allocation ≤ total resources
+%%
+function AllocateResources(
+  priorities : seq (GOAL_ID × PROB),
+  total : ℝ⁺
+) : GOAL_ID ⇸ ℝ⁺ ≙
+  let total_priority == Σ([p | (_, p) : priorities]) •
+  {
+    g ↦ (p / total_priority) × total
+    | (g, p) : priorities
+  }
+
+%% GenerateCandidateActions: Create action candidates from goals
+%%
+%% Pre-conditions:
+%% - At least one active goal exists
+%%
+%% Post-conditions:
+%% - Candidate actions align with goal requirements
+%% - Each candidate has confidence estimate
+%%
+function GenerateCandidateActions(
+  priorities : seq (GOAL_ID × PROB),
+  goals : GOAL_ID ⇸ Goal,
+  thought : Thought option
+) : seq Action ≙
+  let top_goals == take(3, priorities) •
+  flatten([
+    CreateActionsForGoal(goals(g), p, thought)
+    | (g, p) : top_goals
+  ])
+
+%% =====================================================================
+%% Learning Operations
+%% =====================================================================
+
+%% UpdateLearning: Update learning module with experience
+%%
+%% Pre-conditions:
+%% - Experience (state, action, reward, next_state) available
+%% - Experience buffer has capacity
+%%
+%% Post-conditions:
+%% - Experience stored in buffer
+%% - Q-network updated if enough experiences
+%% - Target network updated periodically
+%% - Meta-learning strategies adjusted
+%%
+schema UpdateLearning
+  ΔLearningModuleState
+  prev_state? : CognitiveState
+  action? : Action
+  reward? : ℝ
+  next_state? : CognitiveState
+where
+  %% Create experience
+  let exp == Experience{
+    state = prev_state?.attention_focus,
+    action = action?.name,
+    reward = reward?,
+    next_state = next_state?.attention_focus,
+    done = (reward? < -0.5)  %% Episode termination condition
+  } •
+  
+  %% Store experience
+  experience_buffer' = AddExperience(experience_buffer, exp)
+  
+  %% Update priority weights
+  priority_weights' = UpdatePriorities(
+    priority_weights,
+    exp,
+    learning_progress
+  )
+  
+  %% Q-learning update if buffer sufficient
+  #experience_buffer'.buffer ≥ 32 ⇒
+    let batch == SampleBatch(experience_buffer', priority_weights', 32) •
+    q_network_state' = UpdateQNetwork(
+      q_network_state,
+      target_network_state,
+      batch,
+      learning_rate,
+      gamma
+    )
+    q_values' = ComputeQValues(q_network_state', action_space)
+    learning_progress' = ComputeLearningProgress(q_values, q_values')
+  
+  %% Target network update every 100 steps
+  cycle_count mod 100 = 0 ⇒
+    target_network_state' = q_network_state'
+  
+  %% Meta-learning: Adjust strategies based on performance
+  meta_learning_enabled = true ⇒
+    learning_progress' < -0.1 ⇒
+      strategy_adjustments' = append(
+        strategy_adjustments,
+        AdjustLearningStrategy(learning_progress')
+      )
+      learning_rate' = AdaptLearningRate(learning_rate, learning_progress')
+  
+  %% Epsilon decay (reduce exploration over time)
+  epsilon' = max(0.01, epsilon × 0.995)
+  
+  %% Error recovery
+  q_network_divergence_detected() ⇒
+    error_count' = error_count + 1
+    recovery_actions' = append(recovery_actions, "gradient_clip")
+    q_network_state' = ClipGradients(q_network_state)
+  
+  %% Update exploration efficiency
+  exploration_efficiency' = MeasureExplorationEfficiency(
+    experience_buffer',
+    q_values'
+  )
+end
+
+%% UpdateQNetwork: Update Q-network weights using TD learning
+%%
+%% Pre-conditions:
+%% - Batch of experiences provided
+%% - Learning rate and discount factor valid
+%%
+%% Post-conditions:
+%% - Q-network weights updated to minimize TD error
+%% - Gradients clipped to prevent instability
+%%
+function UpdateQNetwork(
+  q_state : FEATURE_VECTOR,
+  target_state : FEATURE_VECTOR,
+  batch : seq Experience,
+  lr : ℝ⁺,
+  gamma : PROB
+) : FEATURE_VECTOR ≙
+  let td_errors == [
+    ComputeTDError(exp, q_state, target_state, gamma)
+    | exp : batch
+  ] •
+  let gradient == ComputeGradient(td_errors, q_state) •
+  let clipped_gradient == ClipGradient(gradient, max_norm = 1.0) •
+  q_state - lr × clipped_gradient
+
+%% ComputeTDError: Temporal difference error for Q-learning
+%%
+%% Pre-conditions:
+%% - Experience contains valid state-action-reward-next_state
+%%
+%% Post-conditions:
+%% - Returns TD error for this experience
+%%
+function ComputeTDError(
+  exp : Experience,
+  q_state : FEATURE_VECTOR,
+  target_state : FEATURE_VECTOR,
+  gamma : PROB
+) : ℝ ≙
+  let current_q == EvaluateQ(q_state, exp.state, exp.action) •
+  let next_q == 
+    if exp.done then 0.0
+    else max([EvaluateQ(target_state, exp.next_state, a) | a : action_space])
+  •
+  let target_q == exp.reward + gamma × next_q •
+  target_q - current_q
+
+%% =====================================================================
+%% Memory Operations
+%% =====================================================================
+
+%% StoreAtom: Add atom to AtomSpace
+%%
+%% Pre-conditions:
+%% - Atom is well-formed
+%% - AtomSpace backend is available
+%%
+%% Post-conditions:
+%% - Atom added to backend storage
+%% - Incoming sets updated for referenced atoms
+%% - Atom events triggered
+%%
+schema StoreAtom
+  ΔSystemState
+  atom? : Atom
+  stored_atom! : Atom
+where
+  %% Add atom to atomspace
+  atomspace' = AddAtomToSpace(atomspace, atom?)
+  
+  %% Update incoming sets for link targets
+  atom? is Link ⇒
+    ∀ target_id : atom?.outgoing_set •
+      let target == atomspace.backend.get_atom(target_id) •
+      target.incoming_set' = target.incoming_set ∪ {atom?.id}
+  
+  %% Return stored atom
+  stored_atom! = atomspace'.backend.get_atom(atom?.id)
+  
+  %% Other state unchanged
+  perception' = perception
+  reasoning' = reasoning
+  action_selection' = action_selection
+  learning' = learning
+  cognitive_state' = cognitive_state
+end
+
+%% QueryAtoms: Pattern matching query on AtomSpace
+%%
+%% Pre-conditions:
+%% - Pattern is well-formed
+%% - May contain wildcards (None values)
+%%
+%% Post-conditions:
+%% - Returns all matching atoms
+%% - Respects pattern structure
+%%
+schema QueryAtoms
+  ΞSystemState  %% State unchanged
+  pattern? : Atom
+  results! : seq Atom
+where
+  %% Execute pattern match
+  results! = atomspace.backend.query(pattern?)
+  
+  %% Results match pattern structure
+  ∀ result : results! •
+    MatchesPattern(result, pattern?)
+end
+
+%% =====================================================================
+%% Composite Operations
+%% =====================================================================
+
+%% InitializeSystem: Initialize complete system state
+%%
+%% Pre-conditions:
+%% - Configuration provided
+%%
+%% Post-conditions:
+%% - All modules initialized
+%% - Core atoms created in AtomSpace
+%% - System ready for cognitive cycles
+%%
+schema InitializeSystem
+  SystemState'  %% Only post-state
+  config? : seq ℂ ⇸ ℝ
+where
+  %% Initialize modules with config
+  perception' = InitializePerception(config?)
+  reasoning' = InitializeReasoning(config?)
+  action_selection' = InitializeActionSelection(config?)
+  learning' = InitializeLearning(config?)
+  
+  %% Initialize AtomSpace
+  let backend_type == config?("atomspace_backend") •
+  atomspace' = CreateAtomSpace(backend_type, config?)
+  
+  %% Create core concept atoms
+  let core_concepts == [
+    "Perception", "Reasoning", "Action", "Learning",
+    "Emotion", "Attention", "Goal"
+  ] •
+  ∀ concept : core_concepts •
+    atomspace' = AddAtomToSpace(
+      atomspace',
+      Node("ConceptNode", concept)
+    )
+  
+  %% Initialize memory
+  global_memory' = CreateMemory(config?)
+  
+  %% Initialize cognitive state
+  cognitive_state' = InitialCognitiveState(config?)
+  
+  %% Set configuration
+  config' = config?
+  
+  %% Initialize cycle tracking
+  cycle_count' = 0
+  total_processing_time' = 0.0
+  
+  %% Initial metrics
+  overall_performance' = 0.0
+  system_coherence' = 0.0
+end
+
+%% =====================================================================
+%% Operation Theorems
+%% =====================================================================
+
+%% Theorem 1: Cognitive Cycle Preserves Invariants
+%% Each cognitive cycle maintains system invariants
+theorem CognitiveCyclePreservesInvariants
+∀ sys, sys' : SystemState •
+∀ input : SensoryInput •
+∀ reward : ℝ •
+  CognitiveCycle ⇒
+    sys' satisfies SystemState
+end
+
+%% Theorem 2: Learning Convergence
+%% Q-learning eventually converges to optimal policy
+theorem LearningConvergence
+∀ learning : LearningModuleState •
+  (∀ n : ℕ • cycle_count > n ⇒
+    |learning_progress(n+1) - learning_progress(n)| < ε)
+  ⇒ converged_to_optimal()
+end
+
+%% Theorem 3: Memory Retrieval Correctness
+%% Retrieved memories are most similar to query
+theorem MemoryRetrievalCorrectness
+∀ memory : EpisodicMemory •
+∀ query : FEATURE_VECTOR •
+∀ k : ℕ₁ •
+  let retrieved == RetrieveMemories(memory, some(query), k) •
+  ∀ m : retrieved •
+  ∀ m' : memory.memories \ retrieved •
+    Similarity(query, m.content) ≥ Similarity(query, m'.content)
+end
+
+%% Theorem 4: Resource Allocation Optimality
+%% Resource allocation maximizes goal completion
+theorem ResourceAllocationOptimal
+∀ priorities : seq (GOAL_ID × PROB) •
+∀ total : ℝ⁺ •
+  let allocation == AllocateResources(priorities, total) •
+  ∀ alternative_allocation : GOAL_ID ⇸ ℝ⁺ •
+    ExpectedGoalCompletion(allocation) ≥
+    ExpectedGoalCompletion(alternative_allocation)
+end
+
+%% Theorem 5: AtomSpace Query Soundness
+%% Pattern matching returns only valid matches
+theorem AtomSpaceQuerySoundness
+∀ pattern : Atom •
+∀ result : QueryAtoms.results! •
+  MatchesPattern(result, pattern)
+end
+
+%% End of operations.zpp

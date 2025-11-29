@@ -1,0 +1,918 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% CogPrime External Integrations - Z++ Formal Specification
+%% File: integrations.zpp
+%% Purpose: Formal specification of external system integrations including
+%%          vector databases, graph databases, LLM providers, and
+%%          distributed backend systems
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Import required specifications
+import data_model
+import system_state
+import operations
+
+%% =====================================================================
+%% Vector Database Integration
+%% =====================================================================
+
+%% Vector Database Types
+VECTOR_DB_TYPE ::= qdrant | chromadb | pinecone | milvus | redis
+
+%% Vector: Generic vector representation
+[VECTOR_DIM] == ℕ₁
+[EMBEDDING_VECTOR] == seq ℝ
+
+%% VectorMetadata: Metadata associated with vectors
+%%
+%% Invariants:
+%% - Contains searchable fields
+%% - Supports filtering during search
+%%
+schema VectorMetadata
+  atom_id : ATOM_ID option
+  atom_type : ATOM_TYPE option
+  timestamp : ℝ⁺
+  source : seq ℂ
+  tags : seq (seq ℂ)
+  custom_fields : seq ℂ ⇸ ℝ
+where
+  %% Timestamp is valid
+  timestamp > 0.0
+  
+  %% Source is non-empty
+  #source > 0
+end
+
+%% VectorSearchResult: Result from vector similarity search
+%%
+%% Invariants:
+%% - Each result has similarity score [0.0, 1.0]
+%% - Results ordered by similarity (descending)
+%%
+schema VectorSearchResult
+  vector_id : seq ℂ
+  embedding : EMBEDDING_VECTOR
+  metadata : VectorMetadata
+  similarity_score : PROB
+where
+  %% Vector ID is non-empty
+  #vector_id > 0
+  
+  %% Embedding is non-empty
+  #embedding > 0
+  
+  %% Similarity score is valid
+  0.0 ≤ similarity_score ≤ 1.0
+end
+
+%% VectorDatabaseConnection: Abstract vector database interface
+%%
+%% Invariants:
+%% - Connection is established before operations
+%% - Supports CRUD and search operations
+%%
+schema VectorDatabaseConnection
+  db_type : VECTOR_DB_TYPE
+  connection_string : seq ℂ
+  collection_name : seq ℂ
+  dimension : VECTOR_DIM
+  connected : 𝔹
+  metric : seq ℂ  %% "cosine", "euclidean", "dot_product"
+where
+  %% Connection string is non-empty
+  #connection_string > 0
+  
+  %% Collection name is non-empty
+  #collection_name > 0
+  
+  %% Dimension is reasonable
+  1 ≤ dimension ≤ 4096
+  
+  %% Metric is valid
+  metric ∈ {"cosine", "euclidean", "dot_product"}
+  
+  %% Operations require connection
+  connected = true ⇒ #connection_string > 0
+end
+
+%% InsertVector: Insert vector into database
+%%
+%% Pre-conditions:
+%% - Database connection is established
+%% - Vector dimension matches collection dimension
+%%
+%% Post-conditions:
+%% - Vector stored with metadata
+%% - Returns unique vector ID
+%%
+schema InsertVector
+  ΞVectorDatabaseConnection
+  vector? : EMBEDDING_VECTOR
+  metadata? : VectorMetadata
+  vector_id! : seq ℂ
+where
+  %% Pre-condition: Connection established
+  connected = true
+  
+  %% Vector dimension matches
+  #vector? = dimension
+  
+  %% Generate unique ID
+  vector_id! = GenerateVectorID()
+  
+  %% Post-condition: Vector stored
+  VectorExists(vector_id!, collection_name)
+end
+
+%% SearchVectors: Similarity search in vector database
+%%
+%% Pre-conditions:
+%% - Database connection is established
+%% - Query vector dimension matches collection dimension
+%% - Limit ≥ 1
+%%
+%% Post-conditions:
+%% - Returns up to limit most similar vectors
+%% - Results sorted by similarity (descending)
+%%
+schema SearchVectors
+  ΞVectorDatabaseConnection
+  query? : EMBEDDING_VECTOR
+  limit? : ℕ₁
+  filter? : VectorMetadata option  %% Optional metadata filter
+  results! : seq VectorSearchResult
+where
+  %% Pre-conditions
+  connected = true
+  #query? = dimension
+  limit? ≥ 1
+  
+  %% Results bounded by limit
+  #results! ≤ limit?
+  
+  %% Results sorted by similarity (descending)
+  ∀ i, j : dom results! •
+    i < j ⇒ results!(i).similarity_score ≥ results!(j).similarity_score
+  
+  %% If filter provided, results match filter
+  filter? = some(f) ⇒
+    ∀ result : results! •
+      MatchesFilter(result.metadata, f)
+  
+  %% All results have valid similarity scores
+  ∀ result : results! •
+    0.0 ≤ result.similarity_score ≤ 1.0
+end
+
+%% =====================================================================
+%% Graph Database Integration
+%% =====================================================================
+
+%% Graph Database Types
+GRAPH_DB_TYPE ::= neo4j | py2neo
+
+%% GraphNode: Node in graph database
+%%
+%% Invariants:
+%% - Each node has unique ID
+%% - Properties are key-value pairs
+%%
+schema GraphNode
+  node_id : seq ℂ
+  labels : seq (seq ℂ)
+  properties : seq ℂ ⇸ seq ℂ
+where
+  %% Node ID is non-empty
+  #node_id > 0
+  
+  %% At least one label
+  #labels ≥ 1
+end
+
+%% GraphRelationship: Edge in graph database
+%%
+%% Invariants:
+%% - Connects two nodes
+%% - Has a relationship type
+%%
+schema GraphRelationship
+  rel_id : seq ℂ
+  rel_type : seq ℂ
+  start_node : seq ℂ
+  end_node : seq ℂ
+  properties : seq ℂ ⇸ seq ℂ
+where
+  %% IDs are non-empty
+  #rel_id > 0
+  #start_node > 0
+  #end_node > 0
+  
+  %% Relationship type is non-empty
+  #rel_type > 0
+  
+  %% Cannot connect node to itself
+  start_node ≠ end_node
+end
+
+%% GraphDatabaseConnection: Abstract graph database interface
+%%
+%% Invariants:
+%% - Connection established for operations
+%% - Supports Cypher or similar query language
+%%
+schema GraphDatabaseConnection
+  db_type : GRAPH_DB_TYPE
+  connection_uri : seq ℂ
+  username : seq ℂ
+  connected : 𝔹
+  transaction_active : 𝔹
+where
+  %% Connection URI is non-empty
+  #connection_uri > 0
+  
+  %% Username is non-empty
+  #username > 0
+  
+  %% Transaction requires connection
+  transaction_active = true ⇒ connected = true
+end
+
+%% CreateGraphNode: Create node in graph database
+%%
+%% Pre-conditions:
+%% - Database connection established
+%% - Node has valid labels and properties
+%%
+%% Post-conditions:
+%% - Node created in database
+%% - Returns node ID
+%%
+schema CreateGraphNode
+  ΞGraphDatabaseConnection
+  labels? : seq (seq ℂ)
+  properties? : seq ℂ ⇸ seq ℂ
+  node_id! : seq ℂ
+where
+  %% Pre-condition
+  connected = true
+  #labels? ≥ 1
+  
+  %% Generate node ID
+  node_id! = GenerateNodeID()
+  
+  %% Post-condition: Node exists
+  NodeExists(node_id!, db_type)
+end
+
+%% CreateGraphRelationship: Create relationship in graph database
+%%
+%% Pre-conditions:
+%% - Both nodes exist in database
+%% - Relationship type is valid
+%%
+%% Post-conditions:
+%% - Relationship created
+%% - Returns relationship ID
+%%
+schema CreateGraphRelationship
+  ΞGraphDatabaseConnection
+  start_node? : seq ℂ
+  end_node? : seq ℂ
+  rel_type? : seq ℂ
+  properties? : seq ℂ ⇸ seq ℂ
+  rel_id! : seq ℂ
+where
+  %% Pre-conditions
+  connected = true
+  NodeExists(start_node?, db_type)
+  NodeExists(end_node?, db_type)
+  #rel_type? > 0
+  start_node? ≠ end_node?
+  
+  %% Generate relationship ID
+  rel_id! = GenerateRelID()
+  
+  %% Post-condition: Relationship exists
+  RelationshipExists(rel_id!, db_type)
+end
+
+%% QueryGraph: Execute Cypher query on graph database
+%%
+%% Pre-conditions:
+%% - Connection established
+%% - Query is valid Cypher syntax
+%%
+%% Post-conditions:
+%% - Returns query results
+%% - Results match query pattern
+%%
+schema QueryGraph
+  ΞGraphDatabaseConnection
+  query? : seq ℂ  %% Cypher query
+  parameters? : seq ℂ ⇸ seq ℂ
+  results! : seq (seq ℂ ⇸ seq ℂ)  %% Result records
+where
+  %% Pre-condition
+  connected = true
+  #query? > 0
+  ValidCypherQuery(query?)
+  
+  %% Results structure depends on query
+  %% (implementation-specific)
+end
+
+%% =====================================================================
+%% LLM Provider Integration
+%% =====================================================================
+
+%% LLM Provider Types
+LLM_PROVIDER ::= openai | anthropic | google | cohere | huggingface | litellm
+
+%% LLMRequest: Request to LLM provider
+%%
+%% Invariants:
+%% - Contains prompt or messages
+%% - Has generation parameters
+%%
+schema LLMRequest
+  provider : LLM_PROVIDER
+  model : seq ℂ
+  prompt : seq ℂ option
+  messages : seq (seq ℂ × seq ℂ) option  %% (role, content) pairs
+  temperature : PROB
+  max_tokens : ℕ₁
+  top_p : PROB
+  stop_sequences : seq (seq ℂ)
+where
+  %% Either prompt or messages must be provided
+  prompt ≠ none ∨ messages ≠ none
+  
+  %% Model name is non-empty
+  #model > 0
+  
+  %% Temperature in valid range
+  0.0 ≤ temperature ≤ 2.0
+  
+  %% Top-p in valid range
+  0.0 ≤ top_p ≤ 1.0
+  
+  %% Max tokens is reasonable
+  1 ≤ max_tokens ≤ 100000
+end
+
+%% LLMResponse: Response from LLM provider
+%%
+%% Invariants:
+%% - Contains generated text
+%% - Includes usage statistics
+%%
+schema LLMResponse
+  generated_text : seq ℂ
+  finish_reason : seq ℂ  %% "stop", "length", "content_filter"
+  prompt_tokens : ℕ
+  completion_tokens : ℕ
+  total_tokens : ℕ
+  latency_ms : ℝ⁺
+where
+  %% Generated text is non-empty
+  #generated_text > 0
+  
+  %% Finish reason is valid
+  finish_reason ∈ {"stop", "length", "content_filter", "error"}
+  
+  %% Token counts are consistent
+  total_tokens = prompt_tokens + completion_tokens
+  
+  %% Latency is positive
+  latency_ms > 0.0
+end
+
+%% LLMConnection: Connection to LLM provider
+%%
+%% Invariants:
+%% - API key configured
+%% - Rate limits respected
+%%
+schema LLMConnection
+  provider : LLM_PROVIDER
+  api_key : seq ℂ
+  base_url : seq ℂ option
+  rate_limit : ℕ₁  %% Requests per minute
+  request_count : ℕ
+  last_request_time : ℝ⁺
+where
+  %% API key is non-empty (encrypted in practice)
+  #api_key > 0
+  
+  %% Rate limit is reasonable
+  1 ≤ rate_limit ≤ 10000
+  
+  %% Request count doesn't exceed rate limit
+  request_count ≤ rate_limit
+end
+
+%% CallLLM: Make request to LLM provider
+%%
+%% Pre-conditions:
+%% - Connection configured
+%% - Rate limit not exceeded
+%% - Request is valid
+%%
+%% Post-conditions:
+%% - Returns generated text
+%% - Updates request count
+%%
+schema CallLLM
+  ΔLLMConnection
+  request? : LLMRequest
+  response! : LLMResponse
+where
+  %% Pre-condition: Rate limit check
+  request_count < rate_limit
+  
+  %% Provider matches
+  request?.provider = provider
+  
+  %% Execute request
+  response! = ExecuteLLMRequest(request?, api_key, base_url)
+  
+  %% Update request count
+  request_count' = request_count + 1
+  
+  %% Update last request time
+  last_request_time' = current_time()
+  
+  %% Post-condition: Valid response
+  #response!.generated_text > 0
+end
+
+%% =====================================================================
+%% Embedding Service Integration
+%% =====================================================================
+
+%% Embedding Provider Types
+EMBEDDING_PROVIDER ::= sentence_transformers | fasttext | tiktoken | openai
+
+%% EmbeddingRequest: Request for text embedding
+%%
+%% Invariants:
+%% - Contains text to embed
+%% - Specifies model
+%%
+schema EmbeddingRequest
+  provider : EMBEDDING_PROVIDER
+  model : seq ℂ
+  text : seq ℂ
+  normalize : 𝔹
+where
+  %% Text is non-empty
+  #text > 0
+  
+  %% Model name is non-empty
+  #model > 0
+end
+
+%% EmbeddingResponse: Response with embedding vector
+%%
+%% Invariants:
+%% - Contains embedding vector
+%% - Vector dimension consistent with model
+%%
+schema EmbeddingResponse
+  embedding : EMBEDDING_VECTOR
+  dimension : VECTOR_DIM
+  model : seq ℂ
+where
+  %% Embedding is non-empty
+  #embedding > 0
+  
+  %% Dimension matches embedding size
+  dimension = #embedding
+  
+  %% Model name is non-empty
+  #model > 0
+end
+
+%% EmbeddingConnection: Connection to embedding service
+%%
+%% Invariants:
+%% - Model loaded and ready
+%% - Dimension known
+%%
+schema EmbeddingConnection
+  provider : EMBEDDING_PROVIDER
+  model : seq ℂ
+  dimension : VECTOR_DIM
+  model_loaded : 𝔹
+where
+  %% Model name is non-empty
+  #model > 0
+  
+  %% Dimension is reasonable
+  1 ≤ dimension ≤ 4096
+  
+  %% Operations require loaded model
+  model_loaded = true
+end
+
+%% GenerateEmbedding: Generate embedding for text
+%%
+%% Pre-conditions:
+%% - Model is loaded
+%% - Text is non-empty
+%%
+%% Post-conditions:
+%% - Returns embedding vector
+%% - Dimension matches model dimension
+%%
+schema GenerateEmbedding
+  ΞEmbeddingConnection
+  request? : EmbeddingRequest
+  response! : EmbeddingResponse
+where
+  %% Pre-conditions
+  model_loaded = true
+  request?.provider = provider
+  request?.model = model
+  
+  %% Generate embedding
+  response! = ComputeEmbedding(request?.text, model, dimension)
+  
+  %% Post-conditions
+  response!.dimension = dimension
+  response!.model = model
+  
+  %% If normalization requested, vector is normalized
+  request?.normalize = true ⇒
+    VectorNormalized(response!.embedding)
+end
+
+%% =====================================================================
+%% Node9 Distributed Backend Integration
+%% =====================================================================
+
+%% Node9NamespacePath: Path in node9 namespace
+%%
+%% Invariants:
+%% - Absolute path starting with '/'
+%% - Valid path components
+%%
+schema Node9NamespacePath
+  path : seq ℂ
+  components : seq (seq ℂ)
+where
+  %% Absolute path
+  head path = '/'
+  
+  %% Components derived from path
+  components = split(path, '/')
+  
+  %% No empty components
+  ∀ c : components • #c > 0
+end
+
+%% Node9Operation: Operation on node9 namespace
+%%
+%% Invariants:
+%% - Operation type is valid
+%% - Path is well-formed
+%%
+schema Node9Operation
+  op_type : seq ℂ  %% "read", "write", "create", "delete", "list"
+  path : Node9NamespacePath
+  data : seq ℂ option  %% For write operations
+  permissions : ℕ  %% Unix-style permissions
+where
+  %% Operation type is valid
+  op_type ∈ {"read", "write", "create", "delete", "list"}
+  
+  %% Write operations require data
+  op_type = "write" ⇒ data ≠ none
+  
+  %% Permissions are valid (0-0777)
+  0 ≤ permissions ≤ 511  %% 0777 in octal = 511 in decimal
+end
+
+%% Node9BackendState: State of node9 distributed backend
+%%
+%% Invariants:
+%% - Namespace initialized
+%% - Local cache synchronized
+%%
+schema Node9BackendState
+  namespace_root : Node9NamespacePath
+  local_cache : LocalAtomSpaceBackend
+  pending_sync : ℙ ATOM_ID
+  last_sync_time : ℝ⁺
+  sync_interval : ℝ⁺  %% Seconds between syncs
+where
+  %% Namespace root is valid
+  namespace_root.path = "/cog/space" ∨
+  namespace_root.path = "/cog/memory"
+  
+  %% Pending sync atoms are in local cache
+  pending_sync ⊆ dom local_cache.atoms_by_id
+  
+  %% Sync interval is reasonable
+  1.0 ≤ sync_interval ≤ 300.0  %% 1 to 300 seconds
+end
+
+%% SyncNode9Backend: Synchronize local cache with node9 namespace
+%%
+%% Pre-conditions:
+%% - Pending sync atoms exist
+%% - Namespace is accessible
+%%
+%% Post-conditions:
+%% - Pending atoms written to namespace
+%% - Sync time updated
+%%
+schema SyncNode9Backend
+  ΔNode9BackendState
+where
+  %% Pre-condition: Time to sync
+  current_time() - last_sync_time ≥ sync_interval
+  
+  %% Write pending atoms to namespace
+  ∀ atom_id : pending_sync •
+    let atom == local_cache.atoms_by_id(atom_id) •
+    WriteAtomToNamespace(atom, namespace_root)
+  
+  %% Clear pending sync
+  pending_sync' = ∅
+  
+  %% Update sync time
+  last_sync_time' = current_time()
+  
+  %% Local cache unchanged
+  local_cache' = local_cache
+end
+
+%% =====================================================================
+%% Mem0 Backend Integration
+%% =====================================================================
+
+%% Mem0Config: Configuration for mem0 backend
+%%
+%% Invariants:
+%% - Vector DB configured
+%% - Embedding service configured
+%%
+schema Mem0Config
+  vector_db : VectorDatabaseConnection
+  embedding_service : EmbeddingConnection
+  enable_graph : 𝔹
+  graph_db : GraphDatabaseConnection option
+  cache_size : ℕ₁
+where
+  %% Vector DB and embedding dimensions match
+  vector_db.dimension = embedding_service.dimension
+  
+  %% If graph enabled, graph DB configured
+  enable_graph = true ⇒ graph_db ≠ none
+  
+  %% Cache size is reasonable
+  100 ≤ cache_size ≤ 100000
+end
+
+%% Mem0BackendState: State of mem0 backend
+%%
+%% Invariants:
+%% - Local cache synchronized with vector DB
+%% - Embeddings computed for atoms
+%%
+schema Mem0BackendState
+  config : Mem0Config
+  local_cache : LocalAtomSpaceBackend
+  embeddings : ATOM_ID ⇸ EMBEDDING_VECTOR
+  embedding_cache : seq ℂ ⇸ EMBEDDING_VECTOR  %% Text to embedding
+  vector_ids : ATOM_ID ⇸ seq ℂ  %% Atom ID to vector DB ID
+where
+  %% All embedded atoms in local cache
+  dom embeddings ⊆ dom local_cache.atoms_by_id
+  
+  %% Vector IDs correspond to embeddings
+  dom vector_ids = dom embeddings
+  
+  %% Embedding dimensions match config
+  ∀ emb : ran embeddings •
+    #emb = config.vector_db.dimension
+  
+  %% Cache size bounded
+  #embedding_cache ≤ config.cache_size
+end
+
+%% StoreAtomWithEmbedding: Store atom with vector embedding
+%%
+%% Pre-conditions:
+%% - Atom is well-formed
+%% - Embedding service available
+%%
+%% Post-conditions:
+%% - Atom stored in local cache
+%% - Embedding generated and stored in vector DB
+%% - Mappings updated
+%%
+schema StoreAtomWithEmbedding
+  ΔMem0BackendState
+  atom? : Atom
+  atom_id! : ATOM_ID
+where
+  %% Store in local cache
+  local_cache' = AddAtom(local_cache, atom?)
+  
+  %% Generate embedding
+  let text == AtomToText(atom?) •
+  let embedding == 
+    if text ∈ dom embedding_cache then embedding_cache(text)
+    else GenerateEmbedding(config.embedding_service, text)
+  •
+  
+  %% Store embedding
+  embeddings' = embeddings ⊕ {atom?.id ↦ embedding}
+  
+  %% Store in vector DB
+  let metadata == CreateAtomMetadata(atom?) •
+  let vector_id == InsertVector(
+    config.vector_db,
+    embedding,
+    metadata
+  ) •
+  vector_ids' = vector_ids ⊕ {atom?.id ↦ vector_id}
+  
+  %% Update embedding cache
+  embedding_cache' = embedding_cache ⊕ {text ↦ embedding}
+  
+  %% Return atom ID
+  atom_id! = atom?.id
+end
+
+%% SearchSimilarAtoms: Vector similarity search for atoms
+%%
+%% Pre-conditions:
+%% - Query atom or text provided
+%% - Limit ≥ 1
+%%
+%% Post-conditions:
+%% - Returns similar atoms ranked by similarity
+%%
+schema SearchSimilarAtoms
+  ΞMem0BackendState
+  query? : Atom ⊎ seq ℂ  %% Either atom or text
+  limit? : ℕ₁
+  results! : seq (Atom × PROB)  %% Atoms with similarity scores
+where
+  %% Generate query embedding
+  let query_text == 
+    case query? of
+      | left(atom) ⇒ AtomToText(atom)
+      | right(text) ⇒ text
+    end
+  •
+  let query_embedding == 
+    if query_text ∈ dom embedding_cache
+    then embedding_cache(query_text)
+    else GenerateEmbedding(config.embedding_service, query_text)
+  •
+  
+  %% Search vector DB
+  let vector_results == SearchVectors(
+    config.vector_db,
+    query_embedding,
+    limit?
+  ) •
+  
+  %% Map back to atoms
+  results! = [
+    (local_cache.atoms_by_id(GetAtomIDFromVectorID(vr.vector_id)),
+     vr.similarity_score)
+    | vr : vector_results,
+      GetAtomIDFromVectorID(vr.vector_id) ∈ dom local_cache.atoms_by_id
+  ]
+  
+  %% Results sorted by similarity
+  ∀ i, j : dom results! •
+    i < j ⇒ results!(i).2 ≥ results!(j).2
+end
+
+%% =====================================================================
+%% Integration Error Handling
+%% =====================================================================
+
+%% IntegrationError: Error during external integration
+%%
+%% Invariants:
+%% - Error type categorized
+%% - Includes error message and context
+%%
+schema IntegrationError
+  error_type : seq ℂ  %% "connection", "timeout", "rate_limit", "auth", "data"
+  service : seq ℂ  %% Which service failed
+  message : seq ℂ
+  timestamp : ℝ⁺
+  retry_count : ℕ
+  recoverable : 𝔹
+where
+  %% Error type is valid
+  error_type ∈ {"connection", "timeout", "rate_limit", "auth", "data", "unknown"}
+  
+  %% Service name is non-empty
+  #service > 0
+  
+  %% Message is non-empty
+  #message > 0
+  
+  %% Retry count is reasonable
+  retry_count ≤ 5
+  
+  %% Some errors are non-recoverable
+  error_type = "auth" ⇒ recoverable = false
+end
+
+%% HandleIntegrationError: Error recovery strategy
+%%
+%% Pre-conditions:
+%% - Error occurred in integration
+%%
+%% Post-conditions:
+%% - Error logged
+%% - Recovery action taken if recoverable
+%% - Fallback used if necessary
+%%
+schema HandleIntegrationError
+  error? : IntegrationError
+  action! : seq ℂ  %% "retry", "fallback", "fail"
+where
+  %% Determine action based on error
+  error?.recoverable = true ∧ error?.retry_count < 3 ⇒
+    action! = "retry"
+  
+  error?.recoverable = true ∧ error?.retry_count ≥ 3 ⇒
+    action! = "fallback"
+  
+  error?.recoverable = false ⇒
+    action! = "fail"
+  
+  %% Log error
+  LogError(error?)
+end
+
+%% =====================================================================
+%% Integration Theorems
+%% =====================================================================
+
+%% Theorem 1: Vector Search Correctness
+%% Vector similarity search returns most similar vectors
+theorem VectorSearchCorrectness
+∀ vdb : VectorDatabaseConnection •
+∀ query : EMBEDDING_VECTOR •
+∀ limit : ℕ₁ •
+  let results == SearchVectors(vdb, query, limit) •
+  ∀ r1, r2 : results •
+    index(r1) < index(r2) ⇒
+    r1.similarity_score ≥ r2.similarity_score
+end
+
+%% Theorem 2: Graph Consistency
+%% All relationships reference existing nodes
+theorem GraphConsistency
+∀ gdb : GraphDatabaseConnection •
+∀ rel : GraphRelationship •
+  RelationshipExists(rel.rel_id, gdb.db_type) ⇒
+    NodeExists(rel.start_node, gdb.db_type) ∧
+    NodeExists(rel.end_node, gdb.db_type)
+end
+
+%% Theorem 3: Embedding Determinism
+%% Same text always produces same embedding
+theorem EmbeddingDeterminism
+∀ ec : EmbeddingConnection •
+∀ text : seq ℂ •
+  let emb1 == GenerateEmbedding(ec, text) •
+  let emb2 == GenerateEmbedding(ec, text) •
+  emb1 = emb2
+end
+
+%% Theorem 4: Rate Limit Enforcement
+%% LLM requests respect rate limits
+theorem RateLimitEnforcement
+∀ llm : LLMConnection •
+  llm.request_count ≤ llm.rate_limit
+end
+
+%% Theorem 5: Mem0 Consistency
+%% Embeddings in mem0 backend match atoms
+theorem Mem0Consistency
+∀ mem0 : Mem0BackendState •
+  dom mem0.embeddings ⊆ dom mem0.local_cache.atoms_by_id ∧
+  dom mem0.vector_ids = dom mem0.embeddings
+end
+
+%% Theorem 6: Node9 Sync Correctness
+%% After sync, no pending changes remain
+theorem Node9SyncCorrectness
+∀ n9, n9' : Node9BackendState •
+  SyncNode9Backend ⇒ n9'.pending_sync = ∅
+end
+
+%% End of integrations.zpp
