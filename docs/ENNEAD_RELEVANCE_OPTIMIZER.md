@@ -2,11 +2,13 @@
 
 ## Overview
 
-The Ennead Relevance Realization Optimizer represents a breakthrough in cognitive architecture design by implementing John Vervaeke's complete relevance realization framework through a unified nine-dimensional system. This optimizer achieves optimal relevance realization by integrating three fundamental triads that interpenetrate and mutually constitute each other.
+The Ennead Relevance Realization Optimizer represents a breakthrough in cognitive architecture design by implementing John Vervaeke's complete relevance realization framework through a unified ten-dimensional system organized as a triad-of-triads. This optimizer achieves optimal relevance realization by integrating three fundamental triads that interpenetrate and mutually constitute each other.
+
+**Note on "Ennead" Naming:** While traditionally "Ennead" (Greek: ἐννεάς) means nine, this implementation has 10 dimensions (4+3+3) due to Vervaeke's four-fold structure of knowing (adding participatory to the classical three). The name honors both Plotinus's Enneads (organized around triadic principles) and Vervaeke's framework, maintaining the essential triad-of-triads structure: three fundamental aspects of cognition (knowing, understanding, wisdom), each with its internal dimensions.
 
 ## The Ennead Structure
 
-The Relevance Realization Ennead organizes cognition into **three triads of three dimensions each**, creating a comprehensive framework for optimal relevance realization:
+The Relevance Realization Ennead organizes cognition into **three fundamental triads**, creating a comprehensive framework for optimal relevance realization. While traditionally "Ennead" refers to nine, this implementation has **10 dimensions** (4+3+3) due to Vervaeke's four-fold knowing structure. The system maintains the essential triad-of-triads principle:
 
 ```
                 RELEVANCE REALIZATION ENNEAD

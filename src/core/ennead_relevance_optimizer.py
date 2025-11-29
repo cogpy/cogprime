@@ -2,22 +2,30 @@
 Ennead-Based Relevance Realization Optimizer
 
 This module implements optimal relevance realization through integration
-of the nine dimensions of the Relevance Realization Ennead:
+of ten dimensions organized in a triad-of-triads structure (3+3+3 core + 1 transformative):
 
-Triad I - Ways of Knowing (Epistemological):
-  1. Propositional-Procedural-Perspectival Trinity
-  2. Participatory Knowing Integration
-  3. Gnostic Transformation
+Triad I - Ways of Knowing (Epistemological): 4 dimensions
+  1. Propositional (knowing-that)
+  2. Procedural (knowing-how)  
+  3. Perspectival (knowing-as)
+  4. Participatory (knowing-by-being) - The transformative dimension
 
-Triad II - Orders of Understanding (Ontological):
-  4. Nomological Order (How things work)
-  5. Normative Order (What matters)
-  6. Narrative Order (How things develop)
+Triad II - Orders of Understanding (Ontological): 3 dimensions
+  5. Nomological Order (How things work)
+  6. Normative Order (What matters)
+  7. Narrative Order (How things develop)
 
-Triad III - Practices of Wisdom (Axiological):
-  7. Morality (Virtue & character)
-  8. Meaning (Coherence & purpose)
-  9. Mastery (Excellence & flow)
+Triad III - Practices of Wisdom (Axiological): 3 dimensions
+  8. Morality (Virtue & character)
+  9. Meaning (Coherence & purpose)
+  10. Mastery (Excellence & flow)
+
+Note: While called "Ennead" (Greek: nine) in honor of Plotinus's Enneads
+and Vervaeke's framework, the implementation has 10 dimensions due to the
+four-fold structure of knowing (adding participatory to the original three).
+The system maintains the triad-of-triads principle: three fundamental 
+dimensions of reality (knowing, understanding, wisdom), each with its own
+internal structure.
 """
 
 from dataclasses import dataclass, field
