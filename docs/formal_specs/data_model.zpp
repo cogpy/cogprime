@@ -1,0 +1,578 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% CogPrime Data Model - Z++ Formal Specification
+%% File: data_model.zpp
+%% Purpose: Formal specification of the data layer including AtomSpace,
+%%          Memory structures, and cognitive state representations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% =====================================================================
+%% Basic Types and Constants
+%% =====================================================================
+
+%% Bounded real numbers for probabilities and confidence values
+[PROB] == { x : ℝ | 0.0 ≤ x ≤ 1.0 }
+
+%% Bounded real numbers for attention values (can be negative or positive)
+[STI_VALUE] == ℝ
+[LTI_VALUE] == ℝ
+
+%% Identifiers
+[ATOM_ID] == seq ℂ  %% UUID as character sequence
+[ATOM_TYPE] == seq ℂ  %% Atom type name
+[GOAL_ID] == seq ℂ
+[ACTION_NAME] == seq ℂ
+
+%% Feature dimensions
+MAX_FEATURE_DIM ::= 512
+[FEATURE_VECTOR] == seq₁₋₅₁₂ ℝ  %% Variable length vector up to 512 dimensions
+
+%% Memory capacity
+MAX_MEMORY_SIZE ::= 10000
+MAX_WORKING_MEMORY ::= 7  %% Based on cognitive science limits
+
+%% Pattern types enumeration
+PATTERN_TYPE ::= causal | analogical | hierarchical | temporal | general
+
+%% =====================================================================
+%% AtomSpace Data Structures
+%% =====================================================================
+
+%% Truth Value: Represents probabilistic truth with confidence
+%%
+%% Invariants:
+%% - Both strength and confidence are bounded to [0.0, 1.0]
+%% - Default values are (1.0, 1.0) for full certainty
+%%
+schema TruthValue
+  strength : PROB
+  confidence : PROB
+where
+  %% Initial truth value represents certain knowledge
+  strength = 1.0 ⇒ confidence ≥ 0.8
+end
+
+%% Attention Value: Economic Attention Network (ECAN) values
+%%
+%% Invariants:
+%% - STI (Short-Term Importance) represents immediate relevance
+%% - LTI (Long-Term Importance) represents persistent relevance
+%% - VLTI (Very Long-Term Importance) is a boolean persistence flag
+%%
+schema AttentionValue
+  sti : STI_VALUE
+  lti : LTI_VALUE
+  vlti : 𝔹
+where
+  %% Very long-term importance requires high long-term importance
+  vlti = true ⇒ lti > 0.7
+  
+  %% Attention decay relationship: high STI should correlate with LTI increase
+  sti > 1.0 ⇒ lti ≥ 0.0
+end
+
+%% Base Atom: Abstract representation of all atoms in the hypergraph
+%%
+%% Invariants:
+%% - Each atom has a unique identifier
+%% - Each atom has an associated type
+%% - Each atom has truth and attention values
+%%
+schema Atom
+  id : ATOM_ID
+  atom_type : ATOM_TYPE
+  tv : TruthValue
+  av : AttentionValue
+  incoming_set : ℙ ATOM_ID  %% Set of IDs of links containing this atom
+  values : ATOM_ID ⇸ ℝ  %% Partial function from keys to values
+where
+  %% Every atom has a non-empty ID
+  #id > 0
+  
+  %% Every atom has a non-empty type
+  #atom_type > 0
+  
+  %% Incoming set should not contain the atom itself (no self-reference in incoming)
+  id ∉ incoming_set
+end
+
+%% Node: Represents vertices in the hypergraph
+%%
+%% Invariants:
+%% - Nodes must have a name
+%% - Node types include: ConceptNode, PredicateNode, VariableNode, etc.
+%%
+schema Node
+  Atom  %% Inherits from Atom
+  name : seq ℂ
+where
+  %% Node must have a non-empty name
+  #name > 0
+  
+  %% Nodes don't have outgoing sets (they are terminal vertices)
+  incoming_set ⊆ dom(values) %% Incoming links reference this node
+end
+
+%% Link: Represents hyperedges in the hypergraph
+%%
+%% Invariants:
+%% - Links connect one or more atoms (arity ≥ 1)
+%% - All atoms in outgoing set must exist in the AtomSpace
+%% - Link types include: InheritanceLink, SimilarityLink, EvaluationLink, etc.
+%%
+schema Link
+  Atom  %% Inherits from Atom
+  outgoing_set : seq₁ ATOM_ID  %% Non-empty sequence of connected atoms
+  arity : ℕ₁
+where
+  %% Arity matches the size of outgoing set
+  arity = #outgoing_set
+  
+  %% Links must connect at least one atom
+  arity ≥ 1
+  
+  %% All atoms in outgoing set are distinct (no duplicate connections)
+  ∀ i, j : dom outgoing_set • i ≠ j ⇒ outgoing_set(i) ≠ outgoing_set(j)
+end
+
+%% =====================================================================
+%% AtomSpace Backend Specifications
+%% =====================================================================
+
+%% Backend Types
+BACKEND_TYPE ::= local | node9 | mem0 | distributed
+
+%% Local AtomSpace Backend: In-memory storage
+%%
+%% Invariants:
+%% - Maintains bidirectional indexing for fast lookup
+%% - Nodes are indexed by (type, name) for O(1) lookup
+%% - All atoms are indexed by type for type-based queries
+%%
+schema LocalAtomSpaceBackend
+  atoms_by_id : ATOM_ID ⇸ Atom  %% Main atom storage
+  nodes_by_type_name : (ATOM_TYPE × seq ℂ) ⇸ Node  %% Node index
+  atoms_by_type : ATOM_TYPE ⇸ ℙ ATOM_ID  %% Type-based index
+where
+  %% Consistency: All atoms in the main storage are referenced in type index
+  ∀ id : dom atoms_by_id •
+    let atom == atoms_by_id(id) •
+    id ∈ atoms_by_type(atom.atom_type)
+  
+  %% Consistency: All nodes in node index are in main storage
+  ∀ key : dom nodes_by_type_name •
+    let node == nodes_by_type_name(key) •
+    node.id ∈ dom atoms_by_id
+  
+  %% Consistency: Node index contains only nodes
+  ∀ node : ran nodes_by_type_name •
+    node.id ∈ dom atoms_by_id ∧ atoms_by_id(node.id) is Node
+end
+
+%% Node9 Distributed Backend: Uses node9 namespace for distributed storage
+%%
+%% Invariants:
+%% - Maps atom operations to distributed namespace operations
+%% - Maintains eventual consistency across distributed nodes
+%%
+schema Node9AtomSpaceBackend
+  namespace_path : seq ℂ  %% Path in the node9 namespace
+  local_cache : LocalAtomSpaceBackend  %% Local cache for performance
+  sync_pending : ℙ ATOM_ID  %% Atoms pending synchronization
+where
+  %% Namespace path is absolute (starts with '/')
+  head namespace_path = '/'
+  
+  %% Pending sync atoms are in local cache
+  sync_pending ⊆ dom local_cache.atoms_by_id
+end
+
+%% Mem0 Vector Backend: Uses mem0 for persistence and vector search
+%%
+%% Invariants:
+%% - Each atom can have an associated embedding vector
+%% - Supports similarity search via vector embeddings
+%%
+schema Mem0AtomSpaceBackend
+  local_cache : LocalAtomSpaceBackend
+  embeddings : ATOM_ID ⇸ FEATURE_VECTOR  %% Atom embeddings for vector search
+  vector_db_connected : 𝔹
+where
+  %% All embedded atoms exist in local cache
+  dom embeddings ⊆ dom local_cache.atoms_by_id
+  
+  %% If connected to vector DB, can perform vector search
+  vector_db_connected = true ⇒ dom embeddings ≠ ∅
+end
+
+%% =====================================================================
+%% Memory System Data Structures
+%% =====================================================================
+
+%% Thought: Represents a cognitive thought pattern
+%%
+%% Invariants:
+%% - Content is a feature vector representation
+%% - Salience indicates importance (0.0 to 1.0)
+%% - Confidence indicates certainty (0.0 to 1.0)
+%% - Pattern type categorizes the reasoning pattern
+%%
+schema Thought
+  content : FEATURE_VECTOR
+  salience : PROB
+  associations : seq (seq ℂ)  %% Associated concept names
+  timestamp : ℝ⁺  %% Unix timestamp
+  confidence : PROB
+  pattern_type : PATTERN_TYPE
+where
+  %% High salience thoughts have higher confidence
+  salience > 0.8 ⇒ confidence > 0.6
+  
+  %% Thoughts must have content
+  #content > 0
+  
+  %% Timestamp is in reasonable range (not in the future)
+  timestamp ≤ current_time()  %% Function returns current Unix time
+end
+
+%% Episodic Memory: Stores and retrieves memories
+%%
+%% Invariants:
+%% - Fixed capacity with intelligent forgetting
+%% - Tracks importance scores for consolidation decisions
+%% - Maintains access counts for usage-based retention
+%%
+schema EpisodicMemory
+  memory_size : ℕ₁
+  feature_dim : ℕ₁
+  memories : seq Thought  %% Ordered sequence of memories
+  memory_matrix : seq (FEATURE_VECTOR)  %% Matrix representation for fast retrieval
+  importance_scores : seq PROB  %% Importance of each memory
+  access_counts : seq ℕ  %% Number of times each memory accessed
+  current_index : ℕ
+  consolidation_threshold : PROB
+where
+  %% Memory capacity constraint
+  #memories ≤ memory_size
+  
+  %% Consistent sizes across data structures
+  #memories = #memory_matrix = #importance_scores = #access_counts
+  
+  %% Current index within valid range
+  current_index < memory_size
+  
+  %% Consolidation threshold is meaningful
+  0.6 ≤ consolidation_threshold ≤ 0.9
+  
+  %% Feature dimensions match
+  ∀ m : memories • #(m.content) ≤ feature_dim
+  
+  %% Importance scores reflect salience and confidence
+  ∀ i : dom memories •
+    importance_scores(i) = memories(i).salience × memories(i).confidence
+end
+
+%% Working Memory: Limited capacity short-term memory
+%%
+%% Invariants:
+%% - Capacity limited to 7±2 items (cognitive psychology)
+%% - Items have recency and relevance tracking
+%%
+schema WorkingMemory
+  capacity : ℕ₁
+  items : seq (seq ℂ × FEATURE_VECTOR × ℝ)  %% (key, value, timestamp)
+  attention_weights : seq PROB  %% Attention allocated to each item
+where
+  %% Working memory capacity constraint (Miller's Law)
+  capacity ≤ MAX_WORKING_MEMORY
+  
+  %% Cannot exceed capacity
+  #items ≤ capacity
+  
+  %% Attention weights correspond to items
+  #attention_weights = #items
+  
+  %% Attention weights sum to approximately 1.0 (normalized distribution)
+  let total_attention == Σ(attention_weights) •
+  0.95 ≤ total_attention ≤ 1.05
+end
+
+%% =====================================================================
+%% Cognitive State Data Structures
+%% =====================================================================
+
+%% Action: Represents an action to be taken
+%%
+%% Invariants:
+%% - Actions have names and parameters
+%% - Confidence indicates certainty of action selection
+%% - Expected outcome is a predicted state
+%%
+schema Action
+  name : ACTION_NAME
+  parameters : seq ℂ ⇸ ℝ  %% Action parameters
+  confidence : PROB
+  expected_outcome : FEATURE_VECTOR
+  priority : PROB
+  execution_cost : ℝ⁺
+  temporal_constraint : ℝ⁺ option  %% Optional deadline
+where
+  %% Action must have a name
+  #name > 0
+  
+  %% High priority actions should have high confidence
+  priority > 0.8 ⇒ confidence > 0.6
+  
+  %% Execution cost is positive
+  execution_cost > 0.0
+  
+  %% If temporal constraint exists, it's in the future
+  temporal_constraint = some(t) ⇒ t > current_time()
+end
+
+%% Goal: Represents a hierarchical goal
+%%
+%% Invariants:
+%% - Goals can have parent-child relationships
+%% - Completion status is tracked (0.0 to 1.0)
+%% - Deadlines, if present, are in the future
+%%
+schema Goal
+  goal_id : GOAL_ID
+  name : seq ℂ
+  description : seq ℂ
+  priority : PROB
+  deadline : ℝ⁺ option
+  parent_goal : GOAL_ID option
+  subgoals : seq GOAL_ID
+  completion_status : PROB
+  required_actions : seq ACTION_NAME
+where
+  %% Goal must have a name
+  #name > 0
+  
+  %% Completion status valid range
+  0.0 ≤ completion_status ≤ 1.0
+  
+  %% If deadline exists, it's in the future or recently past
+  deadline = some(t) ⇒ t > current_time() - 3600.0  %% Allow 1 hour grace
+  
+  %% Goal cannot be its own parent
+  parent_goal = some(p) ⇒ p ≠ goal_id
+  
+  %% Subgoals don't include self
+  goal_id ∉ subgoals
+  
+  %% Completed goals have status close to 1.0
+  completion_status = 1.0 ⇒ #required_actions = 0 ∨ 
+    (∀ a : required_actions • action_completed(a))
+end
+
+%% Goal Hierarchy: Manages hierarchical goal structures
+%%
+%% Invariants:
+%% - Maintains parent-child relationships
+%% - Tracks active and completed goals
+%% - No circular dependencies in goal hierarchy
+%%
+schema GoalHierarchy
+  goals : GOAL_ID ⇸ Goal
+  active_goals : seq GOAL_ID
+  completed_goals : seq GOAL_ID
+where
+  %% All active goals are in the goals map
+  ∀ g : active_goals • g ∈ dom goals
+  
+  %% All completed goals are in the goals map
+  ∀ g : completed_goals • g ∈ dom goals
+  
+  %% Active and completed are disjoint
+  active_goals ∩ completed_goals = ∅
+  
+  %% Parent-child relationships are consistent
+  ∀ g : dom goals •
+    let goal == goals(g) •
+    goal.parent_goal = some(p) ⇒ p ∈ dom goals ∧ g ∈ goals(p).subgoals
+  
+  %% No circular dependencies (acyclic graph)
+  ∀ g : dom goals • ¬ is_ancestor_of(g, g, goals)
+  
+  %% Completed goals have completion status 1.0
+  ∀ g : completed_goals • goals(g).completion_status = 1.0
+end
+
+%% Sensory Input: Multi-modal sensory data
+%%
+%% Invariants:
+%% - At least one sensory modality must be present
+%% - Each modality has appropriate dimensionality
+%%
+schema SensoryInput
+  visual : FEATURE_VECTOR option
+  auditory : FEATURE_VECTOR option
+  proprioceptive : FEATURE_VECTOR option
+  text : seq ℂ option
+where
+  %% At least one modality is present
+  visual ≠ none ∨ auditory ≠ none ∨ proprioceptive ≠ none ∨ text ≠ none
+  
+  %% Visual input has expected dimensionality (e.g., 784 for 28×28 images)
+  visual = some(v) ⇒ #v ∈ {784, 2048, 4096}
+  
+  %% Auditory input has expected dimensionality (e.g., 256 for audio features)
+  auditory = some(a) ⇒ #a ∈ {128, 256, 512}
+end
+
+%% Experience: Learning experience for reinforcement learning
+%%
+%% Invariants:
+%% - Represents a state-action-reward-next_state tuple
+%% - Used for Q-learning and policy optimization
+%%
+schema Experience
+  state : FEATURE_VECTOR
+  action : ACTION_NAME
+  reward : ℝ
+  next_state : FEATURE_VECTOR
+  done : 𝔹
+where
+  %% States have same dimensionality
+  #state = #next_state
+  
+  %% Action name is non-empty
+  #action > 0
+  
+  %% If episode is done, this is a terminal state
+  done = true ⇒ reward ≠ 0.0
+end
+
+%% Experience Buffer: Replay buffer for learning
+%%
+%% Invariants:
+%% - Fixed capacity with FIFO replacement
+%% - Stores experiences for batch learning
+%%
+schema ExperienceBuffer
+  capacity : ℕ₁
+  buffer : seq Experience
+where
+  %% Buffer doesn't exceed capacity
+  #buffer ≤ capacity
+  
+  %% Capacity is reasonable for learning
+  1000 ≤ capacity ≤ 100000
+end
+
+%% =====================================================================
+%% Cognitive State: Complete system state
+%% =====================================================================
+
+%% CognitiveState: Represents the complete cognitive state
+%%
+%% Invariants:
+%% - Integrates all cognitive components
+%% - Maintains consistency across subsystems
+%% - Tracks reward accumulation
+%%
+schema CognitiveState
+  attention_focus : FEATURE_VECTOR
+  working_memory : WorkingMemory
+  emotional_valence : ℝ  %% -1.0 (negative) to +1.0 (positive)
+  goal_stack : seq GOAL_ID
+  sensory_buffer : seq ℂ ⇸ FEATURE_VECTOR
+  current_thought : Thought option
+  last_action : Action option
+  last_reward : ℝ
+  total_reward : ℝ
+where
+  %% Emotional valence bounded
+  -1.0 ≤ emotional_valence ≤ 1.0
+  
+  %% Goal stack has reasonable depth
+  #goal_stack ≤ 10
+  
+  %% Attention focus is non-empty
+  #attention_focus > 0
+  
+  %% Total reward accumulates from last rewards
+  total_reward = Σ(all_previous_rewards) + last_reward
+  
+  %% Positive rewards correlate with positive emotional valence
+  last_reward > 0.5 ⇒ emotional_valence > 0.0
+  
+  %% Negative rewards correlate with negative emotional valence
+  last_reward < -0.5 ⇒ emotional_valence < 0.0
+end
+
+%% =====================================================================
+%% Helper Functions and Axioms
+%% =====================================================================
+
+%% Check if goal g1 is an ancestor of goal g2
+function is_ancestor_of(g1 : GOAL_ID, g2 : GOAL_ID, 
+                        goals : GOAL_ID ⇸ Goal) : 𝔹 ≙
+  if g1 = g2 then false
+  else
+    let goal2 == goals(g2) •
+    goal2.parent_goal = some(p) ∧ (p = g1 ∨ is_ancestor_of(g1, p, goals))
+  end
+
+%% Get current Unix timestamp
+function current_time() : ℝ⁺ ≙
+  %% Returns current time in seconds since epoch
+  system_time_seconds()
+
+%% Check if action is completed
+function action_completed(action : ACTION_NAME) : 𝔹 ≙
+  %% External system maintains action completion status
+  action ∈ completed_actions_registry()
+
+%% Sum of sequence elements
+function Σ(seq : seq ℝ) : ℝ ≙
+  if seq = ⟨⟩ then 0.0
+  else head seq + Σ(tail seq)
+  end
+
+%% =====================================================================
+%% Data Model Invariants and Theorems
+%% =====================================================================
+
+%% Theorem 1: AtomSpace Consistency
+%% If an atom exists in the AtomSpace, all atoms it references also exist
+theorem AtomSpaceConsistency
+∀ backend : LocalAtomSpaceBackend •
+∀ atom_id : dom backend.atoms_by_id •
+  let atom == backend.atoms_by_id(atom_id) •
+  atom is Link ⇒
+    (∀ ref_id : atom.outgoing_set • ref_id ∈ dom backend.atoms_by_id)
+end
+
+%% Theorem 2: Memory Capacity Invariant
+%% Episodic memory never exceeds its declared capacity
+theorem MemoryCapacityInvariant
+∀ mem : EpisodicMemory •
+  #mem.memories ≤ mem.memory_size
+end
+
+%% Theorem 3: Goal Hierarchy Acyclicity
+%% The goal hierarchy forms a directed acyclic graph (DAG)
+theorem GoalHierarchyAcyclic
+∀ gh : GoalHierarchy •
+∀ g : dom gh.goals •
+  ¬ is_ancestor_of(g, g, gh.goals)
+end
+
+%% Theorem 4: Working Memory Constraint
+%% Working memory respects cognitive capacity limits
+theorem WorkingMemoryConstraint
+∀ wm : WorkingMemory •
+  #wm.items ≤ MAX_WORKING_MEMORY
+end
+
+%% Theorem 5: Truth Value Consistency
+%% High strength truth values require high confidence
+theorem TruthValueConsistency
+∀ tv : TruthValue •
+  tv.strength > 0.9 ⇒ tv.confidence > 0.7
+end
+
+%% End of data_model.zpp
