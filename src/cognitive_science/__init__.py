@@ -46,3 +46,12 @@ try:
     __all__.extend(['WisdomCore'])
 except ImportError:
     pass
+
+try:
+    from .vervaeke_4e_framework import *
+    __all__.extend(['Vervaeke4EFramework', 'EmbodiedCognitionProcessor', 
+                    'EmbeddedCognitionProcessor', 'EnactedCognitionProcessor',
+                    'ExtendedCognitionProcessor', 'PerspectivalParticipatoryProcessor',
+                    'ProcessingModeManager', 'CognitiveEmotionalIntegrator'])
+except ImportError:
+    pass
