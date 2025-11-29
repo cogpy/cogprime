@@ -31,3 +31,29 @@ try:
     __all__.append('PsycheCore')
 except ImportError:
     pass
+
+try:
+    from .cross_domain_core import (
+        Domain, ModalityType, UnifiedRepresentation, CrossDomainMapping,
+        CrossModalAttention, DomainAdaptation, AbstractConcept,
+        CrossDomainReasoner, CrossDomainIntegrationFramework
+    )
+    __all__.extend([
+        'Domain', 'ModalityType', 'UnifiedRepresentation', 'CrossDomainMapping',
+        'CrossModalAttention', 'DomainAdaptation', 'AbstractConcept',
+        'CrossDomainReasoner', 'CrossDomainIntegrationFramework'
+    ])
+except ImportError:
+    pass
+
+try:
+    from .cross_domain_knowledge_graph import (
+        RelationType, KnowledgeNode, KnowledgeEdge,
+        CrossDomainKnowledgeGraph, KnowledgeGraphIntegrator
+    )
+    __all__.extend([
+        'RelationType', 'KnowledgeNode', 'KnowledgeEdge',
+        'CrossDomainKnowledgeGraph', 'KnowledgeGraphIntegrator'
+    ])
+except ImportError:
+    pass
