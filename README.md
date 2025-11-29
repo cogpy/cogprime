@@ -16,6 +16,7 @@ CogPrime is an ambitious project aimed at creating an Artificial General Intelli
 - **4E Cognition**: Embodied, embedded, enacted, and extended cognitive processing
 - **Modular Architecture**: Perception, reasoning, action, and learning modules with emergent behaviors
 - **System 4 Implementation**: Campbell's System 4 cognitive architecture with consciousness sets and tensional coupling
+- **Ontogenesis**: Self-generating, evolving kernels through differential operators
 
 ## Architecture Components
 
@@ -62,6 +63,19 @@ A complete implementation of the OpenCog cognitive architecture in pure Lua (`lu
 - **Learning**: Pattern mining, reinforcement learning, concept formation
 
 See [lua/README.md](lua/README.md) for details.
+
+### Ontogenesis: Self-Generating Kernels
+
+A novel implementation of self-generating, evolving kernels (`src/ontogenesis/` directory), featuring:
+
+- **Self-Generation**: Kernels generate offspring through recursive self-composition
+- **Self-Optimization**: Kernels optimize their own grip through iterative improvement
+- **Self-Reproduction**: Two kernels combine to create offspring with mixed genetic material
+- **Evolution**: Populations evolve over generations to maximize fitness
+- **Genetic Operations**: Crossover, mutation, and selection algorithms
+- **Development Stages**: Embryonic, juvenile, mature, and senescent life stages
+
+See [docs/ONTOGENESIS.md](docs/ONTOGENESIS.md) for comprehensive documentation.
 
 ## Installation
 
@@ -193,6 +207,71 @@ metrics = action_module.get_planning_metrics()
 print(f"Resource utilization: {metrics['resource_utilization']*100:.1f}%")
 ```
 
+### Ontogenesis: Self-Generating Kernels
+
+**Basic Kernel Creation:**
+```python
+from src.ontogenesis import (
+    GeneratedKernel,
+    GripMetrics,
+    initialize_ontogenetic_kernel,
+    self_generate
+)
+import numpy as np
+
+# Create a base kernel
+coefficients = np.array([1.0, 0.5, 0.25, 0.125])
+grip = GripMetrics(contact=0.9, coverage=0.8, efficiency=0.7, stability=0.85)
+
+kernel = GeneratedKernel(
+    order=4,
+    coefficients=coefficients,
+    domain_spec="consciousness",
+    grip_metrics=grip
+)
+
+# Initialize as ontogenetic
+parent = initialize_ontogenetic_kernel(kernel)
+
+# Generate offspring
+offspring = self_generate(parent)
+print(f"Parent: {parent.genome.id}, Generation: {parent.genome.generation}")
+print(f"Offspring: {offspring.genome.id}, Generation: {offspring.genome.generation}")
+```
+
+**Population Evolution:**
+```python
+from src.ontogenesis import (
+    run_ontogenesis,
+    OntogenesisConfig,
+    EvolutionConfig,
+    summarize_evolution
+)
+
+# Configure evolution
+config = OntogenesisConfig(
+    evolution=EvolutionConfig(
+        population_size=20,
+        mutation_rate=0.1,
+        crossover_rate=0.8,
+        max_generations=50,
+        fitness_threshold=0.9
+    ),
+    seed_kernels=[parent]  # Start with one seed
+)
+
+# Run evolution
+generations = run_ontogenesis(config)
+
+# Analyze results
+summary = summarize_evolution(generations)
+print(f"Generations: {summary['total_generations']}")
+print(f"Best fitness: {summary['final_best_fitness']:.4f}")
+print(f"Converged at: generation {summary['convergence_generation']}")
+```
+
+See [docs/ONTOGENESIS.md](docs/ONTOGENESIS.md) for comprehensive examples and API reference.
+
 ### Advanced Configuration
 
 The system supports extensive configuration for research and experimentation:
@@ -228,6 +307,7 @@ advanced_config = {
 
 - **[Technical Architecture](docs/ARCHITECTURE.md)** - Detailed system architecture with Mermaid diagrams
 - **[Integration Patterns](docs/INTEGRATION_PATTERNS.md)** - Multi-framework integration strategies
+- **[Ontogenesis](docs/ONTOGENESIS.md)** - Self-generating, evolving kernels through differential operators
 - **[SiliconSage Evolution](SiliconSage-v5.md)** - Latest integrated AGI architecture
 - **[OpenCog Prime Foundation](CogPrime%20-%20An%20Integrative%20Architecture%20for%20Embodied%20Artificial%20General%20Intelligence.md)** - Core cognitive principles
 - **[OpenCog Hyperon Extensions](OpenCog%20Hyperon%20-%20A%20Framework%20for%20AGI%20at%20the%20Human%20Level%20and%20Beyond.md)** - Advanced AGI capabilities
