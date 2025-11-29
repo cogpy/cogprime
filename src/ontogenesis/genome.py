@@ -11,6 +11,11 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
+# Constants for genetic operations
+MUTATION_STRENGTH = 0.2  # Maximum mutation perturbation (±10%)
+EPSILON = 1e-6  # Small value to prevent division by zero
+
+
 class KernelGene(ABC):
     """Abstract base class for kernel genes."""
 
@@ -40,8 +45,8 @@ class CoefficientGene(KernelGene):
     def mutate(self, mutation_rate: float) -> "CoefficientGene":
         """Mutate the coefficient value."""
         if np.random.random() < mutation_rate:
-            # Apply ±10% mutation
-            mutation = (np.random.random() - 0.5) * 0.2
+            # Apply mutation with configurable strength
+            mutation = (np.random.random() - 0.5) * MUTATION_STRENGTH
             new_value = self.value * (1 + mutation)
             return CoefficientGene(index=self.index, value=new_value)
         return self.clone()
@@ -65,7 +70,7 @@ class OperatorGene(KernelGene):
     def mutate(self, mutation_rate: float) -> "OperatorGene":
         """Mutate the operator weight."""
         if np.random.random() < mutation_rate:
-            mutation = (np.random.random() - 0.5) * 0.2
+            mutation = (np.random.random() - 0.5) * MUTATION_STRENGTH
             new_weight = max(0.0, min(1.0, self.weight * (1 + mutation)))
             return OperatorGene(operator_type=self.operator_type, weight=new_weight)
         return self.clone()

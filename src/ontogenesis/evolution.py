@@ -14,6 +14,10 @@ from .genome import genetic_distance
 from .operators import self_reproduce, ReproductionMethod
 
 
+# Constants for evolution
+EPSILON = 1e-6  # Small value to prevent division by zero
+
+
 @dataclass
 class EvolutionConfig:
     """Configuration for evolutionary algorithm."""
@@ -88,7 +92,7 @@ def evaluate_fitness(kernel: OntogeneticKernel, population: List[OntogeneticKern
     if len(coeffs) > 1:
         # Measure how symmetric coefficients are
         reversed_coeffs = coeffs[::-1]
-        symmetry = 1.0 - np.mean(np.abs(coeffs - reversed_coeffs)) / (np.mean(np.abs(coeffs)) + 1e-6)
+        symmetry = 1.0 - np.mean(np.abs(coeffs - reversed_coeffs)) / (np.mean(np.abs(coeffs)) + EPSILON)
         symmetry = max(0.0, min(1.0, symmetry))
     else:
         symmetry = 0.5

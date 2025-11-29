@@ -25,6 +25,10 @@ from .genome import (
 )
 
 
+# Constants for operators
+EPSILON = 1e-6  # Small value to prevent division by zero
+
+
 class ReproductionMethod(Enum):
     """Methods for kernel reproduction."""
 
@@ -283,7 +287,7 @@ def _genome_to_kernel(
     # Estimate grip based on coefficient properties
     spread = np.std(coefficients)
     magnitude = np.mean(np.abs(coefficients))
-    grip_score = spread / (magnitude + 1e-6)
+    grip_score = spread / (magnitude + EPSILON)
 
     grip = GripMetrics(
         contact=min(1.0, grip_score * 0.8),
