@@ -58,6 +58,9 @@ class Vervaeke4ECognitiveCore(CogPrimeCore):
         # Initialize base cognitive core
         super().__init__(config)
         
+        # Configuration with defaults
+        self.transformation_threshold = config.get('transformation_threshold', 0.1)
+        
         # Initialize 4E perception system
         self.perception_4e = Embodied4EPerceptionSystem(config)
         
@@ -289,7 +292,7 @@ class Vervaeke4ECognitiveCore(CogPrimeCore):
                     self.wisdom_history[-1] - np.mean(self.wisdom_history[:-1])
                 )
                 
-                if wisdom_change > 0.1:  # Significant threshold
+                if wisdom_change > self.transformation_threshold:
                     transformation = {
                         'cycle': len(self.wisdom_history),
                         'wisdom_change': wisdom_change,

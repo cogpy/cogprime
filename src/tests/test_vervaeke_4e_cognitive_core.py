@@ -344,16 +344,6 @@ class TestVervaeke4ECognitiveCore:
         # Wisdom cultivation occurring
         assert trajectory['mean_wisdom'] >= 0.0
         assert trajectory['mean_meaning'] >= 0.0
-        
-        print("\n=== 4E Cognitive System Validation ===")
-        print(f"Body Schema Joints: {status['body_schema_joints']}")
-        print(f"Active Tools: {status['active_tools']}")
-        print(f"Processing Mode: {status['processing_mode']}")
-        print(f"Wisdom Measure: {status['wisdom_measure']:.3f}")
-        print(f"Meaning Connectivity: {status['meaning_connectivity']:.3f}")
-        print(f"Transformation Events: {status['transformation_events']}")
-        print(f"Overall Meaning Health: {crisis_metrics['overall_meaning_health']:.3f}")
-        print("=== All Acceptance Criteria Validated ===\n")
 
 
 if __name__ == '__main__':

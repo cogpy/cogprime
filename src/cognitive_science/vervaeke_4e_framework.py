@@ -16,6 +16,7 @@ import torch.nn as nn
 from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass, field
 from enum import Enum
+from collections import deque
 import numpy as np
 
 
@@ -266,7 +267,7 @@ class EnactedCognitionProcessor(nn.Module):
         """Learn from action-outcome experience"""
         error = float(torch.mean((predicted - actual) ** 2))
         outcome = ActionOutcome(
-            action=str(action.shape),
+            action=action.detach().cpu().numpy().tolist(),  # Store as list for serialization
             sensory_prediction=predicted,
             actual_outcome=actual,
             prediction_error=error,
@@ -408,10 +409,11 @@ class PerspectivalParticipatoryProcessor(nn.Module):
         else:
             integrated = perspective
         
-        # Track active perspectives
-        self.active_perspectives.append(perspective.detach())
-        if len(self.active_perspectives) > 10:
-            self.active_perspectives.pop(0)
+        # Track active perspectives using deque for efficiency
+        if not hasattr(self, '_perspective_deque'):
+            self._perspective_deque = deque(maxlen=10)
+        self._perspective_deque.append(perspective.detach().clone())
+        self.active_perspectives = list(self._perspective_deque)
         
         # Compute metrics
         flexibility = self._compute_perspective_flexibility()

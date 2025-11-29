@@ -12,6 +12,7 @@ import torch
 import torch.nn as nn
 from typing import Dict, Any, Tuple, Optional
 from dataclasses import dataclass
+from collections import deque
 
 from ..modules.perception import SensoryInput, PerceptionModule
 from ..cognitive_science.vervaeke_4e_framework import (
@@ -74,10 +75,11 @@ class Embodied4EPerceptionModule(nn.Module):
         )
         
         # Fusion network to integrate all 4E aspects
+        fusion_input_dim = feature_dim * 2  # Base + embodied
         self.four_e_fusion = nn.Sequential(
-            nn.Linear(feature_dim * 2, 512),  # Base + embodied
+            nn.Linear(fusion_input_dim, feature_dim),
             nn.ReLU(),
-            nn.Linear(512, feature_dim),
+            nn.Linear(feature_dim, feature_dim),
             nn.LayerNorm(feature_dim)
         )
         
@@ -273,10 +275,11 @@ class SalienceLandscapeNavigator(nn.Module):
         # Detect attention peaks
         peak_strength = self.peak_detector(modulated_salience)
         
-        # Track salience over time
-        self.salience_history.append(modulated_salience.detach())
-        if len(self.salience_history) > 20:
-            self.salience_history.pop(0)
+        # Track salience over time using deque for efficiency
+        if not hasattr(self, '_salience_deque'):
+            self._salience_deque = deque(maxlen=20)
+        self._salience_deque.append(modulated_salience.detach())
+        self.salience_history = list(self._salience_deque)
         
         # Compute navigation metrics
         landscape_coherence = self._compute_landscape_coherence()
