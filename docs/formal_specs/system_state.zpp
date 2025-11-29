@@ -1,0 +1,576 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% CogPrime System State - Z++ Formal Specification
+%% File: system_state.zpp
+%% Purpose: Formal specification of the complete system state including
+%%          all cognitive modules, AtomSpace, memory systems, and their
+%%          interactions and invariants
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Import data model definitions
+import data_model
+
+%% =====================================================================
+%% Module State Specifications
+%% =====================================================================
+
+%% Perception Module State
+%%
+%% Manages multi-modal sensory processing with attention allocation
+%%
+%% Invariants:
+%% - Attention budget is limited and must be allocated across modalities
+%% - Cross-modal integration requires at least two active modalities
+%% - Saliency detection tracks regions of high importance
+%%
+schema PerceptionModuleState
+  visual_encoder_state : FEATURE_VECTOR option
+  audio_encoder_state : FEATURE_VECTOR option
+  proprioceptive_encoder_state : FEATURE_VECTOR option
+  
+  %% Attention mechanism
+  attention_weights : seq PROB  %% Attention per modality
+  attention_budget : ℝ⁺
+  attention_history : seq (seq PROB)  %% Recent attention allocations
+  
+  %% Cross-modal integration
+  integrated_features : FEATURE_VECTOR option
+  integration_quality : PROB
+  
+  %% Saliency detection
+  saliency_map : FEATURE_VECTOR option
+  high_saliency_regions : ℙ ℕ  %% Indices of salient features
+  
+  %% Performance metrics
+  perception_accuracy : PROB
+  processing_latency : ℝ⁺  %% milliseconds
+where
+  %% At least one encoder must be active
+  visual_encoder_state ≠ none ∨ audio_encoder_state ≠ none ∨
+    proprioceptive_encoder_state ≠ none
+  
+  %% Attention weights sum to 1.0 (normalized distribution)
+  let total_attention == Σ(attention_weights) •
+  0.95 ≤ total_attention ≤ 1.05
+  
+  %% Number of attention weights matches number of active modalities
+  #attention_weights = count_active_modalities(visual_encoder_state,
+                                                audio_encoder_state,
+                                                proprioceptive_encoder_state)
+  
+  %% Integration quality depends on number of modalities
+  integrated_features ≠ none ⇒ integration_quality > 0.5
+  
+  %% Cross-modal integration requires multiple modalities
+  integration_quality > 0.7 ⇒
+    count_active_modalities(visual_encoder_state, audio_encoder_state,
+                            proprioceptive_encoder_state) ≥ 2
+  
+  %% High integration quality requires balanced attention
+  integration_quality > 0.8 ⇒
+    (∀ w : attention_weights • 0.2 ≤ w ≤ 0.8)
+  
+  %% Attention history has bounded length
+  #attention_history ≤ 50
+  
+  %% Processing latency target (< 10ms for real-time)
+  perception_accuracy > 0.8 ⇒ processing_latency < 10.0
+  
+  %% Saliency regions are valid feature indices
+  saliency_map = some(sm) ⇒
+    high_saliency_regions ⊆ {i : ℕ | 0 ≤ i < #sm}
+end
+
+%% Reasoning Module State
+%%
+%% Manages pattern recognition, memory retrieval, and inference
+%%
+%% Invariants:
+%% - Working memory has limited capacity
+%% - Episodic memory maintains importance-based retention
+%% - Pattern confidence reflects reasoning quality
+%%
+schema ReasoningModuleState
+  %% Pattern recognition
+  current_patterns : seq (PATTERN_TYPE × PROB)  %% Detected patterns with confidence
+  pattern_recognizer_state : FEATURE_VECTOR
+  
+  %% Memory systems
+  working_memory : WorkingMemory
+  episodic_memory : EpisodicMemory
+  
+  %% Confidence estimation
+  confidence_estimates : seq PROB
+  uncertainty_level : PROB
+  
+  %% Performance metrics
+  pattern_recognition_accuracy : PROB
+  memory_retrieval_latency : ℝ⁺  %% milliseconds
+  consolidation_savings : PROB  %% Memory saved by consolidation
+where
+  %% Pattern confidence aligns with overall accuracy
+  #current_patterns > 0 ⇒
+    let avg_confidence == average_confidence(current_patterns) •
+    |avg_confidence - pattern_recognition_accuracy| < 0.2
+  
+  %% Working memory capacity constraint
+  #working_memory.items ≤ working_memory.capacity
+  
+  %% Episodic memory capacity constraint
+  #episodic_memory.memories ≤ episodic_memory.memory_size
+  
+  %% Confidence estimates match number of patterns
+  #confidence_estimates = #current_patterns
+  
+  %% Uncertainty inversely related to confidence
+  let avg_confidence == average_confidence(current_patterns) •
+  #current_patterns > 0 ⇒ uncertainty_level ≈ (1.0 - avg_confidence)
+  
+  %% Memory consolidation reduces storage
+  consolidation_savings ≥ 0.0 ∧ consolidation_savings ≤ 0.3
+  
+  %% High accuracy reasoning has low uncertainty
+  pattern_recognition_accuracy > 0.85 ⇒ uncertainty_level < 0.2
+  
+  %% Memory retrieval is efficient
+  memory_retrieval_latency < 5.0  %% Target < 5ms
+end
+
+%% Action Selection Module State
+%%
+%% Manages goal hierarchies, resource allocation, and action planning
+%%
+%% Invariants:
+%% - Goal hierarchy is acyclic
+%% - Resource utilization doesn't exceed total resources
+%% - Action confidence reflects planning quality
+%%
+schema ActionSelectionModuleState
+  %% Goal management
+  goal_hierarchy : GoalHierarchy
+  active_goal_priorities : seq (GOAL_ID × PROB)  %% Sorted by urgency
+  
+  %% Resource management
+  total_resources : ℝ⁺
+  allocated_resources : GOAL_ID ⇸ ℝ⁺
+  resource_utilization : PROB
+  
+  %% Action planning
+  candidate_actions : seq Action
+  selected_action : Action option
+  action_policy_state : FEATURE_VECTOR
+  
+  %% Performance metrics
+  goal_completion_rate : PROB
+  resource_efficiency : PROB
+  planning_latency : ℝ⁺  %% milliseconds
+where
+  %% All active goals are in the hierarchy
+  ∀ (g, p) : active_goal_priorities •
+    g ∈ dom goal_hierarchy.goals
+  
+  %% Priority values are valid probabilities
+  ∀ (g, p) : active_goal_priorities •
+    0.0 ≤ p ≤ 1.0
+  
+  %% Resource allocation doesn't exceed total
+  let total_allocated == Σ(ran allocated_resources) •
+  total_allocated ≤ total_resources
+  
+  %% Resource utilization calculation
+  let total_allocated == Σ(ran allocated_resources) •
+  resource_utilization = total_allocated / total_resources
+  
+  %% All allocated resources are for active goals
+  dom allocated_resources ⊆ goal_hierarchy.active_goals
+  
+  %% Selected action must be from candidates
+  selected_action = some(a) ⇒ a ∈ candidate_actions
+  
+  %% High priority goals get more resources
+  ∀ (g1, p1), (g2, p2) : active_goal_priorities •
+    p1 > p2 ∧ g1 ∈ dom allocated_resources ∧ g2 ∈ dom allocated_resources ⇒
+    allocated_resources(g1) ≥ allocated_resources(g2)
+  
+  %% Goal completion rate reflects actual progress
+  let completed == #goal_hierarchy.completed_goals •
+  let total == #goal_hierarchy.active_goals + completed •
+  total > 0 ⇒ goal_completion_rate = completed / total
+  
+  %% Resource efficiency measures effective use
+  resource_efficiency = goal_completion_rate × resource_utilization
+  
+  %% Efficient planning is fast
+  planning_latency < 5.0  %% Target < 5ms
+end
+
+%% Learning Module State
+%%
+%% Manages reinforcement learning, meta-learning, and strategy adaptation
+%%
+%% Invariants:
+%% - Experience buffer has bounded capacity
+%% - Q-network and target network have consistent dimensions
+%% - Learning rate adapts based on performance
+%%
+schema LearningModuleState
+  %% Experience management
+  experience_buffer : ExperienceBuffer
+  priority_weights : seq PROB  %% For prioritized experience replay
+  
+  %% Q-learning state
+  q_network_state : FEATURE_VECTOR
+  target_network_state : FEATURE_VECTOR
+  q_values : ACTION_NAME ⇸ ℝ  %% Current Q-value estimates
+  
+  %% Learning parameters
+  learning_rate : ℝ⁺
+  epsilon : PROB  %% Exploration rate
+  gamma : PROB  %% Discount factor
+  
+  %% Meta-learning
+  meta_learning_enabled : 𝔹
+  strategy_adjustments : seq (seq ℂ)  %% Recent strategy changes
+  
+  %% Error recovery
+  error_count : ℕ
+  recovery_actions : seq (seq ℂ)
+  
+  %% Performance metrics
+  learning_progress : ℝ  %% Change in average Q-value
+  exploration_efficiency : PROB
+  update_frequency : ℕ  %% Updates per cycle
+where
+  %% Experience buffer respects capacity
+  #experience_buffer.buffer ≤ experience_buffer.capacity
+  
+  %% Priority weights match buffer size
+  #priority_weights = #experience_buffer.buffer
+  
+  %% Priority weights are normalized
+  #priority_weights > 0 ⇒
+    let total == Σ(priority_weights) •
+    0.95 ≤ total ≤ 1.05
+  
+  %% Q-network and target network have same dimension
+  #q_network_state = #target_network_state
+  
+  %% Learning rate is reasonable
+  0.0001 ≤ learning_rate ≤ 0.1
+  
+  %% Epsilon-greedy parameters are valid
+  0.0 ≤ epsilon ≤ 0.5  %% Exploration rate
+  0.9 ≤ gamma ≤ 0.99   %% Discount factor
+  
+  %% High learning progress reduces exploration
+  learning_progress > 0.5 ⇒ epsilon < 0.2
+  
+  %% Meta-learning tracks strategy changes
+  meta_learning_enabled = true ⇒ #strategy_adjustments ≤ 100
+  
+  %% Error recovery is bounded
+  error_count ≤ 100
+  #recovery_actions ≤ error_count
+  
+  %% Exploration efficiency measures quality
+  0.0 ≤ exploration_efficiency ≤ 1.0
+  
+  %% Update frequency is reasonable
+  0 ≤ update_frequency ≤ 10  %% Max 10 updates per cycle
+end
+
+%% =====================================================================
+%% Complete System State
+%% =====================================================================
+
+%% SystemState: Complete state of the CogPrime system
+%%
+%% Integrates all cognitive modules, knowledge systems, and configurations
+%%
+%% Invariants:
+%% - All modules are initialized and consistent
+%% - AtomSpace contains atoms from all modules
+%% - Memory systems are synchronized
+%% - Resource allocation is balanced
+%%
+schema SystemState
+  %% Core cognitive modules
+  perception : PerceptionModuleState
+  reasoning : ReasoningModuleState
+  action_selection : ActionSelectionModuleState
+  learning : LearningModuleState
+  
+  %% Knowledge representation
+  atomspace : AtomSpace
+  atomspace_backend_type : BACKEND_TYPE
+  
+  %% Memory systems
+  global_memory : Memory
+  
+  %% Current cognitive state
+  cognitive_state : CognitiveState
+  
+  %% System configuration
+  config : seq ℂ ⇸ ℝ  %% Configuration parameters
+  
+  %% Cycle tracking
+  cycle_count : ℕ
+  total_processing_time : ℝ⁺  %% Cumulative milliseconds
+  
+  %% System-wide metrics
+  overall_performance : PROB
+  system_coherence : PROB
+where
+  %% Attention focus in cognitive state matches perception output
+  perception.integrated_features = some(features) ⇒
+    cognitive_state.attention_focus = features
+  
+  %% Current thought comes from reasoning module
+  cognitive_state.current_thought = some(thought) ⇒
+    thought ∈ reasoning.episodic_memory.memories
+  
+  %% Selected action comes from action module
+  cognitive_state.last_action = some(action) ⇒
+    action = action_selection.selected_action
+  
+  %% Working memory in cognitive state matches reasoning working memory
+  cognitive_state.working_memory = reasoning.working_memory
+  
+  %% Goals in cognitive state are active goals
+  ∀ g : cognitive_state.goal_stack •
+    g ∈ action_selection.goal_hierarchy.active_goals
+  
+  %% Experience buffer learning aligns with last reward
+  cognitive_state.last_reward ≠ 0.0 ⇒
+    ∃ exp : learning.experience_buffer.buffer •
+      exp.reward = cognitive_state.last_reward
+  
+  %% System coherence reflects module integration
+  system_coherence = 
+    (perception.integration_quality +
+     reasoning.pattern_recognition_accuracy +
+     action_selection.goal_completion_rate +
+     learning.exploration_efficiency) / 4.0
+  
+  %% Overall performance combines key metrics
+  overall_performance =
+    system_coherence × 0.4 +
+    perception.perception_accuracy × 0.2 +
+    reasoning.pattern_recognition_accuracy × 0.2 +
+    action_selection.resource_efficiency × 0.2
+  
+  %% Average cycle time target (< 10ms)
+  cycle_count > 0 ⇒
+    (total_processing_time / cycle_count) < 10.0
+  
+  %% High performance systems are coherent
+  overall_performance > 0.8 ⇒ system_coherence > 0.7
+  
+  %% Configuration parameters are valid
+  "visual_dim" ∈ dom config ⇒ config("visual_dim") > 0
+  "audio_dim" ∈ dom config ⇒ config("audio_dim") > 0
+  "memory_size" ∈ dom config ⇒ config("memory_size") > 100
+end
+
+%% =====================================================================
+%% Distributed System State (for multi-node deployments)
+%% =====================================================================
+
+%% Node: Represents a compute node in distributed deployment
+%%
+%% Invariants:
+%% - Each node has a unique identifier
+%% - Nodes maintain local state and sync with distributed backends
+%%
+schema Node
+  node_id : seq ℂ
+  node_type : seq ℂ  %% "cognitive_core", "atomspace", "memory", "graph"
+  local_state : SystemState option  %% Only for cognitive core nodes
+  network_address : seq ℂ
+  active : 𝔹
+where
+  %% Node ID is non-empty
+  #node_id > 0
+  
+  %% Node type is valid
+  node_type ∈ {"cognitive_core", "atomspace", "memory", "graph"}
+  
+  %% Cognitive core nodes have local state
+  node_type = "cognitive_core" ⇒ local_state ≠ none
+  
+  %% Active nodes have valid network addresses
+  active = true ⇒ #network_address > 0
+end
+
+%% DistributedSystemState: Multi-node deployment state
+%%
+%% Invariants:
+%% - At least one cognitive core node exists
+%% - Backend nodes are distributed appropriately
+%% - Network communication is established
+%%
+schema DistributedSystemState
+  nodes : seq Node
+  primary_node_id : seq ℂ
+  backend_mappings : BACKEND_TYPE ⇸ seq (seq ℂ)  %% Backend type to node IDs
+  sync_status : seq ℂ ⇸ 𝔹  %% Node ID to sync status
+  network_latency : seq ℂ ⇸ ℝ⁺  %% Node ID to latency (ms)
+where
+  %% At least one node exists
+  #nodes > 0
+  
+  %% Primary node exists and is a cognitive core
+  ∃ n : nodes •
+    n.node_id = primary_node_id ∧
+    n.node_type = "cognitive_core" ∧
+    n.active = true
+  
+  %% All nodes have unique IDs
+  ∀ n1, n2 : nodes •
+    n1 ≠ n2 ⇒ n1.node_id ≠ n2.node_id
+  
+  %% Backend mappings reference existing nodes
+  ∀ backend : dom backend_mappings •
+    ∀ node_id : backend_mappings(backend) •
+      ∃ n : nodes • n.node_id = node_id
+  
+  %% Sync status covers all active nodes
+  ∀ n : nodes •
+    n.active = true ⇒ n.node_id ∈ dom sync_status
+  
+  %% Network latency is measured for active nodes
+  ∀ n : nodes •
+    n.active = true ⇒ n.node_id ∈ dom network_latency
+  
+  %% Low latency enables real-time processing
+  ∀ node_id : dom network_latency •
+    network_latency(node_id) < 50.0  %% Target < 50ms
+end
+
+%% =====================================================================
+%% State Transition Constraints
+%% =====================================================================
+
+%% These constraints define valid state transitions that preserve invariants
+
+%% Safe State Transition: Ensures system remains in valid state
+%%
+%% Pre-conditions:
+%% - Current state satisfies all invariants
+%% - Transition operation is well-defined
+%%
+%% Post-conditions:
+%% - New state satisfies all invariants
+%% - Key metrics improve or remain stable
+%%
+schema SafeStateTransition
+  ΔSystemState  %% State change notation
+where
+  %% Pre-condition: Initial state is valid
+  SystemState  %% References pre-state
+  
+  %% Performance doesn't degrade significantly
+  overall_performance' ≥ overall_performance - 0.1
+  
+  %% System coherence is maintained
+  system_coherence' ≥ 0.5
+  
+  %% Cycle count increments
+  cycle_count' = cycle_count + 1
+  
+  %% Total processing time increases
+  total_processing_time' > total_processing_time
+end
+
+%% =====================================================================
+%% Helper Functions
+%% =====================================================================
+
+%% Count active sensory modalities
+function count_active_modalities(
+  visual : FEATURE_VECTOR option,
+  audio : FEATURE_VECTOR option,
+  proprio : FEATURE_VECTOR option
+) : ℕ ≙
+  (if visual ≠ none then 1 else 0) +
+  (if audio ≠ none then 1 else 0) +
+  (if proprio ≠ none then 1 else 0)
+
+%% Calculate average confidence from patterns
+function average_confidence(
+  patterns : seq (PATTERN_TYPE × PROB)
+) : PROB ≙
+  if #patterns = 0 then 0.0
+  else
+    let confidences == [p.2 | p : patterns] •
+    Σ(confidences) / #patterns
+  end
+
+%% =====================================================================
+%% System State Theorems
+%% =====================================================================
+
+%% Theorem 1: System Coherence Bounded
+%% System coherence is always within valid probability range
+theorem SystemCoherenceBounded
+∀ sys : SystemState •
+  0.0 ≤ sys.system_coherence ≤ 1.0
+end
+
+%% Theorem 2: Module Consistency
+%% All module states are internally consistent
+theorem ModuleConsistency
+∀ sys : SystemState •
+  sys.perception satisfies PerceptionModuleState ∧
+  sys.reasoning satisfies ReasoningModuleState ∧
+  sys.action_selection satisfies ActionSelectionModuleState ∧
+  sys.learning satisfies LearningModuleState
+end
+
+%% Theorem 3: Resource Conservation
+%% Total allocated resources never exceed available resources
+theorem ResourceConservation
+∀ sys : SystemState •
+  let total_allocated ==
+    Σ(ran sys.action_selection.allocated_resources) •
+  total_allocated ≤ sys.action_selection.total_resources
+end
+
+%% Theorem 4: Memory Capacity Respected
+%% All memory systems respect their capacity constraints
+theorem MemoryCapacityRespected
+∀ sys : SystemState •
+  #sys.reasoning.episodic_memory.memories ≤
+    sys.reasoning.episodic_memory.memory_size ∧
+  #sys.reasoning.working_memory.items ≤
+    sys.reasoning.working_memory.capacity ∧
+  #sys.learning.experience_buffer.buffer ≤
+    sys.learning.experience_buffer.capacity
+end
+
+%% Theorem 5: Goal Hierarchy Acyclic
+%% The goal hierarchy in action selection is always acyclic
+theorem GoalHierarchyAcyclic
+∀ sys : SystemState •
+∀ g : dom sys.action_selection.goal_hierarchy.goals •
+  ¬ is_ancestor_of(g, g, sys.action_selection.goal_hierarchy.goals)
+end
+
+%% Theorem 6: State Transition Preserves Invariants
+%% Safe state transitions maintain all system invariants
+theorem StateTransitionPreservesInvariants
+∀ sys, sys' : SystemState •
+  SafeStateTransition ⇒
+    sys' satisfies SystemState
+end
+
+%% Theorem 7: Distributed Consistency
+%% In distributed deployments, primary node state is consistent
+theorem DistributedConsistency
+∀ dsys : DistributedSystemState •
+  ∃ n : dsys.nodes •
+    n.node_id = dsys.primary_node_id ∧
+    n.local_state ≠ none ∧
+    n.local_state satisfies SystemState
+end
+
+%% End of system_state.zpp
