@@ -92,15 +92,95 @@ class ConsciousnessManager:
     
     def _calculate_co_identification(self, agent: str, arena: str) -> float:
         """Calculates how well agent and arena aspects are co-identified"""
-        # Implementation would analyze how well the agent and arena aspects match
-        # For now, return a placeholder value
-        return 0.5
+        # Calculate co-identification based on:
+        # 1. Semantic similarity of agent and arena features
+        # 2. Number of shared affordances
+        # 3. Historical interaction patterns
+        
+        # Count matching features
+        matching_features = 0
+        total_features = 0
+        
+        for feature in self.current_landscape.features:
+            if agent.lower() in feature.name.lower() or arena.lower() in feature.name.lower():
+                total_features += 1
+                # Check if there's a strong salience (indicates good co-identification)
+                if feature.salience > 0.7:
+                    matching_features += 1
+        
+        # Count shared affordances
+        shared_affordances = 0
+        for affordance in self.current_landscape.affordances:
+            if (agent.lower() in affordance.agent_aspect.lower() and 
+                arena.lower() in affordance.arena_aspect.lower()):
+                shared_affordances += 1
+        
+        # Calculate co-identification score
+        if total_features == 0:
+            feature_score = 0.5  # Neutral if no features
+        else:
+            feature_score = matching_features / total_features
+        
+        affordance_score = min(shared_affordances / 5.0, 1.0)  # Normalize to 0-1
+        
+        # Weighted combination
+        co_identification = (0.6 * feature_score) + (0.4 * affordance_score)
+        
+        return co_identification
     
     def _calculate_understanding_depth(self, cause: str, effect: str) -> float:
         """Calculates how deeply a causal pattern is understood"""
-        # Implementation would analyze related patterns and integration
-        # For now, return a placeholder value
-        return 0.5
+        # Calculate understanding depth based on:
+        # 1. Number of related causal patterns
+        # 2. Integration with feature and affordance landscapes
+        # 3. Reliability of the pattern
+        
+        # Count related patterns
+        related_patterns = 0
+        total_reliability = 0.0
+        
+        for pattern in self.current_landscape.causal_patterns:
+            # Check if patterns share cause or effect
+            if (cause.lower() in pattern.cause.lower() or 
+                effect.lower() in pattern.effect.lower() or
+                pattern.cause.lower() in cause.lower() or
+                pattern.effect.lower() in effect.lower()):
+                related_patterns += 1
+                total_reliability += pattern.reliability
+        
+        # Calculate pattern network depth
+        if related_patterns == 0:
+            pattern_depth = 0.3  # Low depth if isolated
+        else:
+            avg_reliability = total_reliability / related_patterns
+            pattern_depth = min(related_patterns / 10.0, 0.8) * avg_reliability
+        
+        # Check integration with features
+        feature_integration = 0.0
+        for feature in self.current_landscape.features:
+            if (cause.lower() in feature.name.lower() or 
+                effect.lower() in feature.name.lower()):
+                feature_integration += feature.salience
+        
+        feature_integration = min(feature_integration / 2.0, 0.3)
+        
+        # Check integration with affordances
+        affordance_integration = 0.0
+        for affordance in self.current_landscape.affordances:
+            if (cause.lower() in affordance.name.lower() or 
+                effect.lower() in affordance.name.lower()):
+                affordance_integration += affordance.strength
+        
+        affordance_integration = min(affordance_integration / 2.0, 0.3)
+        
+        # Combine all factors
+        understanding_depth = (
+            0.5 * pattern_depth + 
+            0.25 * feature_integration + 
+            0.25 * affordance_integration
+        )
+        
+        return min(understanding_depth, 1.0)
     
     def _update_integration(self) -> None:
         """Updates the integration level across landscapes"""

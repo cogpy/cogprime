@@ -342,6 +342,46 @@ class LocalAtomSpaceBackend(AtomSpaceBackend):
         """Get all atoms of a given type."""
         return list(self.atoms_by_type.get(atom_type, set()))
     
+    def _match_atoms_recursive(self, pattern: Atom, candidate: Atom) -> bool:
+        """Recursively match atoms including nested links.
+        
+        Args:
+            pattern: The pattern atom to match
+            candidate: The candidate atom to check
+            
+        Returns:
+            True if atoms match, False otherwise
+        """
+        # Check if both are nodes
+        if pattern.is_node() and candidate.is_node():
+            return (pattern.atom_type == candidate.atom_type and 
+                    pattern.name == candidate.name)
+        
+        # Check if both are links
+        if pattern.is_link() and candidate.is_link():
+            # Type must match
+            if pattern.atom_type != candidate.atom_type:
+                return False
+            
+            # Arity must match
+            if len(pattern.outgoing_set) != len(candidate.outgoing_set):
+                return False
+            
+            # Recursively check all outgoing atoms
+            for pattern_atom, candidate_atom in zip(pattern.outgoing_set, candidate.outgoing_set):
+                # None is a wildcard
+                if pattern_atom is None:
+                    continue
+                
+                # Recursively match
+                if not self._match_atoms_recursive(pattern_atom, candidate_atom):
+                    return False
+            
+            return True
+        
+        # Different types don't match
+        return False
+    
     def query(self, pattern: Atom) -> List[Atom]:
         """Query atoms matching a pattern."""
         results = []
@@ -385,7 +425,11 @@ class LocalAtomSpaceBackend(AtomSpaceBackend):
                         if pattern_atom.atom_type != candidate_atom.atom_type:
                             match = False
                             break
-                        # TODO: Implement recursive matching for nested links
+                        # Recursively match nested link outgoing sets
+                        nested_matches = self._match_atoms_recursive(pattern_atom, candidate_atom)
+                        if not nested_matches:
+                            match = False
+                            break
                     else:
                         match = False
                         break
@@ -396,10 +440,82 @@ class LocalAtomSpaceBackend(AtomSpaceBackend):
         return results
     
     def pattern_match(self, pattern: Dict) -> List[Dict]:
-        """Perform advanced pattern matching."""
-        # TODO: Implement more sophisticated pattern matching
-        # This is a placeholder for advanced pattern matching functionality
-        return []
+        """Perform advanced pattern matching using dictionary patterns.
+        
+        Args:
+            pattern: Dictionary pattern with keys:
+                - 'type': Atom type to match (optional)
+                - 'name': Node name to match (optional)
+                - 'outgoing': List of outgoing atom patterns (for links)
+                - 'variables': Dict of variable names to bind
+                
+        Returns:
+            List of dictionaries containing matched atoms and variable bindings
+        """
+        results = []
+        
+        # Extract pattern components
+        pattern_type = pattern.get('type')
+        pattern_name = pattern.get('name')
+        pattern_outgoing = pattern.get('outgoing', [])
+        variables = pattern.get('variables', {})
+        
+        # If no type specified, search all atoms
+        if pattern_type:
+            candidates = self.get_atoms_by_type(pattern_type)
+        else:
+            candidates = list(self.atoms_by_id.values())
+        
+        # Match each candidate
+        for candidate in candidates:
+            bindings = {}
+            
+            # Check type match
+            if pattern_type and candidate.atom_type != pattern_type:
+                continue
+            
+            # Check name match for nodes
+            if pattern_name and candidate.is_node():
+                if candidate.name != pattern_name:
+                    continue
+            
+            # Check outgoing set for links
+            if pattern_outgoing and candidate.is_link():
+                if len(pattern_outgoing) != len(candidate.outgoing_set):
+                    continue
+                
+                # Match each outgoing atom
+                match = True
+                for i, out_pattern in enumerate(pattern_outgoing):
+                    out_candidate = candidate.outgoing_set[i]
+                    
+                    # Variable binding
+                    if isinstance(out_pattern, str) and out_pattern.startswith('$'):
+                        bindings[out_pattern] = out_candidate
+                    # Recursive pattern matching
+                    elif isinstance(out_pattern, dict):
+                        sub_results = self.pattern_match(out_pattern)
+                        if not sub_results:
+                            match = False
+                            break
+                        bindings.update(sub_results[0])
+                    # Direct atom comparison
+                    elif isinstance(out_pattern, Atom):
+                        if not self._match_atoms_recursive(out_pattern, out_candidate):
+                            match = False
+                            break
+                
+                if not match:
+                    continue
+            
+            # Add matched result
+            result = {
+                'atom': candidate,
+                'bindings': bindings
+            }
+            results.append(result)
+        
+        return results
 
 
 # Import the full Node9 backend implementation
@@ -475,6 +591,109 @@ except ImportError:
             return []
 
 
+class DistributedAtomSpaceBackend(AtomSpaceBackend):
+    """Distributed AtomSpace backend combining node9 and mem0.
+    
+    This backend uses:
+    - node9 for namespace management and graph structure
+    - mem0 for persistence, vector search, and semantic queries
+    """
+    
+    def __init__(self, node9_config: Dict = None, mem0_config: Dict = None):
+        """Initialize distributed backend with both node9 and mem0.
+        
+        Args:
+            node9_config: Configuration for node9 backend
+            mem0_config: Configuration for mem0 backend
+        """
+        self.node9_config = node9_config or {}
+        self.mem0_config = mem0_config or {}
+        
+        # Initialize both backends
+        try:
+            self.node9_backend = Node9AtomSpaceBackend(**self.node9_config)
+        except Exception as e:
+            logger.warning(f"Failed to initialize node9 backend: {e}, using local")
+            self.node9_backend = LocalAtomSpaceBackend()
+        
+        try:
+            self.mem0_backend = Mem0AtomSpaceBackend(config=self.mem0_config)
+        except Exception as e:
+            logger.warning(f"Failed to initialize mem0 backend: {e}, using local")
+            self.mem0_backend = LocalAtomSpaceBackend()
+        
+        # Use node9 as primary for structure, mem0 for search
+        self.primary_backend = self.node9_backend
+        self.search_backend = self.mem0_backend
+        
+        logger.info("Initialized distributed backend with node9 and mem0")
+    
+    def add_atom(self, atom: Atom) -> Atom:
+        """Add atom to both backends."""
+        # Add to node9 for structure
+        result = self.primary_backend.add_atom(atom)
+        
+        # Also add to mem0 for search
+        try:
+            self.search_backend.add_atom(atom)
+        except Exception as e:
+            logger.warning(f"Failed to add atom to mem0: {e}")
+        
+        return result
+    
+    def remove_atom(self, atom: Atom) -> bool:
+        """Remove atom from both backends."""
+        success = self.primary_backend.remove_atom(atom)
+        
+        try:
+            self.search_backend.remove_atom(atom)
+        except Exception as e:
+            logger.warning(f"Failed to remove atom from mem0: {e}")
+        
+        return success
+    
+    def get_atom(self, atom_id: AtomID) -> Optional[Atom]:
+        """Get atom from primary backend."""
+        return self.primary_backend.get_atom(atom_id)
+    
+    def get_atom_by_type_name(self, atom_type: AtomType, name: str) -> Optional[Node]:
+        """Get atom by type and name from primary backend."""
+        return self.primary_backend.get_atom_by_type_name(atom_type, name)
+    
+    def get_atoms_by_type(self, atom_type: AtomType) -> List[Atom]:
+        """Get all atoms of a type from primary backend."""
+        return self.primary_backend.get_atoms_by_type(atom_type)
+    
+    def query(self, pattern: Atom) -> List[Atom]:
+        """Query using primary backend."""
+        return self.primary_backend.query(pattern)
+    
+    def pattern_match(self, pattern: Dict) -> List[Dict]:
+        """Pattern match using primary backend."""
+        return self.primary_backend.pattern_match(pattern)
+    
+    def semantic_search(self, query: str, limit: int = 10) -> List[Tuple[Atom, float]]:
+        """Perform semantic search using mem0 backend.
+        
+        Args:
+            query: Search query string
+            limit: Maximum number of results
+            
+        Returns:
+            List of (atom, score) tuples
+        """
+        try:
+            # Use mem0 for semantic search
+            if hasattr(self.search_backend, 'semantic_search'):
+                return self.search_backend.semantic_search(query, limit)
+            else:
+                logger.warning("Semantic search not available, using pattern match")
+                return []
+        except Exception as e:
+            logger.error(f"Semantic search failed: {e}")
+            return []
+
+
 class BackendType(Enum):
     """Enum for AtomSpace backend types."""
     LOCAL = "local"
@@ -510,9 +729,20 @@ class AtomSpace:
         elif backend_type == BackendType.MEM0:
             self.backend = Mem0AtomSpaceBackend(config=self.config)
         elif backend_type == BackendType.DISTRIBUTED:
-            # TODO: Implement a combined backend that uses both node9 and mem0
-            self.backend = LocalAtomSpaceBackend()
-            logger.warning("Distributed backend not fully implemented yet, using local backend")
+            # Implement a combined backend that uses both node9 and mem0
+            # node9 handles the namespace and graph structure
+            # mem0 handles persistence and semantic search
+            try:
+                self.backend = DistributedAtomSpaceBackend(
+                    node9_config={
+                        'namespace_path': self.config.get('namespace_path', '/cog/space')
+                    },
+                    mem0_config=self.config.get('mem0', {})
+                )
+                logger.info("Initialized distributed backend with node9 and mem0")
+            except Exception as e:
+                logger.warning(f"Failed to initialize distributed backend: {e}, using local backend")
+                self.backend = LocalAtomSpaceBackend()
         else:
             raise ValueError(f"Unknown backend type: {backend_type}")
         

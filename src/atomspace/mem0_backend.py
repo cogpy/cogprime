@@ -336,7 +336,60 @@ class Mem0AtomSpaceBackend:
         Returns:
             The deserialized atom
         """
-        # This would need to import the actual Atom classes
-        # For now, return None as this is a placeholder
-        # The actual implementation would reconstruct the atom from the data
-        return None
+        try:
+            # Import Atom classes from parent module
+            from . import Node, Link, Atom
+            
+            atom_id = data.get('id')
+            atom_type = data.get('type')
+            
+            if not atom_id or not atom_type:
+                logger.warning("Missing id or type in atom data")
+                return None
+            
+            # Check if it's a node (has name) or link (has outgoing)
+            if 'name' in data:
+                # Deserialize as Node
+                atom = Node(atom_type=atom_type, name=data['name'])
+                atom.id = atom_id
+            elif 'outgoing' in data:
+                # Deserialize as Link
+                # First, retrieve outgoing atoms
+                outgoing_atoms = []
+                for out_id in data['outgoing']:
+                    out_atom = self.get_atom(out_id)
+                    if out_atom:
+                        outgoing_atoms.append(out_atom)
+                    else:
+                        logger.warning(f"Could not find outgoing atom {out_id}")
+                
+                atom = Link(atom_type=atom_type, outgoing_set=outgoing_atoms)
+                atom.id = atom_id
+            else:
+                # Generic atom
+                atom = Atom(atom_type=atom_type)
+                atom.id = atom_id
+            
+            # Restore truth value if present
+            if 'truth_value' in data:
+                tv_data = data['truth_value']
+                if hasattr(atom, 'tv'):
+                    atom.tv.strength = tv_data.get('strength', 0.0)
+                    atom.tv.confidence = tv_data.get('confidence', 0.0)
+            
+            # Restore attention value if present
+            if 'attention_value' in data:
+                av_data = data['attention_value']
+                if hasattr(atom, 'av'):
+                    atom.av.sti = av_data.get('sti', 0)
+                    atom.av.lti = av_data.get('lti', 0)
+                    atom.av.vlti = av_data.get('vlti', False)
+            
+            return atom
+            
+        except ImportError as e:
+            logger.error(f"Failed to import Atom classes: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Failed to deserialize atom: {e}")
+            return None

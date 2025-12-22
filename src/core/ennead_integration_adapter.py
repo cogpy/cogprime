@@ -311,13 +311,56 @@ class EnneadRelevanceAdapter:
         Compute results using legacy relevance systems.
         
         This provides backward compatibility with existing code.
+        Integrates with RelevanceCore for traditional relevance computation.
         """
-        # This would integrate with existing RelevanceCore, etc.
-        # For now, return a placeholder structure
+        relevant_items = set()
+        total_confidence = 0.0
+        
+        try:
+            # Import RelevanceCore if available
+            from .relevance_core import RelevanceCore
+            
+            # Create or use existing relevance core
+            if not hasattr(self, '_relevance_core'):
+                self._relevance_core = RelevanceCore()
+            
+            # Process each query item
+            for item in query:
+                # Calculate relevance using traditional methods
+                relevance_score = self._relevance_core.calculate_relevance(
+                    item=item,
+                    context=context
+                )
+                
+                # Add to results if above threshold
+                if relevance_score > 0.5:
+                    relevant_items.add(item)
+                    total_confidence += relevance_score
+            
+            # Calculate average confidence
+            avg_confidence = total_confidence / len(query) if query else 0.0
+            
+        except ImportError:
+            # Fallback: Simple keyword matching
+            context_str = str(context).lower()
+            for item in query:
+                item_str = str(item).lower()
+                # Simple relevance: check if item appears in context
+                if item_str in context_str:
+                    relevant_items.add(item)
+                    total_confidence += 0.7
+            
+            avg_confidence = total_confidence / len(query) if query else 0.0
+        
+        except Exception as e:
+            logger.warning(f"Error in legacy relevance computation: {e}")
+            avg_confidence = 0.0
+        
         return {
-            'relevant_items': set(),
-            'confidence': 0.0,
-            'method': 'legacy'
+            'relevant_items': relevant_items,
+            'confidence': min(avg_confidence, 1.0),
+            'method': 'legacy',
+            'item_count': len(relevant_items)
         }
     
     def _integrate_scores(self,
