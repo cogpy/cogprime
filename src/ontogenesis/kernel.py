@@ -110,6 +110,8 @@ class OntogeneticKernel(GeneratedKernel):
 
     genome: Optional["KernelGenome"] = None  # Genetic information (forward reference)
     ontogenetic_state: Optional[OntogeneticState] = None  # Development state
+    telos: Optional["Telos"] = None  # Intrinsic purpose (forward reference)
+    actualization_tracker: Optional["ActualizationTracker"] = None  # Tracks actualization progress
 
     def __post_init__(self):
         """Initialize ontogenetic kernel."""
@@ -135,6 +137,14 @@ class OntogeneticKernel(GeneratedKernel):
             self.ontogenetic_state = OntogeneticState(
                 stage=DevelopmentStage.EMBRYONIC, maturity=0.0
             )
+        
+        # Initialize actualization tracker if not provided
+        if self.actualization_tracker is None:
+            try:
+                from ..telos import ActualizationTracker
+                self.actualization_tracker = ActualizationTracker()
+            except ImportError:
+                pass  # Telos module not available
 
     def get_fitness(self) -> float:
         """Get the fitness of this kernel."""
@@ -143,7 +153,10 @@ class OntogeneticKernel(GeneratedKernel):
         return self.grip_metrics.total_grip
 
     def advance_stage(self) -> None:
-        """Advance to the next development stage if mature enough."""
+        """Advance to the next development stage if mature enough.
+        
+        Uses teleological guidance if telos is available.
+        """
         if not self.ontogenetic_state:
             return
 
@@ -154,11 +167,97 @@ class OntogeneticKernel(GeneratedKernel):
             DevelopmentStage.MATURE: (0.95, DevelopmentStage.SENESCENT),
         }
 
+        # Check if ready for transition
         if state.stage in stage_transitions:
             threshold, next_stage = stage_transitions[state.stage]
-            if state.maturity >= threshold:
+            
+            # Adjust threshold based on telos actualization if available
+            if self.telos is not None and self.actualization_tracker is not None:
+                try:
+                    metrics = self.actualization_tracker.compute_metrics(self, self.telos)
+                    # Lower threshold if actualization is high (ready to advance)
+                    # Raise threshold if actualization is low (need more development)
+                    adjustment = (metrics.actualization - 0.5) * 0.2  # ±0.1 adjustment
+                    adjusted_threshold = threshold - adjustment
+                    adjusted_threshold = max(0.1, min(0.95, adjusted_threshold))
+                except:
+                    adjusted_threshold = threshold
+            else:
+                adjusted_threshold = threshold
+            
+            if state.maturity >= adjusted_threshold:
                 old_stage = state.stage
                 state.stage = next_stage
                 state.record_event(
-                    "stage_transition", {"from": old_stage.value, "to": next_stage.value}
+                    "stage_transition", {
+                        "from": old_stage.value, 
+                        "to": next_stage.value,
+                        "maturity": state.maturity,
+                        "threshold": adjusted_threshold
+                    }
                 )
+                
+                # Record in actualization tracker if available
+                if self.actualization_tracker is not None:
+                    transition = self.actualization_tracker.detect_phase_transition()
+                    if transition:
+                        state.record_event("phase_transition", transition)
+    
+    def compute_actualization_gradient(self) -> Optional[np.ndarray]:
+        """Compute gradient toward actualization if telos is available.
+        
+        Returns:
+            Gradient vector or None if telos not available
+        """
+        if self.telos is None:
+            return None
+        
+        try:
+            from ..telos import DevelopmentalAttractor
+            
+            # Create attractor
+            attractor = DevelopmentalAttractor(self.telos)
+            
+            # Get current state
+            current_state = self.coefficients.copy()
+            
+            # Compute gradient
+            gradient = attractor.compute_gradient(current_state)
+            
+            return gradient
+        except:
+            return None
+    
+    def apply_teleological_pull(self, strength: float = 1.0) -> None:
+        """Apply attractive force toward telos.
+        
+        Args:
+            strength: Multiplier for pull strength
+        """
+        if self.telos is None:
+            return
+        
+        try:
+            from ..telos import DevelopmentalAttractor
+            
+            # Create attractor
+            attractor = DevelopmentalAttractor(self.telos)
+            
+            # Get gradient
+            gradient = self.compute_actualization_gradient()
+            
+            if gradient is not None:
+                # Apply gradient to coefficients
+                for i in range(min(len(self.coefficients), len(gradient))):
+                    self.coefficients[i] += gradient[i] * strength * 0.1
+                    # Keep in reasonable range
+                    self.coefficients[i] = max(-10.0, min(10.0, self.coefficients[i]))
+                
+                # Record event
+                if self.ontogenetic_state is not None:
+                    self.ontogenetic_state.record_event(
+                        "teleological_pull",
+                        {"strength": strength, "gradient_norm": float(np.linalg.norm(gradient))}
+                    )
+        except:
+            pass
