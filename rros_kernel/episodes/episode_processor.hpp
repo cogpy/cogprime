@@ -115,6 +115,19 @@ private:
     float process_scientific_revolution(const std::vector<float>& input, const std::unordered_map<std::string, float>& context);
     float process_wisdom_contemplation(const std::vector<float>& input, const std::unordered_map<std::string, float>& context);
     float process_intelligence_rationality(const std::vector<float>& input, const std::unordered_map<std::string, float>& context);
+
+    // Additional episode processors for complete coverage
+    float process_neoplatonism(const std::vector<float>& input, const std::unordered_map<std::string, float>& context);
+    float process_gnosis_anagoge(const std::vector<float>& input, const std::unordered_map<std::string, float>& context);
+    float process_death_meaning(const std::vector<float>& input, const std::unordered_map<std::string, float>& context);
+    float process_ecology_practices(const std::vector<float>& input, const std::unordered_map<std::string, float>& context);
+    float process_love_wisdom(const std::vector<float>& input, const std::unordered_map<std::string, float>& context);
+    float process_wonder_curiosity(const std::vector<float>& input, const std::unordered_map<std::string, float>& context);
+    float process_opponent_processing(const std::vector<float>& input, const std::unordered_map<std::string, float>& context);
+    float process_exaptation_cooption(const std::vector<float>& input, const std::unordered_map<std::string, float>& context);
+    float process_psychedelics_insights(const std::vector<float>& input, const std::unordered_map<std::string, float>& context);
+    float process_meditation_wisdom(const std::vector<float>& input, const std::unordered_map<std::string, float>& context);
+    float process_consciousness_mystery(const std::vector<float>& input, const std::unordered_map<std::string, float>& context);
     
     // Helper functions
     float compute_similarity_distance(const std::vector<float>& a, const std::vector<float>& b);

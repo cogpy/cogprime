@@ -128,7 +128,7 @@ CogPrime is a research project focused on AGI development. When contributing:
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your contributions will be licensed under the GNU AGPL v3 License.
 
 ## Questions?
 

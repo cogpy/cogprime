@@ -1,6 +1,6 @@
 ---
 [← Back to Index](README.md)
-[← Previous Episode](episode-33.md) | [Next Episode →](episode-37.md)
+[← Previous Episode](episode-33.md) | [Next Episode →](episode-35.md)
 ---
 
 ## Episode 34 - Notes
