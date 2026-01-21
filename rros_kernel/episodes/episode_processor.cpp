@@ -89,11 +89,67 @@ void EpisodeProcessor::initialize_processors() {
             return process_wisdom_contemplation(input, context);
         };
         
-    episode_processors_[Episode::INTELLIGENCE_RATIONALITY] = 
+    episode_processors_[Episode::INTELLIGENCE_RATIONALITY] =
         [this](const std::vector<float>& input, const std::unordered_map<std::string, float>& context) {
             return process_intelligence_rationality(input, context);
         };
-        
+
+    // Additional episode processors for complete coverage
+    episode_processors_[Episode::NEOPLATONISM] =
+        [this](const std::vector<float>& input, const std::unordered_map<std::string, float>& context) {
+            return process_neoplatonism(input, context);
+        };
+
+    episode_processors_[Episode::GNOSIS_ANAGOGE] =
+        [this](const std::vector<float>& input, const std::unordered_map<std::string, float>& context) {
+            return process_gnosis_anagoge(input, context);
+        };
+
+    episode_processors_[Episode::DEATH_MEANING] =
+        [this](const std::vector<float>& input, const std::unordered_map<std::string, float>& context) {
+            return process_death_meaning(input, context);
+        };
+
+    episode_processors_[Episode::ECOLOGY_PRACTICES] =
+        [this](const std::vector<float>& input, const std::unordered_map<std::string, float>& context) {
+            return process_ecology_practices(input, context);
+        };
+
+    episode_processors_[Episode::LOVE_WISDOM] =
+        [this](const std::vector<float>& input, const std::unordered_map<std::string, float>& context) {
+            return process_love_wisdom(input, context);
+        };
+
+    episode_processors_[Episode::WONDER_CURIOSITY] =
+        [this](const std::vector<float>& input, const std::unordered_map<std::string, float>& context) {
+            return process_wonder_curiosity(input, context);
+        };
+
+    episode_processors_[Episode::OPPONENT_PROCESSING] =
+        [this](const std::vector<float>& input, const std::unordered_map<std::string, float>& context) {
+            return process_opponent_processing(input, context);
+        };
+
+    episode_processors_[Episode::EXAPTATION_COOPTION] =
+        [this](const std::vector<float>& input, const std::unordered_map<std::string, float>& context) {
+            return process_exaptation_cooption(input, context);
+        };
+
+    episode_processors_[Episode::PSYCHEDELICS_INSIGHTS] =
+        [this](const std::vector<float>& input, const std::unordered_map<std::string, float>& context) {
+            return process_psychedelics_insights(input, context);
+        };
+
+    episode_processors_[Episode::MEDITATION_WISDOM] =
+        [this](const std::vector<float>& input, const std::unordered_map<std::string, float>& context) {
+            return process_meditation_wisdom(input, context);
+        };
+
+    episode_processors_[Episode::CONSCIOUSNESS_MYSTERY] =
+        [this](const std::vector<float>& input, const std::unordered_map<std::string, float>& context) {
+            return process_consciousness_mystery(input, context);
+        };
+
     // Fill in remaining episodes with default processor
     for (int i = 0; i <= static_cast<int>(Episode::TILLICH_BARFIELD); ++i) {
         Episode episode = static_cast<Episode>(i);
@@ -554,17 +610,391 @@ float EpisodeProcessor::process_intelligence_rationality(
     return (std::tanh(improvement) * 0.6f + rationality * 0.4f);
 }
 
-float EpisodeProcessor::compute_default_relevance(
+// Additional episode processor implementations
+
+float EpisodeProcessor::process_neoplatonism(
+    const std::vector<float>& input,
+    const std::unordered_map<std::string, float>& /* context */
+) {
+    // Neoplatonic ascent: movement toward unity and the One
+    if (input.empty()) return 0.0f;
+
+    // Henosis (unity): measure convergence toward single value
+    float mean = std::accumulate(input.begin(), input.end(), 0.0f) / input.size();
+    float dispersion = 0.0f;
+    for (float val : input) {
+        dispersion += std::abs(val - mean);
+    }
+    dispersion /= input.size();
+
+    float unity = 1.0f / (1.0f + dispersion);
+
+    // Emanation: detect hierarchical structure (values decreasing from peak)
+    float max_val = *std::max_element(input.begin(), input.end());
+    float emanation_order = 0.0f;
+    for (float val : input) {
+        emanation_order += (max_val - std::abs(val - max_val)) / (max_val + 1e-6f);
+    }
+    emanation_order /= input.size();
+
+    return (unity * 0.6f + emanation_order * 0.4f);
+}
+
+float EpisodeProcessor::process_gnosis_anagoge(
     const std::vector<float>& input,
     const std::unordered_map<std::string, float>& context
 ) {
+    // Gnosis: transformative knowing; Anagoge: upward-leading ascent
+    if (input.size() < 4) return 0.0f;
+
+    // Anagogic ascent: detect upward trend with integration
+    float trend = 0.0f;
+    for (size_t i = 1; i < input.size(); ++i) {
+        trend += (input[i] - input[i-1]);
+    }
+    trend /= (input.size() - 1);
+
+    // Integration depth: multi-scale coherence (like wisdom contemplation)
+    float integration = 0.0f;
+    for (size_t window = 2; window <= std::min(input.size(), size_t(6)); ++window) {
+        float window_coherence = 0.0f;
+        for (size_t i = 0; i <= input.size() - window; ++i) {
+            float window_mean = 0.0f;
+            for (size_t j = i; j < i + window; ++j) {
+                window_mean += input[j];
+            }
+            window_mean /= window;
+            for (size_t j = i; j < i + window; ++j) {
+                window_coherence += 1.0f / (1.0f + std::abs(input[j] - window_mean));
+            }
+        }
+        integration += window_coherence / input.size();
+    }
+
+    // Transformation marker from context
+    float transformation = 1.0f;
+    if (context.find("transformation_depth") != context.end()) {
+        transformation = 1.0f + context.at("transformation_depth");
+    }
+
+    return std::tanh((trend + 1.0f) * integration * 0.3f) * transformation;
+}
+
+float EpisodeProcessor::process_death_meaning(
+    const std::vector<float>& input,
+    const std::unordered_map<std::string, float>& /* context */
+) {
+    // Existential meaning in face of mortality: finitude awareness
+    if (input.empty()) return 0.0f;
+
+    // Finitude: detect bounded nature and endpoints
+    float range = 0.0f;
+    if (input.size() > 1) {
+        float min_val = *std::min_element(input.begin(), input.end());
+        float max_val = *std::max_element(input.begin(), input.end());
+        range = max_val - min_val;
+    }
+
+    // Mortality salience: sharp transitions (memento mori moments)
+    float transition_sharpness = 0.0f;
+    for (size_t i = 1; i < input.size(); ++i) {
+        float change = std::abs(input[i] - input[i-1]);
+        transition_sharpness = std::max(transition_sharpness, change);
+    }
+
+    // Meaning despite finitude: coherence within bounds
+    float mean = std::accumulate(input.begin(), input.end(), 0.0f) / input.size();
+    float coherence = 0.0f;
+    for (float val : input) {
+        coherence += 1.0f / (1.0f + std::abs(val - mean));
+    }
+    coherence /= input.size();
+
+    return (coherence * 0.5f + std::tanh(transition_sharpness) * 0.3f +
+            std::tanh(range) * 0.2f);
+}
+
+float EpisodeProcessor::process_ecology_practices(
+    const std::vector<float>& input,
+    const std::unordered_map<std::string, float>& /* context */
+) {
+    // Ecology of practices: interconnected, mutually supporting practices
+    if (input.size() < 3) return 0.0f;
+
+    // Mutual support: correlation between adjacent elements
+    float mutual_support = 0.0f;
+    for (size_t i = 1; i < input.size() - 1; ++i) {
+        // Element supported by neighbors
+        float neighbor_avg = (input[i-1] + input[i+1]) / 2.0f;
+        mutual_support += 1.0f / (1.0f + std::abs(input[i] - neighbor_avg));
+    }
+    mutual_support /= (input.size() - 2);
+
+    // Diversity: variance indicating multiple distinct practices
+    float mean = std::accumulate(input.begin(), input.end(), 0.0f) / input.size();
+    float diversity = 0.0f;
+    for (float val : input) {
+        diversity += (val - mean) * (val - mean);
+    }
+    diversity = std::sqrt(diversity / input.size());
+
+    // Systemic health: balance of unity and diversity
+    float health = mutual_support * (1.0f + diversity * 0.5f);
+
+    return std::tanh(health);
+}
+
+float EpisodeProcessor::process_love_wisdom(
+    const std::vector<float>& input,
+    const std::unordered_map<std::string, float>& /* context */
+) {
+    // Philia (love of wisdom): attraction toward truth and understanding
+    if (input.empty()) return 0.0f;
+
+    // Attraction: movement toward positive values
+    float attraction = 0.0f;
+    float positive_sum = 0.0f;
+    for (float val : input) {
+        if (val > 0) {
+            attraction += val;
+            positive_sum += 1.0f;
+        }
+    }
+    attraction = positive_sum > 0 ? attraction / positive_sum : 0.0f;
+
+    // Care: sustained attention (low variance, consistent engagement)
+    float mean = std::accumulate(input.begin(), input.end(), 0.0f) / input.size();
+    float care = 0.0f;
+    for (float val : input) {
+        care += 1.0f / (1.0f + std::abs(val - mean));
+    }
+    care /= input.size();
+
+    // Agape: unconditional aspect (response regardless of input quality)
+    float agape = 1.0f / (1.0f + std::abs(mean)); // Centered response
+
+    return (attraction * 0.4f + care * 0.4f + agape * 0.2f);
+}
+
+float EpisodeProcessor::process_wonder_curiosity(
+    const std::vector<float>& input,
+    const std::unordered_map<std::string, float>& /* context */
+) {
+    // Wonder and curiosity: openness to novelty and mystery
+    if (input.empty()) return 0.0f;
+
+    // Novelty detection: unexpected changes
+    float novelty = 0.0f;
+    float expected = input[0];
+    for (size_t i = 1; i < input.size(); ++i) {
+        float surprise = std::abs(input[i] - expected);
+        novelty += surprise;
+        expected = expected * 0.7f + input[i] * 0.3f; // Update expectation
+    }
+    novelty /= (input.size() - 1);
+
+    // Openness: range of values engaged with
+    float min_val = *std::min_element(input.begin(), input.end());
+    float max_val = *std::max_element(input.begin(), input.end());
+    float openness = max_val - min_val;
+
+    // Sustained engagement: maintaining attention despite novelty
+    float sustained = 0.0f;
+    for (size_t i = 1; i < input.size(); ++i) {
+        if (std::abs(input[i]) > 0.1f && std::abs(input[i-1]) > 0.1f) {
+            sustained += 1.0f;
+        }
+    }
+    sustained /= (input.size() - 1);
+
+    return (std::tanh(novelty) * 0.4f + std::tanh(openness) * 0.3f +
+            sustained * 0.3f);
+}
+
+float EpisodeProcessor::process_opponent_processing(
+    const std::vector<float>& input,
+    const std::unordered_map<std::string, float>& /* context */
+) {
+    // Opponent processing: dynamic tension between opposing forces
+    if (input.size() < 2) return 0.0f;
+
+    // Oscillation: alternating positive/negative
+    float oscillation = 0.0f;
+    for (size_t i = 1; i < input.size(); ++i) {
+        if ((input[i] > 0 && input[i-1] < 0) || (input[i] < 0 && input[i-1] > 0)) {
+            oscillation += 1.0f;
+        }
+    }
+    oscillation /= (input.size() - 1);
+
+    // Balance: equal representation of opposing forces
+    float positive_energy = 0.0f, negative_energy = 0.0f;
+    for (float val : input) {
+        if (val > 0) positive_energy += val;
+        else negative_energy += std::abs(val);
+    }
+    float total = positive_energy + negative_energy + 1e-6f;
+    float balance = 1.0f - std::abs(positive_energy - negative_energy) / total;
+
+    // Dynamic equilibrium: stable despite opposition
+    float mean = std::accumulate(input.begin(), input.end(), 0.0f) / input.size();
+    float equilibrium = 1.0f / (1.0f + std::abs(mean)); // Closer to zero = better equilibrium
+
+    return (oscillation * 0.4f + balance * 0.3f + equilibrium * 0.3f);
+}
+
+float EpisodeProcessor::process_exaptation_cooption(
+    const std::vector<float>& input,
+    const std::unordered_map<std::string, float>& /* context */
+) {
+    // Exaptation: repurposing existing structures for new functions
+    if (input.size() < 4) return 0.0f;
+
+    // Structural similarity with functional difference
+    // Compare first half to second half
+    size_t mid = input.size() / 2;
+    float structural_similarity = 0.0f;
+    float functional_difference = 0.0f;
+
+    for (size_t i = 0; i < mid; ++i) {
+        structural_similarity += 1.0f / (1.0f + std::abs(input[i] - input[mid + i]));
+        functional_difference += std::abs(input[i] - input[mid + i]);
+    }
+    structural_similarity /= mid;
+    functional_difference /= mid;
+
+    // Cooption potential: existing patterns available for reuse
+    float pattern_richness = 0.0f;
+    std::unordered_map<int, int> quantized_counts;
+    for (float val : input) {
+        int q = static_cast<int>(val * 5.0f);
+        quantized_counts[q]++;
+    }
+    pattern_richness = static_cast<float>(quantized_counts.size()) / input.size();
+
+    return (structural_similarity * 0.4f + std::tanh(functional_difference) * 0.3f +
+            pattern_richness * 0.3f);
+}
+
+float EpisodeProcessor::process_psychedelics_insights(
+    const std::vector<float>& input,
+    const std::unordered_map<std::string, float>& /* context */
+) {
+    // Psychedelic-like processing: enhanced pattern recognition, boundary dissolution
+    if (input.empty()) return 0.0f;
+
+    // Boundary dissolution: reduced distinction between elements
+    float boundary_dissolution = 0.0f;
+    for (size_t i = 1; i < input.size(); ++i) {
+        boundary_dissolution += 1.0f / (1.0f + std::abs(input[i] - input[i-1]) * 5.0f);
+    }
+    boundary_dissolution /= (input.size() - 1);
+
+    // Enhanced pattern perception: detect subtle patterns
+    float pattern_enhancement = 0.0f;
+    for (size_t lag = 1; lag <= std::min(size_t(4), input.size() / 2); ++lag) {
+        float correlation = 0.0f;
+        for (size_t i = 0; i < input.size() - lag; ++i) {
+            correlation += input[i] * input[i + lag];
+        }
+        pattern_enhancement += std::abs(correlation) / (input.size() - lag);
+    }
+
+    // Meaningfulness: subjective sense of significance
+    float energy = std::sqrt(std::accumulate(input.begin(), input.end(), 0.0f,
+        [](float sum, float val) { return sum + val * val; }));
+    float meaningfulness = std::tanh(energy / input.size());
+
+    return (boundary_dissolution * 0.35f + std::tanh(pattern_enhancement) * 0.35f +
+            meaningfulness * 0.3f);
+}
+
+float EpisodeProcessor::process_meditation_wisdom(
+    const std::vector<float>& input,
+    const std::unordered_map<std::string, float>& context
+) {
+    // Meditation leading to wisdom: concentration + insight
+    if (input.empty()) return 0.0f;
+
+    // Concentration (samatha): stability of attention
+    float mean = std::accumulate(input.begin(), input.end(), 0.0f) / input.size();
+    float variance = 0.0f;
+    for (float val : input) {
+        variance += (val - mean) * (val - mean);
+    }
+    variance /= input.size();
+    float concentration = 1.0f / (1.0f + variance);
+
+    // Insight (vipassana): seeing clearly
+    float insight = 0.0f;
+    for (size_t i = 2; i < input.size(); ++i) {
+        // Detect second-order patterns (insight into patterns)
+        float d1 = input[i] - input[i-1];
+        float d2 = input[i-1] - input[i-2];
+        if (std::abs(d1 - d2) < 0.1f) { // Pattern detected
+            insight += 1.0f;
+        }
+    }
+    insight /= std::max(size_t(1), input.size() - 2);
+
+    // Equanimity: balanced response
+    float equanimity = 1.0f / (1.0f + std::abs(mean));
+
+    // Practice depth from context
+    float depth = 1.0f;
+    if (context.find("practice_depth") != context.end()) {
+        depth = 1.0f + context.at("practice_depth");
+    }
+
+    return (concentration * 0.4f + insight * 0.35f + equanimity * 0.25f) * depth;
+}
+
+float EpisodeProcessor::process_consciousness_mystery(
+    const std::vector<float>& input,
+    const std::unordered_map<std::string, float>& /* context */
+) {
+    // Consciousness and its mysteries: hard problem, qualia, awareness
+    if (input.empty()) return 0.0f;
+
+    // Self-reference: signal's relationship to itself
+    float self_reference = 0.0f;
+    float mean = std::accumulate(input.begin(), input.end(), 0.0f) / input.size();
+    for (float val : input) {
+        // How much does each value "know" the whole?
+        self_reference += 1.0f / (1.0f + std::abs(val - mean));
+    }
+    self_reference /= input.size();
+
+    // Integration: unified experience from diverse inputs
+    float integration = 0.0f;
+    for (size_t i = 1; i < input.size(); ++i) {
+        for (size_t j = 0; j < i; ++j) {
+            integration += 1.0f / (1.0f + std::abs(input[i] - input[j]));
+        }
+    }
+    integration /= (input.size() * (input.size() - 1) / 2.0f + 1e-6f);
+
+    // Irreducibility: cannot be fully explained by parts
+    float total_energy = std::accumulate(input.begin(), input.end(), 0.0f,
+        [](float sum, float val) { return sum + std::abs(val); });
+    float max_part = *std::max_element(input.begin(), input.end(),
+        [](float a, float b) { return std::abs(a) < std::abs(b); });
+    float irreducibility = 1.0f - (std::abs(max_part) / (total_energy + 1e-6f));
+
+    return (self_reference * 0.35f + integration * 0.35f + irreducibility * 0.3f);
+}
+
+float EpisodeProcessor::compute_default_relevance(
+    const std::vector<float>& input,
+    const std::unordered_map<std::string, float>& /* context */
+) {
     // Default processing for episodes without specific implementations
     if (input.empty()) return 0.0f;
-    
+
     float mean = std::accumulate(input.begin(), input.end(), 0.0f) / input.size();
     float energy = std::sqrt(std::accumulate(input.begin(), input.end(), 0.0f,
                            [](float sum, float val) { return sum + val * val; }));
-    
+
     return std::tanh(energy / input.size()) * 0.5f; // Lower weight for default processing
 }
 

@@ -1,6 +1,6 @@
 ---
 [← Back to Index](README.md)
-[← Previous Episode](episode-34.md) | [Next Episode →](episode-38.md)
+[← Previous Episode](episode-36.md) | [Next Episode →](episode-38.md)
 ---
 
 ## Episode 37 Notes
