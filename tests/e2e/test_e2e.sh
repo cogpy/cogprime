@@ -1,9 +1,11 @@
 #!/bin/bash
-
 set -e
 
+# Change to the directory containing this script
+cd "$(dirname "$0")"
+
 # Build the E2E application
-g++ e2e_app.cpp -I ../../include -o e2e_app
+g++ -std=c++11 e2e_app.cpp -I ../../include -o e2e_app
 
 # Test case 1
 output=$(./e2e_app 10)
@@ -29,5 +31,4 @@ fi
 echo "All E2E tests passed!"
 
 # Cleanup
-rm e2e_app
-
+rm -f e2e_app
