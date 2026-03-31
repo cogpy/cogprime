@@ -10,22 +10,24 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
+        # Note: windows-latest excluded — g++ invocation syntax differs
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: Set up C++
-      uses: actions/setup-gpp@v1
+    # g++ is pre-installed on ubuntu-latest and macos-latest runners.
+    # actions/setup-gpp does not exist as a GitHub Action.
 
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
     - name: Cache dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cache/pip
@@ -35,8 +37,8 @@ jobs:
 
     - name: Build C++ Unit Tests
       run: |
-        g++ tests/unit/test_core.cpp -I include -o test_core
-        g++ tests/unit/test_prime.cpp -I include -o test_prime
+        g++ -std=c++11 tests/unit/test_core.cpp -I include -o test_core
+        g++ -std=c++11 tests/unit/test_prime.cpp -I include -o test_prime
 
     - name: Run C++ Unit Tests
       run: |
@@ -55,4 +57,3 @@ jobs:
     - name: Run E2E Tests
       run: bash tests/e2e/test_e2e.sh
       shell: bash
-
